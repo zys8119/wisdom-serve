@@ -1,0 +1,19 @@
+{
+  "name": "node-serve",
+  "version": "1.0.0",
+  "description": "node 服务",
+  "main": "index.ts",
+  "scripts": {
+    "start": "npm run dev",
+    "dev": "ts-node main.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.zhijiasoft.com/zhangyunshan/node-serve.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ts-node": "^10.7.0"
+  }
+}
