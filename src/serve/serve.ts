@@ -1,4 +1,4 @@
-import {AppServe, AppServeOptions, AppServePlugIn, createApp as createAppType} from "./types/type"
+import {AppServe, AppServeOptions, Plugin, createApp as createAppType} from "./types/type"
 import {createServer, Server} from "http"
 import config from "./config"
 import {mergeConfig} from "@wisdom-serve/utils";
@@ -7,14 +7,28 @@ export {mergeConfig} from "@wisdom-serve/utils"
 export class createAppServe implements AppServe{
     options?:Partial<AppServeOptions>
     Serve
+    Plugins = []
     constructor(options?:Partial<AppServeOptions>) {
         this.options = mergeConfig(config, options)
-        this.Serve = createServer((request,response) => {
-            console.log(1111)
+        this.Serve = createServer(async (request,response) => {
+            await Promise.all(this.Plugins.map(async pulg=>{
+                if(Object.prototype.toString.call(pulg) === "[object Function]"){
+                    await pulg.call(this, request, response, Promise.resolve)
+                }else {
+                    await Promise.resolve()
+                }
+            })).then(()=> {
+                response.statusCode = 404
+                response.end("Not Found")
+            }).catch(()=> {
+                response.statusCode = 404
+                response.end("Not Found")
+            })
         });
     }
 
-    use(plugin: AppServePlugIn): AppServe {
+    use(plugin: Plugin): AppServe {
+        this.Plugins.push(plugin)
         return this
     }
 

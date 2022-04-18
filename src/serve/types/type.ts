@@ -1,13 +1,14 @@
-import {Server, ServerOptions} from "http";
+import {IncomingMessage, Server, ServerOptions, ServerResponse} from "http";
+
+export type Plugin = (req: IncomingMessage, res: ServerResponse, next:(arg:any)=>Promise<any>) => Promise<any> | void
 
 export interface AppServe {
     Serve:Server
     options?:Partial<AppServeOptions>;
-    use(this:AppServe, plugin:AppServePlugIn):AppServe
+    Plugins?:Array<Plugin>;
+    use(this:AppServe, plugin:Plugin):AppServe
     listen(port?: number): Promise<Server>;
 }
-
-export type AppServePlugIn = (this:AppServe, res:any, req:any, next:()=> void)=>void
 
 export interface AppServeOptions extends ServerOptions {
     serve?:{
