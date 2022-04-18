@@ -1,13 +1,13 @@
 import {createApp} from "@wisdom-serve/serve"
 import {ServeInfo} from "@wisdom-serve/utils"
 import * as ncol from "ncol"
+import {performance} from "perf_hooks"
 
-console.time()
+global.__vite_start_time = performance.now()
 const app = createApp({
 }).use((res, req, next) => void {
 
 });
-
 app.listen().then(()=>{
     ncol.log("Server running at:")
     ServeInfo.getIPv4().forEach(e=>{
@@ -20,5 +20,5 @@ app.listen().then(()=>{
                 .info(` http://${local || e}:${app.options.serve.port || "80"}`)
         });
     })
-    console.log(console.timeEnd());
+    ncol.info(`ready in ${Math.ceil(performance.now() - global.__vite_start_time)}ms.`);
 });
