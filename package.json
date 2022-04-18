@@ -15,5 +15,12 @@
   "license": "ISC",
   "dependencies": {
     "ts-node": "^10.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.24",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
+    "eslint": "^8.13.0",
+    "eslint-plugin-react": "^7.29.4"
   }
 }
