@@ -1,9 +1,7 @@
 import {createApp} from "@wisdom-serve/serve"
 import {ServeInfo} from "@wisdom-serve/utils"
 import * as ncol from "ncol"
-import {spawnSync} from "child_process"
 
-console.log(spawnSync("node console.time()"))
 console.time()
 const app = createApp({
 }).use((res, req, next) => void {
