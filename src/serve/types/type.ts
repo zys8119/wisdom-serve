@@ -4,7 +4,7 @@ export interface AppServe {
     Serve:Server
     options?:Partial<AppServeOptions>;
     use(this:AppServe, plugin:AppServePlugIn):AppServe
-    listen(port?: number): Promise<void>;
+    listen(port?: number): Promise<Server>;
 }
 
 export type AppServePlugIn = (this:AppServe, res:any, req:any, next:()=> void)=>void

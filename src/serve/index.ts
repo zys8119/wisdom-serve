@@ -1,5 +1,5 @@
 import {AppServe, AppServeOptions, AppServePlugIn, createApp as createAppType} from "./types/type"
-import {createServer} from "http"
+import {createServer, Server} from "http"
 import config from "./config"
 import {mergeConfig} from "@wisdom-serve/utils";
 export {mergeConfig} from "@wisdom-serve/utils"
@@ -17,12 +17,12 @@ export class createAppServe implements AppServe{
         return this
     }
 
-    listen(port?: number): Promise<void> {
+    listen(port?: number): Promise<Server> {
         this.Serve.listen({
             host:this.options.serve.host,
             port:this.options.serve.port,
         })
-        return Promise.resolve()
+        return Promise.resolve(this.Serve)
     }
 }
 
