@@ -2,14 +2,14 @@ import {createApp} from "@wisdom-serve/serve"
 import {ServeInfo} from "@wisdom-serve/utils"
 import * as ncol from "ncol"
 import {performance} from "perf_hooks"
-
+import "./global"
 global.__vite_start_time = performance.now()
 const app = createApp({
 }).use((req, res, next) => {
-    console.log(req.url)
-
+    return next("asdas")
+}).use((req, res, next) => {
     return Promise.resolve()
-});
+})
 app.listen().then(()=>{
     ncol.log("Server running at:")
     ServeInfo.ouinputAddress(app.options.serve.port)

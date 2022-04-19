@@ -1,8 +1,9 @@
 import {IncomingMessage, Server, ServerOptions, ServerResponse} from "http";
+import {AppServeInterface} from "@wisdom-serve/serve";
 
-export type Plugin = (req: IncomingMessage, res: ServerResponse, next:(arg:any)=>Promise<any>) => Promise<any> | void
+export type Plugin = (req: IncomingMessage, res: ServerResponse, next:(arg?:any)=>Promise<any>) => Promise<any> | void
 
-export interface AppServe {
+export interface AppServe extends AppServeInterface{
     Serve:Server
     options?:Partial<AppServeOptions>;
     Plugins?:Array<Plugin>;
@@ -18,3 +19,8 @@ export interface AppServeOptions extends ServerOptions {
 }
 
 export type createApp = (options:AppServeOptions)=>AppServe;
+
+declare module "@wisdom-serve/serve" {
+    export const createApp:createApp
+    export interface AppServeInterface {}
+}

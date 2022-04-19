@@ -3,7 +3,6 @@ import {createServer, Server} from "http"
 import config from "./config"
 import {mergeConfig} from "@wisdom-serve/utils";
 export {mergeConfig} from "@wisdom-serve/utils"
-
 export class createAppServe implements AppServe{
     options?:Partial<AppServeOptions>
     Serve
@@ -11,11 +10,12 @@ export class createAppServe implements AppServe{
     constructor(options?:Partial<AppServeOptions>) {
         this.options = mergeConfig(config, options)
         this.Serve = createServer(async (request,response) => {
-            await Promise.all(this.Plugins.map(async pulg=>{
+            delete require.cache
+            await Promise.race(this.Plugins.map(async pulg=>{
                 if(Object.prototype.toString.call(pulg) === "[object Function]"){
-                    await pulg.call(this, request, response, Promise.resolve)
+                    return await pulg.call(this, request, response, Promise.resolve)
                 }else {
-                    await Promise.resolve()
+                    return Promise.reject("插件格式错误！")
                 }
             })).then(()=> {
                 response.statusCode = 404

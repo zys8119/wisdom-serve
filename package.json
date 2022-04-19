@@ -16,6 +16,7 @@
   "workspaces": [
     "src/*"
   ],
+  "types": "./global.d.ts",
   "dependencies": {
     "@types/lodash": "^4.14.181",
     "@wisdom-serve/serve": "workspace:*",
