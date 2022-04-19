@@ -5,7 +5,9 @@ import {performance} from "perf_hooks"
 import "./global"
 global.__vite_start_time = performance.now()
 const app = createApp({
+    route
 }).use((req, res, next) => {
+    app.a = "asda"
     return next("asdas")
 }).use((req, res, next) => {
     return Promise.resolve()
@@ -15,3 +17,4 @@ app.listen().then(()=>{
     ServeInfo.ouinputAddress(app.options.serve.port)
     ncol.info(`ready in ${Math.ceil(performance.now() - global.__vite_start_time)}ms.`);
 });
+// 5599asda

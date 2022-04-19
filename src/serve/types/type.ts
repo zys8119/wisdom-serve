@@ -15,7 +15,13 @@ export interface AppServeOptions extends ServerOptions {
     serve?:{
         host?:number
         port?:number
-    }
+    },
+    route?:routeRow[]
+}
+
+type routeRow = {
+    path:string,
+    controller():void
 }
 
 export type createApp = (options:AppServeOptions)=>AppServe;
