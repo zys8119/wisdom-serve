@@ -3,9 +3,6 @@ export default createRoute({
     routes:[
         {
             path:"/api",
-            controller(){
-                return Promise.reject()
-            },
             children:[
                 {
                     path:"getData",

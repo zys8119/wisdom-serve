@@ -38,7 +38,7 @@ export type routes = routeRow[]
 
 export type routeRow = {
     path:string,
-    controller(this:AppServe, req: IncomingMessage, res: ServerResponse):void;
+    controller?(this:AppServe, req: IncomingMessage, res: ServerResponse):void | Promise<any>;
     children?:routes
 }
 
