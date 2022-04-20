@@ -3,7 +3,7 @@ import {
     AppServeOptions,
     Plugin,
     createApp as createAppType,
-    createRoute as createRouteType, route
+    createRoute as createRouteType, route, RouteOptionsRow
 } from "./types/type"
 import {createServer, Server} from "http"
 import config from "./config"
@@ -16,26 +16,61 @@ export class createAppServe implements AppServe{
     Serve
     Plugins = []
     RouteOptions = {}
+    $url:string
     constructor(options?:Partial<AppServeOptions>) {
         this.options = mergeConfig(config, options);
         this.RouteOptions = RouteOptionsParse(this.options);
         this.Serve = createServer(async (request,response) => {
-            await Promise.race(CorePlug.concat(this.Plugins).map(async pulg=>{
-                if(Object.prototype.toString.call(pulg) === "[object Function]"){
-                    return await pulg.call(this, request, response, (_any)=>Promise.resolve(_any))
-                }else {
-                    return Promise.reject("插件格式错误！")
-                }
-            })).then(()=> {
-                console.log(333)
-                console.log(request.url)
-                response.statusCode = 404
+            // 插件执行
+            try {
+                await Promise.all(CorePlug.concat(this.Plugins).map(async pulg=>{
+                    if(Object.prototype.toString.call(pulg) === "[object Function]"){
+                        return await pulg.call(this, request, response, (_any)=>Promise.resolve(_any))
+                    }else {
+                        return Promise.reject("插件格式错误！")
+                    }
+                })).then(async ()=> {
+                    if(this.RouteOptions[this.$url]){
+                        const route:RouteOptionsRow = this.RouteOptions[this.$url]
+                        const Parents = route.Parents;
+                        // 控制器执行
+                        await Promise.all(Parents.concat(route).map(p_route=>{
+                            if(Object.prototype.toString.call(p_route.controller) === "[object Function]"){
+                                return new Promise<void>( (resolve, reject) => {
+                                    const controllerRes = p_route.controller.call(this, request, response);
+                                    if(Object.prototype.toString.call(controllerRes) === "[object Promise]"){
+                                        controllerRes.then(res=>{
+                                            resolve(res)
+                                        }).catch(err=>{
+                                            reject(err)
+                                        })
+                                    }else {
+                                        resolve(controllerRes)
+                                    }
+                                });
+                            }else {
+                                response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
+                                response.end("控制器格式错误！")
+                            }
+                        })).catch((err)=>{
+                            ncol.error(err)
+                            response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
+                            response.end("服务器内部错误！")
+                        })
+                    }else {
+                        response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
+                        response.end("控制器不存在！")
+                    }
+                }).catch((err)=> {
+                    ncol.error(err)
+                    response.writeHead(404)
+                    response.end("Not Found")
+                })
+            }catch (err){
+                ncol.error(err)
+                response.writeHead(404)
                 response.end("Not Found")
-            }).catch((err)=> {
-                ncol.error(err.message)
-                response.statusCode = 404
-                response.end("Not Found")
-            })
+            }
         });
     }
 

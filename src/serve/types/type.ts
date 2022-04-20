@@ -1,7 +1,7 @@
 import {IncomingMessage, Server, ServerOptions, ServerResponse} from "http";
 import {AppServeInterface} from "@wisdom-serve/serve";
 
-export type Plugin = (req: IncomingMessage, res: ServerResponse, next:(arg?:any)=>Promise<any>) => Promise<any> | void
+export type Plugin = (this:AppServe, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>) => Promise<any> | void
 
 export interface AppServe extends AppServeInterface{
     Serve:Server
@@ -13,8 +13,10 @@ export interface AppServe extends AppServeInterface{
 }
 
 export type RouteOptions = {
-    [key:string]:routeRow & RouteOptionsExtends
+    [key:string]:RouteOptionsRow
 }
+
+export type RouteOptionsRow = routeRow & RouteOptionsExtends
 
 export type RouteOptionsExtends = {
     Parents?:routes
@@ -36,7 +38,7 @@ export type routes = routeRow[]
 
 export type routeRow = {
     path:string,
-    controller(req: IncomingMessage, res: ServerResponse):void;
+    controller(this:AppServe, req: IncomingMessage, res: ServerResponse):void;
     children?:routes
 }
 

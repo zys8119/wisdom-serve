@@ -2,49 +2,15 @@ import {createRoute} from "@wisdom-serve/serve"
 export default createRoute({
     routes:[
         {
-            path:"/asd",
+            path:"/api",
             controller(){
-                console.log(1)
+                return Promise.reject()
             },
             children:[
                 {
-                    path:"1",
+                    path:"getData",
                     controller(){
-                        console.log(2)
-                    },
-                    children:[
-                        {
-                            path:"2",
-                            controller(){
-                                console.log(3)
-                            },
-                        }
-                    ]
-                },
-                {
-                    path:"3",
-                    controller(){
-                        console.log(4)
-                    },
-                }
-            ]
-        },
-        {
-            path:"sda",
-            controller() {
-                console.log(5)
-            }
-        },
-        {
-            path:"4",
-            controller(){
-                console.log(6)
-            },
-            children:[
-                {
-                    path:"5",
-                    controller(){
-                        console.log(7)
+                        console.log(this.$query)
                     },
                 }
             ]
