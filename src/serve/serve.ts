@@ -9,10 +9,13 @@ import {createServer, Server} from "http"
 import {resolve} from "path"
 import {watch, existsSync} from "fs"
 import config from "./config"
-import {mergeConfig, RouteOptionsParse} from "@wisdom-serve/utils";
+import {mergeConfig, RouteOptionsParse, ServeInfo} from "@wisdom-serve/utils";
 import * as ncol from "ncol"
 import CorePlug from "./corePlug"
+import {performance} from "perf_hooks"
 
+
+global.__vite_start_time = performance.now()
 export class createAppServe implements AppServe{
     options?:Partial<AppServeOptions>
     Serve
@@ -107,6 +110,11 @@ export class createAppServe implements AppServe{
             host:this.options.serve.host,
             port:this.options.serve.port,
         })
+        if(this.options.serve.LogServeInfo){
+            ncol.log("Server running at:")
+            ServeInfo.ouinputAddress(this.options.serve.port)
+            ncol.info(`ready in ${Math.ceil(performance.now() - global.__vite_start_time)}ms.`);
+        }
         return Promise.resolve(this.Serve)
     }
 }

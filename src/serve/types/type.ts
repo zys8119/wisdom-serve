@@ -26,6 +26,7 @@ export interface AppServeOptions extends ServerOptions {
     serve?:{
         host?:number
         port?:number
+        LogServeInfo?:boolean // 是否打印服务信息
     },
     route?:AppServeOptionsRoute
 }

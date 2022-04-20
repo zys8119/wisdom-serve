@@ -2,6 +2,7 @@ import {AppServeOptions} from "../types/type";
 
 export default <Partial<AppServeOptions>>{
     serve:{
-        port:81
+        port:81,
+        LogServeInfo:true
     }
 }
