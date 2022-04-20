@@ -62,11 +62,13 @@ export class createAppServe implements AppServe{
                         response.end("控制器不存在！")
                     }
                 }).catch((err)=> {
+                    //todo 插件执行错误
                     ncol.error(err)
                     response.writeHead(404)
                     response.end("Not Found")
                 })
             }catch (err){
+                //todo 插件执行错误
                 ncol.error(err)
                 response.writeHead(404)
                 response.end("Not Found")
