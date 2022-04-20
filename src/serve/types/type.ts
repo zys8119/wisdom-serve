@@ -9,6 +9,15 @@ export interface AppServe extends AppServeInterface{
     Plugins?:Array<Plugin>;
     use(this:AppServe, plugin:Plugin):AppServe
     listen(port?: number): Promise<Server>;
+    RouteOptions: RouteOptions
+}
+
+export type RouteOptions = {
+    [key:string]:routeRow & RouteOptionsExtends
+}
+
+export type RouteOptionsExtends = {
+    Parents?:routes
 }
 
 export interface AppServeOptions extends ServerOptions {
@@ -16,17 +25,26 @@ export interface AppServeOptions extends ServerOptions {
         host?:number
         port?:number
     },
-    route?:routeRow[]
+    route?:route
 }
 
-type routeRow = {
+export type route = {
+    routes:routes
+}
+
+export type routes = routeRow[]
+
+export type routeRow = {
     path:string,
-    controller():void
+    controller(req: IncomingMessage, res: ServerResponse):void;
+    children?:routes
 }
 
 export type createApp = (options:AppServeOptions)=>AppServe;
+export type createRoute = (routerConfig:route)=>route;
 
 declare module "@wisdom-serve/serve" {
     export const createApp:createApp
+    export const createRoute:createRoute
     export interface AppServeInterface {}
 }

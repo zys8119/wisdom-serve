@@ -4,11 +4,11 @@ import * as ncol from "ncol"
 import {performance} from "perf_hooks"
 import "./global"
 global.__vite_start_time = performance.now()
+import route from "./route"
 const app = createApp({
     route
 }).use((req, res, next) => {
-    app.a = "asda"
-    return next("asdas")
+    return next()
 }).use((req, res, next) => {
     return Promise.resolve()
 })

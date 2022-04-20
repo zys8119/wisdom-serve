@@ -1,26 +1,38 @@
-import {AppServe, AppServeOptions, Plugin, createApp as createAppType} from "./types/type"
+import {
+    AppServe,
+    AppServeOptions,
+    Plugin,
+    createApp as createAppType,
+    createRoute as createRouteType, route
+} from "./types/type"
 import {createServer, Server} from "http"
 import config from "./config"
-import {mergeConfig} from "@wisdom-serve/utils";
-export {mergeConfig} from "@wisdom-serve/utils"
+import {mergeConfig, RouteOptionsParse} from "@wisdom-serve/utils";
+import * as ncol from "ncol"
+import CorePlug from "./corePlug"
+
 export class createAppServe implements AppServe{
     options?:Partial<AppServeOptions>
     Serve
     Plugins = []
+    RouteOptions = {}
     constructor(options?:Partial<AppServeOptions>) {
-        this.options = mergeConfig(config, options)
+        this.options = mergeConfig(config, options);
+        this.RouteOptions = RouteOptionsParse(this.options);
         this.Serve = createServer(async (request,response) => {
-            delete require.cache
-            await Promise.race(this.Plugins.map(async pulg=>{
+            await Promise.race(CorePlug.concat(this.Plugins).map(async pulg=>{
                 if(Object.prototype.toString.call(pulg) === "[object Function]"){
-                    return await pulg.call(this, request, response, Promise.resolve)
+                    return await pulg.call(this, request, response, (_any)=>Promise.resolve(_any))
                 }else {
                     return Promise.reject("插件格式错误！")
                 }
             })).then(()=> {
+                console.log(333)
+                console.log(request.url)
                 response.statusCode = 404
                 response.end("Not Found")
-            }).catch(()=> {
+            }).catch((err)=> {
+                ncol.error(err.message)
                 response.statusCode = 404
                 response.end("Not Found")
             })
@@ -43,4 +55,8 @@ export class createAppServe implements AppServe{
 
 export const createApp:createAppType = (options?:Partial<AppServeOptions>) => {
     return new createAppServe(options) as AppServe
+}
+
+export const createRoute:createRouteType = (routerConfig:route)=>{
+    return routerConfig;
 }
