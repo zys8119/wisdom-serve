@@ -6,10 +6,8 @@ export default createRoute({
             children:[
                 {
                     path:"getData",
-                    controller(res,response){
-                        response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
-                        response.end("asdasda！")
-                        console.log(this.$query)
+                    controller:(req, res)=>{
+                        res.end("asdasd")
                     },
                 }
             ]

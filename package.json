@@ -1,5 +1,5 @@
 {
-  "name": "node-serve",
+  "name": "wisdom-serve",
   "version": "1.0.0",
   "description": "node 服务",
   "main": "main.ts",

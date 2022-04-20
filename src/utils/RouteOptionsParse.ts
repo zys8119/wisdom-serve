@@ -1,8 +1,22 @@
-import {AppServeOptions, RouteOptions, routes} from "@wisdom-serve/serve/types/type";
+import {AppServeOptions, AppServeOptionsRoute, RouteOptions, routes} from "@wisdom-serve/serve/types/type";
 import {get} from "lodash"
 import ForEach from "./ForEach"
-export default (options:Partial<AppServeOptions>)=>{
-    const routes:routes = get(options,"route.routes",[]);
+export default async (options:Partial<AppServeOptions>)=>{
+    let route:AppServeOptionsRoute = get(options,"route", {}) as AppServeOptionsRoute;
+    try {
+        if(Object.prototype.toString.call(route) === "[object Function]"){
+            route = (route as any)();
+            if(Object.prototype.toString.call(route) === "[object Promise]"){
+                route = await route;
+                if((route as any).default){
+                    route = (route as any).default
+                }
+            }
+        }
+    }catch (e) {
+        //
+    }
+    const routes:routes = get(route,"routes",[]);
     const result:RouteOptions = {}
     ForEach(routes, (item,i, p)=>{
         const path = p.concat([item]).map(e=>(/^\//.test(e.path) ? "" : "/")+e.path).join("");

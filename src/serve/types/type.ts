@@ -27,8 +27,12 @@ export interface AppServeOptions extends ServerOptions {
         host?:number
         port?:number
     },
-    route?:route
+    route?:AppServeOptionsRoute
 }
+
+export type AppServeOptionsRoute = route | AppServeOptionsRouteLazy
+
+export type AppServeOptionsRouteLazy = ()=>(Promise<{default:route}> | Promise<route> | route)
 
 export type route = {
     routes:routes
@@ -38,9 +42,11 @@ export type routes = routeRow[]
 
 export type routeRow = {
     path:string,
-    controller?(this:AppServe, req: IncomingMessage, res: ServerResponse):void | Promise<any>;
+    controller?:controller;
     children?:routes
 }
+
+export type controller = (this:AppServe, req: IncomingMessage, res: ServerResponse) => void | Promise<any>
 
 export type createApp = (options:AppServeOptions)=>AppServe;
 export type createRoute = (routerConfig:route)=>route;

@@ -6,6 +6,8 @@ import {
     createRoute as createRouteType, route, RouteOptionsRow
 } from "./types/type"
 import {createServer, Server} from "http"
+import {resolve} from "path"
+import {watch, existsSync} from "fs"
 import config from "./config"
 import {mergeConfig, RouteOptionsParse} from "@wisdom-serve/utils";
 import * as ncol from "ncol"
@@ -19,9 +21,10 @@ export class createAppServe implements AppServe{
     $url:string
     constructor(options?:Partial<AppServeOptions>) {
         this.options = mergeConfig(config, options);
-        this.RouteOptions = RouteOptionsParse(this.options);
         this.Serve = createServer(async (request,response) => {
-            // 插件执行
+            //todo 初始化路由
+            this.RouteOptions = await RouteOptionsParse(this.options);
+            //todo 插件执行
             try {
                 await Promise.all(CorePlug.concat(this.Plugins).map(async pulg=>{
                     if(Object.prototype.toString.call(pulg) === "[object Function]"){
@@ -33,14 +36,26 @@ export class createAppServe implements AppServe{
                     const route:RouteOptionsRow = this.RouteOptions[this.$url]
                     if(route && Object.prototype.toString.call(route.controller) === "[object Function]"){
                         const Parents = route.Parents;
-                        // 控制器执行
+                        //todo 控制器执行
                         const controllerArrs = Parents.concat(route);
                         let index = 0;
                         while (index < controllerArrs.length){
                             const p_route = controllerArrs[index];
                             if(Object.prototype.toString.call(p_route.controller) === "[object Function]"){
                                 try {
-                                    await p_route.controller.call(this, request, response)
+                                    const res: any = await p_route.controller.call(this, request, response)
+                                    try {
+                                        //todo 兼容懒加载
+                                        const defaultController = (res && Object.prototype.toString.call(res.default) === "[object Function]" ? res.default : new Function);
+                                        await defaultController.call(this, request, response)
+                                    }catch (err){
+                                        if(err){
+                                            ncol.error(err)
+                                        }
+                                        response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
+                                        response.end("服务器内部错误！")
+                                        index = controllerArrs.length;
+                                    }
                                 }catch (err){
                                     if(err){
                                         ncol.error(err)
@@ -77,7 +92,17 @@ export class createAppServe implements AppServe{
         return this
     }
 
+
     listen(port?: number): Promise<Server> {
+        // 文件监听，实现热更新
+        watch(process.cwd(),{
+            recursive:true
+        }, (t,f)=>{
+            const file_path = resolve(process.cwd(),f);
+            if(require.cache[file_path] && existsSync(file_path)){
+                delete require.cache[file_path];
+            }
+        })
         this.Serve.listen({
             host:this.options.serve.host,
             port:this.options.serve.port,

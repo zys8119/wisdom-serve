@@ -4,9 +4,8 @@ import * as ncol from "ncol"
 import {performance} from "perf_hooks"
 import "./global"
 global.__vite_start_time = performance.now()
-import route from "./route"
 const app = createApp({
-    route
+    route:()=> import("./route"),
 })
 app.listen().then(()=>{
     ncol.log("Server running at:")
