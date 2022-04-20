@@ -7,10 +7,6 @@ global.__vite_start_time = performance.now()
 import route from "./route"
 const app = createApp({
     route
-}).use((req, res, next) => {
-    return next()
-}).use((req, res, next) => {
-    return Promise.resolve()
 })
 app.listen().then(()=>{
     ncol.log("Server running at:")
