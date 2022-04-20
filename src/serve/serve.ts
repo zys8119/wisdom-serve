@@ -106,13 +106,15 @@ export class createAppServe implements AppServe{
                 delete require.cache[file_path];
             }
         })
+        const listenPort = typeof port === "number" ? port : this.options.serve.port;
+        this.options.serve.port = listenPort;
         this.Serve.listen({
             host:this.options.serve.host,
-            port:this.options.serve.port,
+            port:listenPort,
         })
         if(this.options.serve.LogServeInfo){
             ncol.log("Server running at:")
-            ServeInfo.ouinputAddress(this.options.serve.port)
+            ServeInfo.ouinputAddress(listenPort)
             ncol.info(`ready in ${Math.ceil(performance.now() - global.__vite_start_time)}ms.`);
         }
         return Promise.resolve(this.Serve)

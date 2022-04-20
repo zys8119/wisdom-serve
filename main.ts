@@ -3,4 +3,4 @@ import "./global"
 createApp({
     route:()=> import("./route"),
 })
-.listen();
+.listen().then();
