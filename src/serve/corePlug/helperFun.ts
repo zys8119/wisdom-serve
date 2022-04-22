@@ -42,7 +42,7 @@ const helperFun:Plugin = function (request, response, next){
         this.$success(data, options, 403)
     }
     /**
-     * 错误返回
+     * 任意返回
      * @param data
      * @param options
      */
