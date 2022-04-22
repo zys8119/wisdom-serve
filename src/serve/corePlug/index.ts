@@ -1,5 +1,6 @@
 import urlParse from "./urlParse"
+import helperFun from "./helperFun"
 export default [
-    ()=>Promise.resolve(),
-    urlParse
+    urlParse,
+    helperFun
 ]

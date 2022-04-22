@@ -25,10 +25,10 @@ export class createAppServe implements AppServe{
     constructor(options?:Partial<AppServeOptions>) {
         this.options = mergeConfig(config, options);
         this.Serve = createServer(async (request,response) => {
-            //todo 初始化路由
-            this.RouteOptions = await RouteOptionsParse(this.options);
-            //todo 插件执行
             try {
+                //todo 初始化路由
+                this.RouteOptions = await RouteOptionsParse(this.options)
+                //todo 插件执行
                 await Promise.all(CorePlug.concat(this.Plugins).map(async pulg=>{
                     if(Object.prototype.toString.call(pulg) === "[object Function]"){
                         return await pulg.call(this, request, response, (_any)=>Promise.resolve(_any))

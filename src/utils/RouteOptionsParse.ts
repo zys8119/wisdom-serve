@@ -14,6 +14,7 @@ export default async (options:Partial<AppServeOptions>)=>{
             }
         }
     }catch (e) {
+        throw e;
         //
     }
     const routes:routes = get(route,"routes",[]);
