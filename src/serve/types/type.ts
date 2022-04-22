@@ -1,5 +1,6 @@
 import {IncomingMessage, Server, ServerOptions, ServerResponse} from "http";
 import {AppServeInterface} from "@wisdom-serve/serve";
+import {HeaderContentType} from "../HttpHeaderConfig";
 
 export type Plugin = (this:AppServe, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>) => Promise<any> | void
 
@@ -45,6 +46,11 @@ export type routeRow = {
     path:string,
     controller?:controller;
     children?:routes
+}
+
+export type HttpHeadersType = {
+    [key:string]:any
+    "Content-Type": HeaderContentType
 }
 
 export type controller = (this:AppServe, req: IncomingMessage, res: ServerResponse) => void | Promise<any>

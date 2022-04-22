@@ -4,7 +4,13 @@ export default createRoute({
         {
             path:"/",
             controller(){
-                this.$send("asdas")
+                this.$send(JSON.stringify({
+                    a:"Asdas"
+                }),{
+                    headers:{
+                        "Content-Type":"application/json"
+                    }
+                })
             }
         },
     ]

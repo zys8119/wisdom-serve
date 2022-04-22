@@ -1,4 +1,4 @@
-import {Plugin} from "@wisdom-serve/serve/types/type"
+import {Plugin, HttpHeadersType} from "@wisdom-serve/serve/types/type"
 import {merge} from "lodash"
 const helperFun:Plugin = function (request, response, next){
     /**
@@ -60,21 +60,21 @@ declare module "@wisdom-serve/serve" {
             code:number
             message:string
             statusCode:number
-            headers:{[key:string]:any}
+            headers:Partial<HttpHeadersType>
         }> | string, code?:number|string):void
         $error?(data:any, options?:Partial<{
             data:any
             code:number
             message:string
             statusCode:number
-            headers:{[key:string]:any}
+            headers:Partial<HttpHeadersType>
         }> | string):void
         $send?(data:any, options?:Partial<{
             data:any
             code:number
             message:string
             statusCode:number
-            headers:{[key:string]:any}
+            headers:Partial<HttpHeadersType>
         }> | string):void
     }
 }
