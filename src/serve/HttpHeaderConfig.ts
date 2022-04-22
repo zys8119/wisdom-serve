@@ -1,4 +1,13 @@
 //参考文档 http://www.iana.org/assignments/media-types/media-types.xhtml
+
+// 参考文档 页面查找函数
+((reg, index = 0)=>{
+    return [...document.querySelectorAll("table tr")]
+        .filter(e=>reg.test(([...(e.querySelectorAll("td") || [])][index] || {}).innerText))
+        .map(e=>[...e.querySelectorAll("td")]
+        .map(td=>td.innerText))
+})(/^json|html/)
+
 const HttpHeaderConfig =  [
     "Model/vnd.dwf",
     "application/octet-stream",
