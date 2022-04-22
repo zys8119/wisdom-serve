@@ -118,12 +118,14 @@ const getRequestFormData = (bodySource)=>{
 }
 
 const bodyDataFn:Plugin = function (request, response, next){
-    new bodyData(request, response, (body,bodySource) => {
-        this.$body = body;
-        this.$bodySource = bodySource;
-        this.$bodyRequestFormData = ()=> getRequestFormData(bodySource) as Promise<RequestFormDataInterface[]>
-    })
-    return next();
+    return new Promise<void>(resolve => {
+        new bodyData(request, response, (body,bodySource) => {
+            this.$body = body;
+            this.$bodySource = bodySource;
+            this.$bodyRequestFormData = ()=> getRequestFormData(bodySource) as Promise<RequestFormDataInterface[]>
+            resolve();
+        })
+    });
 }
 export default bodyDataFn
 
