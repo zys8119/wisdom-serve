@@ -4,9 +4,7 @@ export default createRoute({
         {
             path:"/",
             controller(){
-                this.$success({
-                    a:"asdasasdas"
-                }, null)
+                this.$send("asdas")
             }
         },
     ]

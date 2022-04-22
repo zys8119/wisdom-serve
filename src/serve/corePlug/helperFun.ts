@@ -1,6 +1,12 @@
 import {Plugin} from "@wisdom-serve/serve/types/type"
+import {merge} from "lodash"
 const helperFun:Plugin = function (request, response, next){
-    this.$success = (data, options = {})=>{
+    /**
+     * 正常返回
+     * @param data
+     * @param options
+     */
+    this.$success = (data, options = {}, code = 200)=>{
         switch (Object.prototype.toString.call(options)){
             case "[object Object]":
                 break;
@@ -16,17 +22,32 @@ const helperFun:Plugin = function (request, response, next){
                 break;
             default:
                 throw Error("options 数据格式错误")
-                break
         }
-        response.writeHead((options as any).statusCode || 200,{
+        response.writeHead((options as any).statusCode || 200,merge(code === "send" ? {} :{
             "Content-Type":"text/json; charset=utf-8",
-        })
-        response.end(JSON.stringify({
-            code:200,
+        }, (options as any).headers || 200))
+        response.end(code === "send" ? data : JSON.stringify({
+            code:code,
             data,
             message:"请求成功",
             ...options as any,
         }))
+    }
+    /**
+     * 错误返回
+     * @param data
+     * @param options
+     */
+    this.$error = (data, options = {})=>{
+        this.$success(data, options, 403)
+    }
+    /**
+     * 错误返回
+     * @param data
+     * @param options
+     */
+    this.$send = (data, options = {})=>{
+        this.$success(data, options, "send")
     }
     return next()
 }
@@ -39,6 +60,21 @@ declare module "@wisdom-serve/serve" {
             code:number
             message:string
             statusCode:number
+            headers:{[key:string]:any}
+        }> | string, code?:number|string):void
+        $error?(data:any, options?:Partial<{
+            data:any
+            code:number
+            message:string
+            statusCode:number
+            headers:{[key:string]:any}
+        }> | string):void
+        $send?(data:any, options?:Partial<{
+            data:any
+            code:number
+            message:string
+            statusCode:number
+            headers:{[key:string]:any}
         }> | string):void
     }
 }
