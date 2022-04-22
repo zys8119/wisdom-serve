@@ -3,7 +3,8 @@ export default createRoute({
     routes:[
         {
             path:"/",
-            controller(r){
+            controller(){
+                console.log(this.$bodyRequestFormData(), 222)
                 this.$send(JSON.stringify({
                     a:"Asdas"
                 }),{
