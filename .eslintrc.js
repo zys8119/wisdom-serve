@@ -22,7 +22,7 @@ module.exports = {
         "@typescript-eslint"
     ],
     "rules": {
-        "quotes": 2,
+        "quotes": 0,
         "no-debugger": 0,
         "@typescript-eslint/no-empty-interface":0,
         "@typescript-eslint/no-explicit-any":0,

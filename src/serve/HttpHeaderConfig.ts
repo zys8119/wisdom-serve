@@ -1,12 +1,20 @@
-//参考文档 http://www.iana.org/assignments/media-types/media-types.xhtml
 
+import {IncomingHttpHeaders} from "http";
+
+
+//todo 参考文档 http://www.iana.org/assignments/media-types/media-types.xhtml
 // 参考文档 页面查找函数
-((reg, index = 0)=>{
+/**
+
+ ((reg, index = 0)=>{
     return [...document.querySelectorAll("table tr")]
         .filter(e=>reg.test(([...(e.querySelectorAll("td") || [])][index] || {}).innerText))
         .map(e=>[...e.querySelectorAll("td")]
         .map(td=>td.innerText))
 })(/^json|html/)
+
+ */
+
 
 const HttpHeaderConfig =  [
     "Model/vnd.dwf",
@@ -277,9 +285,43 @@ const HttpHeaderConfig =  [
     "video/mpg",
     "video/vnd.rn-realvideo",
     "video/x-ms-wmv",
-    "video/x-ms-wmx"
+    "video/x-ms-wmx",
+    "charset=utf-8",
 ] as const;
+
+export const MethodArr = [
+    'get' , 'GET',
+    'delete' , 'DELETE',
+    'head' , 'HEAD',
+    'options' , 'OPTIONS',
+    'post' , 'POST',
+    'put' , 'PUT',
+    'patch' , 'PATCH',
+    '*' ,
+] as const
+
+export type Method = typeof MethodArr[number] | string
+
+export type HeaderContentType = typeof HttpHeaderConfig[number]  | string
+
+export interface CustomHttpHeadersTypeInterface {
+    "Content-Type": HeaderContentType
+    "Access-Control-Allow-Origin":"*" | string
+    "Access-Control-Allow-Methods":Method
+    "Access-Control-Allow-Headers":"*" | "Content-Type" | string
+    "Allow":"*" | Method | string
+    "Content-Length":number
+    "Server":string
+    "Date":Date
+    "Connection":"keep-alive" | string
+    "Keep-Alive:":"timeout" | string
+    "Timing-Allow-Origin:":"*" | string
+    "Vary":"Accept" | "Origin" | string
+    "X-Content-Type-Options":"nosniff" | string
+}
+
+export type HttpHeadersTypeInterface = CustomHttpHeadersTypeInterface & IncomingHttpHeaders
 
 export default HttpHeaderConfig;
 
-export type HeaderContentType = typeof HttpHeaderConfig[number] | unknown
+

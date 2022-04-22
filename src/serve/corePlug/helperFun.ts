@@ -53,28 +53,17 @@ const helperFun:Plugin = function (request, response, next){
 }
 export default helperFun
 
+type Options = {
+    data:any
+    code:number
+    message:string
+    statusCode:number
+    headers:Partial<HttpHeadersType>
+}
 declare module "@wisdom-serve/serve" {
     interface AppServeInterface {
-        $success?(data:any, options?:Partial<{
-            data:any
-            code:number
-            message:string
-            statusCode:number
-            headers:Partial<HttpHeadersType>
-        }> | string, code?:number|string):void
-        $error?(data:any, options?:Partial<{
-            data:any
-            code:number
-            message:string
-            statusCode:number
-            headers:Partial<HttpHeadersType>
-        }> | string):void
-        $send?(data:any, options?:Partial<{
-            data:any
-            code:number
-            message:string
-            statusCode:number
-            headers:Partial<HttpHeadersType>
-        }> | string):void
+        $success?(data:any, options?:Partial<Options> | string, code?:number|string):void
+        $error?(data:any, options?:Partial<Options> | string):void
+        $send?(data:any, options?:Partial<Options> | string):void
     }
 }
