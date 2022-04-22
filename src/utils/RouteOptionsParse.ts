@@ -3,19 +3,14 @@ import {get} from "lodash"
 import ForEach from "./ForEach"
 export default async (options:Partial<AppServeOptions>)=>{
     let route:AppServeOptionsRoute = get(options,"route", {}) as AppServeOptionsRoute;
-    try {
-        if(Object.prototype.toString.call(route) === "[object Function]"){
-            route = (route as any)();
-            if(Object.prototype.toString.call(route) === "[object Promise]"){
-                route = await route;
-                if((route as any).default){
-                    route = (route as any).default
-                }
+    if(Object.prototype.toString.call(route) === "[object Function]"){
+        route = (route as any)();
+        if(Object.prototype.toString.call(route) === "[object Promise]"){
+            route = await route;
+            if((route as any).default){
+                route = (route as any).default
             }
         }
-    }catch (e) {
-        throw e;
-        //
     }
     const routes:routes = get(route,"routes",[]);
     const result:RouteOptions = {}

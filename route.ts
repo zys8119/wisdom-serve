@@ -6,7 +6,7 @@ export default createRoute({
             controller(){
                 this.$success({
                     a:"asdasasdas"
-                })
+                }, null)
             }
         },
     ]
