@@ -1,5 +1,5 @@
 import {createApp} from "@wisdom-serve/serve"
-import "./global"
+import "./global.ts"
 createApp({
     route:()=> import("./route"),
 })
