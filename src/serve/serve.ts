@@ -11,7 +11,7 @@ import {watch, existsSync} from "fs"
 import config from "./config"
 import {mergeConfig, RouteOptionsParse, ServeInfo} from "@wisdom-serve/utils";
 import * as ncol from "ncol"
-import CorePlug from "./corePlug"
+import CorePlug from "@wisdom-serve/core-plug"
 import {performance} from "perf_hooks"
 
 
