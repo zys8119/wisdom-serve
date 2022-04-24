@@ -1,6 +1,4 @@
 import {createRoute} from "@wisdom-serve/serve"
-import {writeFileSync} from "fs"
-import {resolve} from "path"
 export default createRoute({
     routes:[
         {
