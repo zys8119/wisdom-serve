@@ -4,7 +4,7 @@ export default createRoute({
         {
             path:"/",
             controller:async function (r){
-                this.$success("asdas")
+                this.$success()
             }
         },
     ]

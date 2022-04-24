@@ -24,7 +24,7 @@ const helperFun:Plugin = function (request, response, next){
                 throw Error("options 数据格式错误")
         }
         response.writeHead((options as any).statusCode || 200,merge(code === "send" ? {} :{
-            "Content-Type":"text/json; charset=utf-8",
+            "Content-Type":"application/json; charset=utf-8",
         }, (options as any).headers || 200))
         response.end(code === "send" ? data : JSON.stringify({
             code:code,
@@ -62,8 +62,8 @@ type Options = {
 }
 declare module "@wisdom-serve/serve" {
     interface AppServeInterface {
-        $success?(data:any, options?:Partial<Options> | string, code?:number|string):void
-        $error?(data:any, options?:Partial<Options> | string):void
-        $send?(data:any, options?:Partial<Options> | string):void
+        $success?(data?:any, options?:Partial<Options> | string, code?:number|string):void
+        $error?(data?:any, options?:Partial<Options> | string):void
+        $send?(data?:any, options?:Partial<Options> | string):void
     }
 }
