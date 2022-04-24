@@ -39,7 +39,6 @@ export default class a {
                 }catch (err) {
                     if(keyNameMatch && keyNameMatch.length > 0){
                         try {
-                            console.log(postDataObject[keyName])
                             postDataObject[keyName] = postDataObject[keyName] || [];
                             keyNameMatch[0].split("][").forEach(e=>{
                                 const index = e.replace(/\[|\]/img,"");
@@ -48,7 +47,7 @@ export default class a {
                             });
                             eval(`postDataObject["${keyName}"]${keyNameMatch[0]} = "${arr[1]}"`);
                         }catch (e) {
-                            console.log(e.message)
+                            // console.log(e.message)
                         }
                         return;
                     }

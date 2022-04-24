@@ -37,14 +37,15 @@ export class createAppServe implements AppServe{
                     }
                 })).then(async ()=> {
                     const route:RouteOptionsRow = this.RouteOptions[this.$url]
-                    if(route && Object.prototype.toString.call(route.controller) === "[object Function]"){
+                    const types = ["[object Function]", "[object AsyncFunction]"]
+                    if(route && types.includes(Object.prototype.toString.call(route.controller))){
                         const Parents = route.Parents;
                         //todo 控制器执行
                         const controllerArrs = Parents.concat(route);
                         let index = 0;
                         while (index < controllerArrs.length){
                             const p_route = controllerArrs[index];
-                            if(Object.prototype.toString.call(p_route.controller) === "[object Function]"){
+                            if(types.includes(Object.prototype.toString.call(p_route.controller))){
                                 try {
                                     const res: any = await p_route.controller.call(this, request, response)
                                     try {

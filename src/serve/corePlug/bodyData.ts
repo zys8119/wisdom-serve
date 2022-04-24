@@ -64,11 +64,12 @@ export interface RequestFormDataInterface {
     fileBuff?:string; // 文件数据,buff类型,type = file 时生效
     [keyName:string]:any;
 }
-const getRequestFormData = (bodySource)=>{
+const getRequestFormData = (bodySource, request)=>{
     return new Promise((resolve,reject) => {
         try {
-            if(bodySource.length > 0){
-                const bodyFormData = bufferSplit(bodySource,"------").map(e=>{
+            const splitter = (request.headers['content-type'].match(/----(.*)/) || [])[1]
+            if(bodySource.length > 0 && splitter){
+                const bodyFormData = bufferSplit(bodySource,`------${splitter}`).map(e=>{
                     const buffArr = bufferSplit(e,"\r\n\r\n");
                     if(buffArr.length === 2){
                         const resUlt:any = {};
@@ -122,7 +123,7 @@ const bodyDataFn:Plugin = function (request, response, next){
         new bodyData(request, response, (body,bodySource) => {
             this.$body = body;
             this.$bodySource = bodySource;
-            this.$bodyRequestFormData = ()=> getRequestFormData(bodySource) as Promise<RequestFormDataInterface[]>
+            this.$bodyRequestFormData = ()=> getRequestFormData(bodySource, request) as Promise<RequestFormDataInterface[]>
             resolve();
         })
     });
