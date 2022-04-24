@@ -6,17 +6,7 @@ export default createRoute({
         {
             path:"/",
             controller:async function (r){
-                this.$send(JSON.stringify({
-                    a:"Asdas"
-                }),{
-                    headers:{
-                        "Content-Type":"application/json; charset=utf-8",
-                        Server:"",
-                        "Access-Control-Allow-Methods":"",
-                        accept:"",
-                        "Access-Control-Allow-Origin":"*",
-                    }
-                })
+                this.$success("asdas")
             }
         },
     ]
