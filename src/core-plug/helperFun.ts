@@ -6,7 +6,7 @@ const helperFun:Plugin = function (request, response, next){
      * @param data
      * @param options
      */
-    this.$success = (data, options = {}, code = 200)=>{
+    this.$success = (data, options:any = {}, code = 200)=>{
         switch (Object.prototype.toString.call(options)){
             case "[object Object]":
                 break;
@@ -27,10 +27,9 @@ const helperFun:Plugin = function (request, response, next){
             "Content-Type":"application/json; charset=utf-8",
         }, (options as any).headers || 200))
         response.end(code === "send" ? data : JSON.stringify({
-            code:code,
-            data,
-            message:"请求成功",
-            ...options as any,
+            code:options.code || code,
+            data:options.data || data,
+            message:options.message || "请求成功",
         }))
     }
     /**
