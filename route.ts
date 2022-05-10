@@ -3,8 +3,13 @@ export default createRoute({
     routes:[
         {
             path:"/",
+            method:["post", "get"],
             controller:async function (r){
-                this.$success()
+                this.$success(null,{
+                    headers:{
+                        "Content-Type":"application/json"
+                    }
+                })
             }
         },
     ]
