@@ -1,10 +1,11 @@
 import {IncomingMessage, Server, ServerOptions, ServerResponse} from "http";
 import {AppServeInterface} from "@wisdom-serve/serve";
 import {HttpHeadersTypeInterface, Method} from "@wisdom-serve/serve/HttpHeaderConfig";
+import a from "@wisdom-serve/utils/formData";
 
 export type Plugin = (this:AppServe, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>) => Promise<any> | void
 
-export interface AppServe extends AppServeInterface{
+export interface AppServe extends Partial<AppServeInterface>{
     Serve:Server
     options?:Partial<AppServeOptions>;
     Plugins?:Array<Plugin>;
@@ -28,6 +29,9 @@ export interface AppServeOptions extends ServerOptions {
         host?:number
         port?:number
         LogServeInfo?:boolean // 是否打印服务信息
+    },
+    mysqlConfig?:{
+        [key:string]:any
     },
     route?:AppServeOptionsRoute
 }
@@ -61,5 +65,6 @@ export type createRoute = (routerConfig:route)=>route;
 declare module "@wisdom-serve/serve" {
     export const createApp:createApp
     export const createRoute:createRoute
-    export interface AppServeInterface {}
+    export interface AppServeInterface {
+    }
 }
