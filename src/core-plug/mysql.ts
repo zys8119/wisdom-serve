@@ -28,7 +28,7 @@ export class DBSql{
 export class $DBModel {
     tables = {}
     constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
-        console.log(sync("DB/*.ts",{cwd:process.cwd(),stats:true}))
+        console.log(sync("DB/*.ts",{cwd:process.cwd()}))
         return
     }
 }
