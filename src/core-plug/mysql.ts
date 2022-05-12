@@ -29,36 +29,29 @@ export class $DBModel {
     tables:$DBModelTables = {}
     constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
         sync("DB/*.ts",{cwd:process.cwd(), absolute:true}).forEach(e=> {
+            const ctx = require(e)
+            for(const k in ctx){
+                if(Object.prototype.toString.call(ctx[k]) === '[object Function]' && !ctx[k].$$is__rewrite && ctx[k].name !== '$$is__rewrite'){
+                    const ctxFn = ctx[k];
+                    ctx[k] = function $$is__rewrite(...args){
+                        return ctxFn({ctx, app, request, response}, ...args)
+                    }
+                    ctx[k].$$is__rewrite = true;
+                }
+            }
             const info = {
+                ctx,
                 path:e,
                 name:((e.match(/([^/\\]*)\.ts$/) || [])[1] || "")
             }
-
-            this.tables[info.name] = new Proxy(info,{
-                get(t,p,){
-                    if(p === 'ctx'){
-                        const ctx = require(e)
-                        for(const k in ctx){
-                            if(Object.prototype.toString.call(ctx[k]) === '[object Function]'){
-                                const ctxFn = ctx[k];
-                                ctx[k] = function (...args){
-                                    ctxFn({ctx, app, request, response}, ...args)
-                                }
-                            }
-                        }
-                        return ctx;
-                    }else {
-                        return t[p]
-                    }
-                }
-            });
+            this.tables[info.name] = info
         })
         return
     }
 }
 
 export const def = (fn:(options?:{
-    ctx?:$DBModelTablesCtx,
+    ctx:$DBModelTablesCtx,
     app:AppServe,
     request:IncomingMessage,
     response:ServerResponse,
@@ -81,7 +74,7 @@ export interface $DBModelTables {
     [key:string]: {
         name:string
         path:string
-        ctx?:$DBModelTablesCtx
+        ctx:$DBModelTablesCtx
     }
 }
 

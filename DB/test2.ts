@@ -15,6 +15,6 @@ export const b = def(({ctx})=> {
 })
 
 export const a = def((options,bb)=> {
-    console.log(bb,666)
+    console.log(bb,889)
     return b(options)
 })
