@@ -10,10 +10,11 @@ export default <DBModel>{
 }
 
 
-export const b = def((ctx)=> {
+export const b = def(({ctx})=> {
     return ctx.default.collate
 })
 
-export const a = def((ctx)=> {
-    return b()
+export const a = def((options,bb)=> {
+    console.log(bb,666)
+    return b(options)
 })
