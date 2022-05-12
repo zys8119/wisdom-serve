@@ -26,11 +26,31 @@ export class DBSql{
 }
 
 export class $DBModel {
-    tables = {}
+    tables:$DBModelTables = {}
     constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
-        console.log(sync("DB/*.ts",{cwd:process.cwd()}))
+        sync("DB/*.ts",{cwd:process.cwd(), absolute:true}).forEach(e=> {
+            const ctx = require(e);
+            for(const k in ctx){
+                if(Object.prototype.toString.call(ctx[k]) === '[object Function]'){
+                    const ctxFn = ctx[k]
+                    ctx[k] = function (...args){
+                        return ctxFn(ctx, app, request, response, ...args)
+                    }
+                }
+            }
+            const info = {
+                ctx,
+                path:e,
+                name:((e.match(/([^/\\]*)\.ts$/) || [])[1] || "")
+            }
+            this.tables[info.name] = info;
+        })
         return
     }
+}
+
+export const def = (fn:(ctx?:$DBModelTablesCtx, app?:AppServe, request?:IncomingMessage, response?:ServerResponse)=>any)=> {
+    return fn
 }
 
 const mysql:Plugin = function (request, response){
@@ -40,11 +60,26 @@ const mysql:Plugin = function (request, response){
         resolve()
     })
 }
+
 export default mysql
+
+
+export interface $DBModelTables {
+    [key:string]: {
+        name:string
+        path:string
+        ctx:$DBModelTablesCtx
+    }
+}
+
+export type $DBModelTablesCtx = {
+    [key:string]:any
+    default:DBModel
+}
 
 export interface DBModel {
     commit?:string // 注释
-    collate?:'utf8_unicode_ci'  // 编码
+    collate?:'utf8_unicode_ci' | string  // 编码
     character?:'utf8' // 字符集
     columns:DBModel_columns// 表栏目
 }

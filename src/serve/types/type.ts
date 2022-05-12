@@ -1,15 +1,14 @@
 import {IncomingMessage, Server, ServerOptions, ServerResponse} from "http";
 import {AppServeInterface} from "@wisdom-serve/serve";
 import {HttpHeadersTypeInterface, Method} from "@wisdom-serve/serve/HttpHeaderConfig";
-import a from "@wisdom-serve/utils/formData";
 
-export type Plugin = (this:AppServe, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>) => Promise<any> | void
+export type Plugin = (this:AppServe, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>, options?:any) => Promise<any> | void
 
 export interface AppServe extends Partial<AppServeInterface>{
     Serve:Server
     options?:Partial<AppServeOptions>;
     Plugins?:Array<Plugin>;
-    use(this:AppServe, plugin:Plugin):AppServe
+    use(this:AppServe, plugin:Plugin, options?:any):AppServe
     listen(port?: number): Promise<Server>;
     RouteOptions: RouteOptions
 }
@@ -34,6 +33,10 @@ export interface AppServeOptions extends ServerOptions {
         [key:string]:any
     },
     route?:AppServeOptionsRoute
+    // 核心插件配置
+    CorePlugConfig?:{
+        [key:string]:any
+    }
 }
 
 export type AppServeOptionsRoute = route | AppServeOptionsRouteLazy

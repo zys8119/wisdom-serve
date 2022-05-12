@@ -13,6 +13,7 @@ import {mergeConfig, RouteOptionsParse, ServeInfo} from "@wisdom-serve/utils";
 import * as ncol from "ncol"
 import CorePlug from "@wisdom-serve/core-plug"
 import {performance} from "perf_hooks"
+import {get} from "lodash"
 
 
 global.__vite_start_time = performance.now()
@@ -24,14 +25,18 @@ export class createAppServe implements AppServe{
     $url:string
     constructor(options?:Partial<AppServeOptions>) {
         this.options = mergeConfig(config, options);
+        //todo 核心插件注入
+        CorePlug.forEach((pulg:Plugin)=>{
+            this.use(pulg, get(this.options,"CorePlugConfig",{})[pulg.name])
+        })
         this.Serve = createServer(async (request,response) => {
             try {
                 //todo 初始化路由
                 this.RouteOptions = await RouteOptionsParse(this.options)
                 //todo 插件执行
-                await Promise.all(CorePlug.concat(this.Plugins).map(async pulg=>{
-                    if(Object.prototype.toString.call(pulg) === "[object Function]"){
-                        return await pulg.call(this, request, response, (_any)=>Promise.resolve(_any))
+                await Promise.all(this.Plugins.map(async ({plugin, options}:any)=>{
+                    if(Object.prototype.toString.call(plugin) === "[object Function]"){
+                        return await plugin.call(this, request, response, (_any)=>Promise.resolve(_any), options)
                     }else {
                         return Promise.reject("插件格式错误！")
                     }
@@ -105,8 +110,11 @@ export class createAppServe implements AppServe{
         });
     }
 
-    use(plugin: Plugin): AppServe {
-        this.Plugins.push(plugin)
+    use(plugin: Plugin, options?:any): AppServe {
+        this.Plugins.push({
+            plugin,
+            options,
+        })
         return this
     }
 

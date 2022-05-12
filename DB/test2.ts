@@ -1,19 +1,19 @@
-import { DBModel} from "@wisdom-serve/core-plug/mysql";
+import { DBModel, def} from "@wisdom-serve/core-plug/mysql";
 export default <DBModel>{
     collate: "utf8_unicode_ci",
     character:"utf8",
     columns:{
         id:{
-            varchar:255,
+            varchar:2558999,
         }
     }
 }
 
-export class test implements DBModel{
-    collate = "utf8_unicode_ci"
-    columns:{
-        id:{
-            varchar:255,
-        }
-    }
-}
+
+export const b = def((ctx)=> {
+    return ctx.default.collate
+})
+
+export const a = def((ctx)=> {
+    return b()
+})
