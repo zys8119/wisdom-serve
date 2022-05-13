@@ -2,6 +2,7 @@ import {AppServe, Plugin} from "@wisdom-serve/serve/types/type";
 import {IncomingMessage, ServerResponse} from "http";
 import {createPool, FieldInfo, MysqlError, Pool, QueryOptions} from "mysql";
 import {sync} from "fast-glob";
+import * as ncol from "ncol"
 export class DBSql{
     private connection:Pool
     constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
@@ -33,8 +34,16 @@ export class $DBModel {
             for(const k in ctx){
                 if(Object.prototype.toString.call(ctx[k]) === '[object Function]' && !ctx[k].$$is__rewrite && ctx[k].name !== '$$is__rewrite'){
                     const ctxFn = ctx[k];
-                    ctx[k] = function $$is__rewrite(...args){
-                        return ctxFn({ctx, app, request, response}, ...args)
+                    ctx[k] =  function $$is__rewrite(...args){
+                        try {
+                            return ctxFn({ctx, app, request, response}, ...args)
+                        }catch (err) {
+                            if(err){
+                                ncol.error('mysql plug', err)
+                            }
+                            response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
+                            response.end("服务器内部错误！")
+                        }
                     }
                     ctx[k].$$is__rewrite = true;
                 }

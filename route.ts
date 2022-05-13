@@ -5,7 +5,7 @@ export default createRoute({
             path:"/",
             method:["post", "get"],
             controller:async function (r){
-                console.log(this.$DBModel.tables.test2.ctx.a(128))
+                // console.log(this.$DBModel.tables.test2.ctx.a(128))
                 this.$success()
             }
         },
