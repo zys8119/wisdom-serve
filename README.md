@@ -29,3 +29,9 @@ node 服务
 * ### npm 相关知识
 
 * ### 怎样发布自己的npm包
+
+# 参考文档
+
+[MySql语法](http://c.biancheng.net/view/2548.html)
+
+[mysql工具](https://www.npmjs.com/package/mysql#connection-options)
