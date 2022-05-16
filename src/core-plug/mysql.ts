@@ -58,6 +58,7 @@ export class $DBModel {
             }
             this.tables[info.name] = info
         })
+        const mysqlAuto = app.options.mysqlAuto
         this.runMysqlModel()
         return
     }
@@ -157,7 +158,14 @@ export class $DBModel {
         await Promise.all(_old.map(name=> this.runSql(`ALTER TABLE ${tableName} MODIFY ${name} ${columns[name].str.replace('primary key','')}`, tableName, "更新表字段")))
         // 添加行字段
         await Promise.all(_new.map(name=> this.runSql(`ALTER TABLE ${tableName} ADD ${name} ${columns[name].str.replace('primary key','')}`, tableName, "添加表字段")))
-
+        // 更新表信息
+        await this.runSql(`ALTER TABLE ${tableName} 
+            ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
+            ${config.charset ? `DEFAULT CHARSET= ${config.charset || 'utf8'}` : ''}
+            ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
+            ${config.using ? `USING = ${config.using ||  'BTREE'}` : ''}
+            ${config.engine ? `ENGINE = ${config.engine ||  'MyISAM'}` : ''}
+        `, tableName, "更新表信息")
         console.log("=====================================================================")
     }
 

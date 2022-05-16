@@ -18,9 +18,9 @@ export default <DBModel>{
             varchar:10
         },
         vs:{
-            text:true,
-            comment:"很大的文件"
+            int:true,
+            comment:"阿四"
         }
     },
-    commit:"测试表",
+    commit:"测试表阿萨",
 }
