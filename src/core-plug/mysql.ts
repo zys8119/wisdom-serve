@@ -20,7 +20,15 @@ export class DBSql{
                 if(err){
                     reject({err})
                 }else {
-                    resolve({results, fields})
+                    // 释放连接池
+                    this.connection.getConnection(((err1, connection) => {
+                        try {
+                            connection.release()
+                        }catch (e) {
+                            //
+                        }
+                        resolve({results, fields})
+                    }))
                 }
             })
         })
@@ -58,15 +66,21 @@ export class $DBModel {
             }
             this.tables[info.name] = info
         })
-        const mysqlAuto = app.options.mysqlAuto
-        this.runMysqlModel()
+        const mysqlAuto:any = app.options.mysqlAuto
+        if(mysqlAuto === true || (Object.prototype.toString.call(mysqlAuto) === '[object RegExp]' && mysqlAuto.test(request.url))){
+            this.runMysqlModel()
+        }
         return
     }
 
-    runMysqlModel(){
+    async runMysqlModel(){
         for (const tableName in this.tables){
             if(this.tables[tableName].ctx.default){
-                this.createTable(tableName, this.tables[tableName])
+                try {
+                    await this.createTable(tableName, this.tables[tableName])
+                }catch (e){
+                    console.error(e)
+                }
             }
         }
     }
@@ -159,7 +173,7 @@ export class $DBModel {
         // 添加行字段
         await Promise.all(_new.map(name=> this.runSql(`ALTER TABLE ${tableName} ADD ${name} ${columns[name].str.replace('primary key','')}`, tableName, "添加表字段")))
         // 更新表信息
-        await this.runSql(`ALTER TABLE ${tableName} 
+        await this.runSql(`ALTER TABLE ${tableName}
             ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
             ${config.charset ? `DEFAULT CHARSET= ${config.charset || 'utf8'}` : ''}
             ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
@@ -180,6 +194,7 @@ export class $DBModel {
         }catch (err){
             console.error(err.err.message)
             console.error(err.err.sql)
+            throw Error(err.err)
         }
     }
 }

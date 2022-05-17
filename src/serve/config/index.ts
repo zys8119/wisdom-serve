@@ -7,12 +7,13 @@ export default <Partial<AppServeOptions>>{
         LogServeInfo:true
     },
     mysqlConfig:<PoolConfig>{
-        connectionLimit : 10,
+        connectionLimit : 100,
         host: 'localhost',
         user: 'root',
         password: 'rootroot',
         port: 3306,
         database:"unity_front_utils_admin",
         prefix:""
-    }
+    },
+    mysqlAuto:true
 }

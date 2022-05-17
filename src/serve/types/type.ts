@@ -29,7 +29,8 @@ export interface AppServeOptions extends ServerOptions {
         port?:number
         LogServeInfo?:boolean // 是否打印服务信息
     },
-    mysqlAuto:boolean | RegExp // 是否自动创建数据字段， 当类型为RegExp判断
+    debug?:boolean // 是否开启调试模式
+    mysqlAuto?:boolean | RegExp // 是否自动创建数据字段， 当类型为RegExp判断
     mysqlConfig?:{
         [key:string]:any
     },
