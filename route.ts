@@ -5,11 +5,22 @@ export default createRoute({
             path:"/",
             method:["post", "get"],
             controller:async function (r){
-                console.log(await this.$DBModel.tables.test2.post({
-                    asas:122,
-                    vs:21
+                this.$success(await this.$DBModel.tables.test2.createAPI({
+                    get:{
+                        where:{
+                            id:{value:45}
+                        }
+                    },
+                    post:Object.fromEntries([...this.$query]),
+                    delete:{
+                        where:{
+                            id:{
+                                type:"<",
+                                value:57
+                            }
+                        }
+                    }
                 }))
-                this.$success()
             }
         },
     ]

@@ -3,10 +3,16 @@ import {IncomingMessage, ServerResponse} from "http";
 import {createPool, FieldInfo, MysqlError, Pool, QueryOptions} from "mysql";
 import {sync} from "fast-glob";
 import * as ncol from "ncol"
-import {} from "lodash"
+import {get} from "lodash"
 export class DBSql{
+    private app:AppServe
+    private request:IncomingMessage
+    private response:ServerResponse
     private connection:Pool
     constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
+        this.app = app
+        this.request = request
+        this.response = response
         this.connection = createPool(app.options.mysqlConfig)
     }
 
@@ -32,6 +38,55 @@ export class DBSql{
                 }
             })
         })
+    }
+}
+
+
+export class $Serialize {
+    app:AppServe
+    request:IncomingMessage
+    response:ServerResponse
+    constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
+        this.app = app;
+        this.request = request;
+        this.response = response;
+    }
+
+    /**
+     * 序列化数据
+     * @param data
+     * @param defMap
+     */
+    def(data:any, defMap:{
+        [key:string]:[string | ((data:any)=>any)] | [string | ((data:any)=>any), any] | boolean
+    } = {}, excludeReg?:RegExp):any{
+        if(Object.prototype.toString.call(data) === '[object Array]'){
+            return data.map(d=>this.def(d, defMap, excludeReg))
+        } else if(Object.prototype.toString.call(data) === '[object Object]'){
+            for(const k in defMap){
+                if(Object.prototype.toString.call(defMap[k]) === '[object Array]'){
+                    if(Object.prototype.toString.call(defMap[k][0]) === '[object Function]'){
+                        data[k] = get(data, (defMap[k][0] as any)(data) as string, defMap[k][1])
+                    }else {
+                        data[k] = get(data, defMap[k][0] as string, defMap[k][1])
+                    }
+                }else if(Object.prototype.toString.call(defMap[k]) === '[object Boolean]'){
+                    delete data[k];
+                }
+            }
+        }
+        if(Object.prototype.toString.call(excludeReg) === '[object RegExp]'){
+            for(const k in data){
+                if(excludeReg.test(k)){
+                   delete data[k]
+                }
+            }
+        }
+        return  data;
+    }
+
+    get(...args){
+        return get.apply(get, args)
     }
 }
 
@@ -67,8 +122,10 @@ export class $DBModel {
                 ctx,
                 path:e,
                 name:((e.match(/([^/\\]*)\.ts$/) || [])[1] || ""),
-                get:()=>{return this.get(info.name)},
+                get:(conditions:Partial<Conditions> = {})=>{return this.get(info.name, conditions)},
+                delete:(conditions:Partial<Conditions> = {})=>{return this.delete(info.name, conditions)},
                 post:(data?:{[key:string]:any})=>{return this.post(info.name, data)},
+                createAPI:(options: Partial<CreateAPI> = {})=>{return this.createAPI(info.name,options)},
             }
             // 自动同步model数据库配置
             const mysqlAuto:any = app.options.mysqlAuto
@@ -203,11 +260,41 @@ export class $DBModel {
         }
     }
 
-    async get(tableName){
-        const {results, fields} = await this.runSql(`
-            SELECT * from ${tableName}
-        `, tableName, "查询表数据")
-        console.log(results, fields)
+    async getConditionsSql(conditions:Partial<Conditions> = {}){
+        let whereStr = '';
+        let index = 0;
+        if(Object.prototype.toString.call(conditions.where) === '[object Object]'){
+            for (const k in conditions.where){
+                const where = conditions.where[k]
+                whereStr += index > 0 ? (where.and === true ? ' AND ' : '') : ''
+                whereStr += index > 0 ? (where.or === true ? ' OR ' : '') : ''
+                whereStr += ` ${k} `
+                if(typeof where.like === 'string'){whereStr += ` like '${where.like}' `}
+                else if(typeof where.is_null === 'boolean'){whereStr += ` IS NULL `}
+                else if(typeof where.regexp === 'string'){whereStr += ` REGEXP '${where.regexp}' `}
+                else if(typeof where.between === 'string'){whereStr += ` BETWEEN '${where.regexp}' `}
+                else {whereStr += ` ${where.type || '='} '${where.value}' `}
+                index += 1
+            }
+        }
+        return `
+            ${conditions.as ? `${conditions.as}` : ''}
+            ${conditions.having ? `${conditions.having}` : ''}
+            ${conditions.distinct ? `${conditions.distinct}` : ''}
+            ${conditions.desc ? `order by ${conditions.desc.map(e=>`'${e}'`).join()} desc` : ''}
+            ${conditions.asc ? `order by ${conditions.desc.map(e=>`'${e}'`).join()} asc` : ''}
+            ${whereStr ? `where ${whereStr}` : ``}
+            ${conditions.limit ? `limit ${conditions.limit.length === 2 ? `${conditions.limit[0]} , ${conditions.limit[1]}` : conditions.limit[0]}` : ''}
+        `
+    }
+
+    async delete(tableName, conditions:Partial<Conditions> = {}){
+        const {results, fields} = await this.runSql(`DELETE from ${tableName}`+await this.getConditionsSql(conditions), tableName, "查询表数据")
+        return results
+    }
+
+    async get(tableName, conditions:Partial<Conditions> = {}){
+        const {results, fields} = await this.runSql(`SELECT * from ${tableName}`+await this.getConditionsSql(conditions), tableName, "查询表数据")
         return results
     }
 
@@ -225,8 +312,16 @@ export class $DBModel {
             INSERT INTO  ${tableName}
             SET
             ${value.join()}
-        `, tableName, "查询表数据")
+        `, tableName, "新增表数据")
         return results
+    }
+
+    async createAPI(tableName, {get, delete:api_delete, post}:Partial<CreateAPI> = {}){
+        const method = this.request.method.toLowerCase()
+        if(method === 'get'){return  this.get(tableName, get || {})}
+        else if(method === 'delete'){return  this.delete(tableName, api_delete || {})}
+        else if(method === 'post'){return  this.post(tableName, post || {})}
+        else {return  Promise.reject(`请求失败，不允许${method}查询！`)}
     }
 }
 
@@ -243,12 +338,48 @@ const mysql:Plugin = function (request, response){
     return new Promise<void>(resolve => {
         this.$DB = new DBSql(this, request, response);
         this.$DBModel = new $DBModel(this, request, response);
+        this.$Serialize = new $Serialize(this, request, response);
         resolve()
     })
 }
 
 export default mysql
 
+export interface CreateAPI {
+    get?:Partial<Conditions>
+    delete?:Partial<Conditions>
+    post?:Partial<{[key:string]:any}>
+}
+
+export interface Conditions {
+    // 条件查询
+    where:whereConditions,
+    // 倒叙
+    desc:string [],
+    // 正序
+    asc:string [],
+    // 限制
+    limit:[number] | [number, number],
+    // 去重复
+    distinct:string,
+    // 别名
+    as:string,
+    // 过滤分组
+    having:string,
+}
+
+export interface whereConditions {
+    [key:string]: Partial<{
+        and: boolean,
+        or: boolean,
+        value: any
+        like: string
+        between: string
+        is_null: boolean
+        regexp: string
+        type:string
+    }>
+}
 
 export interface $DBModelTables {
     [key:string]: $DBModelTablesItem
@@ -258,8 +389,10 @@ export interface $DBModelTablesItem {
     name:string
     path:string
     ctx:$DBModelTablesCtx
-    get?():Promise<any>
+    get?(conditions?:Partial<Conditions>):Promise<any>
+    delete?(conditions?:Partial<Conditions>):Promise<any>
     post?(data?:{[key:string]:any}):Promise<any>
+    createAPI?(options?: Partial<CreateAPI>):Promise<any>
 }
 
 export type $DBModelTablesCtx = {
@@ -329,5 +462,6 @@ declare module "@wisdom-serve/serve" {
     interface AppServeInterface {
         $DB:DBSql
         $DBModel:$DBModel
+        $Serialize:$Serialize
     }
 }
