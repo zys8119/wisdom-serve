@@ -3,7 +3,7 @@ import {IncomingMessage, ServerResponse} from "http";
 import {createPool, FieldInfo, MysqlError, Pool, QueryOptions} from "mysql";
 import {sync} from "fast-glob";
 import * as ncol from "ncol"
-import {get} from "lodash"
+import {get, update} from "lodash"
 export class DBSql{
     private app:AppServe
     private request:IncomingMessage
@@ -125,6 +125,7 @@ export class $DBModel {
                 get:(conditions:Partial<Conditions> = {})=>{return this.get(info.name, conditions)},
                 delete:(conditions:Partial<Conditions> = {})=>{return this.delete(info.name, conditions)},
                 post:(data?:{[key:string]:any})=>{return this.post(info.name, data)},
+                update:(data:{[key:string]:any} = {}, conditions:Partial<Conditions> = {})=>{return this.update(info.name, data, conditions)},
                 createAPI:(options: Partial<CreateAPI> = {})=>{return this.createAPI(info.name,options)},
             }
             // 自动同步model数据库配置
@@ -254,8 +255,8 @@ export class $DBModel {
             console.log("=====================================================================")
             return res
         }catch (err){
-            console.error(err.err.message)
-            console.error(err.err.sql)
+            ncol.error(err.err.message)
+            ncol.error(err.err.sql)
             console.log("=====================================================================")
             throw Error(err.err)
         }
@@ -290,38 +291,61 @@ export class $DBModel {
     }
 
     async delete(tableName, conditions:Partial<Conditions> = {}){
-        const {results, fields} = await this.runSql(`DELETE from ${tableName}`+await this.getConditionsSql(conditions), tableName, "查询表数据")
+        const {results, fields} = await this.runSql(`DELETE from ${tableName} `+await this.getConditionsSql(conditions), tableName, "查询表数据")
         return results
     }
 
     async get(tableName, conditions:Partial<Conditions> = {}){
-        const {results, fields} = await this.runSql(`SELECT * from ${tableName}`+await this.getConditionsSql(conditions), tableName, "查询表数据")
+        const {results, fields} = await this.runSql(`SELECT * from ${tableName} `+await this.getConditionsSql(conditions), tableName, "查询表数据")
         return results
     }
 
-    async post(tableName, data = {}){
+    async getPostSql(tableName, data, isUpdate){
         const columns = this.tables[tableName].ctx.default.columns;
         const value = [];
-        for (const k in columns){
-            let v = data[k] || columns[k].default;
-            if(!v && !['[object Boolean]','[object Number]'].includes(Object.prototype.toString.call(v))){
-                v = null
+        if(isUpdate){
+            for (const k in data){
+                if(columns[k]){
+                    const v = data[k];
+                    value.push(`${k} = ${typeof v === 'string' ? `'${v}'` : v}`)
+                }
             }
-            value.push(`${k} = ${typeof v === 'string' ? `'${v}'` : v}`)
+        }else {
+            for (const k in columns){
+                let v = data[k] || columns[k].default;
+                if(!v && !['[object Boolean]','[object Number]'].includes(Object.prototype.toString.call(v))){
+                    v = null
+                }
+                value.push(`${k} = ${typeof v === 'string' ? `'${v}'` : v}`)
+            }
         }
-        const {results} = await this.runSql(`
-            INSERT INTO  ${tableName}
+
+        return `
             SET
             ${value.join()}
-        `, tableName, "新增表数据")
+        `
+    }
+
+    async post(tableName, data = {}, conditions:Partial<Conditions> = {}){
+        const {results} = await this.runSql(`INSERT INTO  ${tableName} ` + await this.getPostSql(tableName, data, true), tableName, "新增表数据")
         return results
     }
 
-    async createAPI(tableName, {get, delete:api_delete, post}:Partial<CreateAPI> = {}){
+    async update(tableName, data = {}, conditions:Partial<Conditions> = {}){
+        const {results} = await this.runSql(`UPDATE  ${tableName} ` + await this.getPostSql(tableName, data, true) + await this.getConditionsSql(conditions), tableName, "新增表数据")
+        return results
+    }
+
+    async createAPI(tableName, {get:getData, delete:api_delete, post, update}:Partial<CreateAPI> = {}){
+        const update_data = get(update,"data",{})
+        const update_conditions = get(update,"conditions",{})
         const method = this.request.method.toLowerCase()
-        if(method === 'get'){return  this.get(tableName, get || {})}
+        if(method === 'get'){return  this.get(tableName, getData || {})}
         else if(method === 'delete'){return  this.delete(tableName, api_delete || {})}
         else if(method === 'post'){return  this.post(tableName, post || {})}
+        else if(method === 'update'){return  this.update(tableName, update_data || {}, update_conditions || {})}
+        else if(method === 'put'){return  this.update(tableName, update_data || {}, update_conditions || {})}
+        else if(method === 'patch'){return  this.update(tableName, update_data || {}, update_conditions || {})}
         else {return  Promise.reject(`请求失败，不允许${method}查询！`)}
     }
 }
@@ -350,6 +374,10 @@ export interface CreateAPI {
     get?:Partial<Conditions>
     delete?:Partial<Conditions>
     post?:Partial<{[key:string]:any}>
+    update?:{
+        data?:Partial<{[key:string]:any}>,
+        conditions?:Partial<Conditions>
+    }
 }
 
 export interface Conditions {
@@ -371,13 +399,21 @@ export interface Conditions {
 
 export interface whereConditions {
     [key:string]: Partial<{
+        // 并且，从二字段才生效
         and: boolean,
+        // 或者，从二字段才生效
         or: boolean,
+        // 对应key值
         value: any
+        // 模糊查询
         like: string
+        // 区域查询
         between: string
+        // 不是null
         is_null: boolean
+        // 正则查询
         regexp: string
+        // 对应key值的运算符，例如：=、>、<、>=、<=
         type:string
     }>
 }
@@ -393,6 +429,7 @@ export interface $DBModelTablesItem {
     get?(conditions?:Partial<Conditions>):Promise<any>
     delete?(conditions?:Partial<Conditions>):Promise<any>
     post?(data?:{[key:string]:any}):Promise<any>
+    update?(data?:{[key:string]:any}, conditions?:Partial<Conditions>):Promise<any>
     createAPI?(options?: Partial<CreateAPI>):Promise<any>
 }
 

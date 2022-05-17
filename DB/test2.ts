@@ -8,18 +8,9 @@ export default <DBModel>{
             primary_key:true,
             auto_increment:true,
             comment:"asdas",
-            default:0
-        },
-        asas:{
-            int:true,
-            default:null
-        },
-        asdas:{
-            varchar:10,
-            default:'aaas'
         },
         vs:{
-            int:true,
+            text:true,
             comment:"阿四"
         }
     },
