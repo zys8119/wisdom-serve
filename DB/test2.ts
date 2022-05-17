@@ -4,18 +4,19 @@ export default <DBModel>{
     charset:"utf8",
     columns:{
         id:{
-            varchar:255,
-            not_null:true,
+            int:255,
             primary_key:true,
+            auto_increment:true,
             comment:"asdas",
-            default:'asda'
+            default:0
         },
         asas:{
             int:true,
             default:null
         },
         asdas:{
-            varchar:10
+            varchar:10,
+            default:'aaas'
         },
         vs:{
             int:true,

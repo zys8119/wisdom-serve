@@ -38,8 +38,12 @@ export class DBSql{
 export class $DBModel {
     tables:$DBModelTables = {}
     app:AppServe
+    request:IncomingMessage
+    response:ServerResponse
     constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
         this.app = app;
+        this.request = request;
+        this.response = response;
         sync("DB/*.ts",{cwd:process.cwd(), absolute:true}).forEach(e=> {
             const ctx = require(e)
             for(const k in ctx){
@@ -59,28 +63,29 @@ export class $DBModel {
                     ctx[k].$$is__rewrite = true;
                 }
             }
-            const info = {
+            const info:$DBModelTablesItem = {
                 ctx,
                 path:e,
-                name:((e.match(/([^/\\]*)\.ts$/) || [])[1] || "")
+                name:((e.match(/([^/\\]*)\.ts$/) || [])[1] || ""),
+                get:()=>{return this.get(info.name)},
+                post:(data?:{[key:string]:any})=>{return this.post(info.name, data)},
+            }
+            // 自动同步model数据库配置
+            const mysqlAuto:any = app.options.mysqlAuto
+            if(mysqlAuto === true || (Object.prototype.toString.call(mysqlAuto) === '[object RegExp]' && mysqlAuto.test(request.url))){
+                this.runMysqlModel(info)
             }
             this.tables[info.name] = info
         })
-        const mysqlAuto:any = app.options.mysqlAuto
-        if(mysqlAuto === true || (Object.prototype.toString.call(mysqlAuto) === '[object RegExp]' && mysqlAuto.test(request.url))){
-            this.runMysqlModel()
-        }
         return
     }
 
-    async runMysqlModel(){
-        for (const tableName in this.tables){
-            if(this.tables[tableName].ctx.default){
-                try {
-                    await this.createTable(tableName, this.tables[tableName])
-                }catch (e){
-                    console.error(e)
-                }
+    async runMysqlModel(info:$DBModelTablesItem){
+        if(info.ctx.default){
+            try {
+                await this.createTable(info.name, info)
+            }catch (e){
+                console.error(e)
             }
         }
     }
@@ -144,7 +149,7 @@ export class $DBModel {
         return result;
     }
 
-    async createTable(tableName, tableConfig){
+    async createTable(tableName, tableConfig:$DBModelTablesItem){
         const config = tableConfig.ctx.default
         const columns = this.columnsParsing(config.columns);
         const columnsName = Object.keys(columns);
@@ -197,6 +202,32 @@ export class $DBModel {
             throw Error(err.err)
         }
     }
+
+    async get(tableName){
+        const {results, fields} = await this.runSql(`
+            SELECT * from ${tableName}
+        `, tableName, "查询表数据")
+        console.log(results, fields)
+        return results
+    }
+
+    async post(tableName, data = {}){
+        const columns = this.tables[tableName].ctx.default.columns;
+        const value = [];
+        for (const k in columns){
+            let v = data[k] || columns[k].default;
+            if(!v && !['[object Boolean]','[object Number]'].includes(Object.prototype.toString.call(v))){
+                v = null
+            }
+            value.push(`${k} = ${typeof v === 'string' ? `'${v}'` : v}`)
+        }
+        const {results} = await this.runSql(`
+            INSERT INTO  ${tableName}
+            SET
+            ${value.join()}
+        `, tableName, "查询表数据")
+        return results
+    }
 }
 
 export const def = (fn:(options?:{
@@ -220,11 +251,15 @@ export default mysql
 
 
 export interface $DBModelTables {
-    [key:string]: {
-        name:string
-        path:string
-        ctx:$DBModelTablesCtx
-    }
+    [key:string]: $DBModelTablesItem
+}
+
+export interface $DBModelTablesItem {
+    name:string
+    path:string
+    ctx:$DBModelTablesCtx
+    get?():Promise<any>
+    post?(data?:{[key:string]:any}):Promise<any>
 }
 
 export type $DBModelTablesCtx = {

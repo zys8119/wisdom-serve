@@ -27,6 +27,7 @@ export class createAppServe implements AppServe{
     constructor(options?:Partial<AppServeOptions>) {
         this.originOptions = options;
         this.options = mergeConfig(config, this.originOptions);
+        this.hotConfig(true)
         //todo 核心插件注入
         CorePlug.forEach((pulg:Plugin)=>{
             this.use(pulg, get(this.options,"CorePlugConfig",{})[pulg.name])
@@ -151,14 +152,14 @@ export class createAppServe implements AppServe{
      * @param file_path
      * @private
      */
-    private hotConfig(file_path){
+    private hotConfig(file_path:string|boolean){
         const config = [
             // 系统内置配置
             resolve(__dirname,'..','serve/config/index.ts'),
             // 用户业务配置
             resolve(process.cwd(),'wisdom.serve.config.ts'),
         ]
-        if(config.includes(file_path)){
+        if(typeof file_path === 'boolean' || config.includes(file_path)){
             const hotNewConfig:any = config.map(e=>{
                 try {
                     return (require(e) as any).default

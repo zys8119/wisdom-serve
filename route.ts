@@ -5,7 +5,10 @@ export default createRoute({
             path:"/",
             method:["post", "get"],
             controller:async function (r){
-                // console.log(this.$DBModel.tables.test2.ctx.a(128))
+                console.log(await this.$DBModel.tables.test2.post({
+                    asas:122,
+                    vs:21
+                }))
                 this.$success()
             }
         },
