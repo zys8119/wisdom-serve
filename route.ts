@@ -23,5 +23,11 @@ export default createRoute({
                 }))
             }
         },
+        {
+            path:"/mysqlAuto",
+            controller:async function(){
+                this.$success()
+            }
+        }
     ]
 });

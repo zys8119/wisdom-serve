@@ -242,7 +242,6 @@ export class $DBModel {
             ${config.using ? `USING = ${config.using ||  'BTREE'}` : ''}
             ${config.engine ? `ENGINE = ${config.engine ||  'MyISAM'}` : ''}
         `, tableName, "更新表信息")
-        console.log("=====================================================================")
     }
 
     async runSql(sql, tableName, message){
@@ -252,10 +251,12 @@ export class $DBModel {
             ncol.color(function (){
                 this.success('【SQL】执行成功：').log(message+"-> ").log(tableName+' ').info(sql)
             })
+            console.log("=====================================================================")
             return res
         }catch (err){
             console.error(err.err.message)
             console.error(err.err.sql)
+            console.log("=====================================================================")
             throw Error(err.err)
         }
     }
