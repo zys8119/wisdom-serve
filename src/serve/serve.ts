@@ -19,12 +19,14 @@ import {get} from "lodash"
 global.__vite_start_time = performance.now()
 export class createAppServe implements AppServe{
     options?:Partial<AppServeOptions>
+    originOptions?:Partial<AppServeOptions>
     Serve
     Plugins = []
     RouteOptions = {}
     $url:string
     constructor(options?:Partial<AppServeOptions>) {
-        this.options = mergeConfig(config, options);
+        this.originOptions = options;
+        this.options = mergeConfig(config, this.originOptions);
         //todo 核心插件注入
         CorePlug.forEach((pulg:Plugin)=>{
             this.use(pulg, get(this.options,"CorePlugConfig",{})[pulg.name])
@@ -128,6 +130,7 @@ export class createAppServe implements AppServe{
             if(require.cache[file_path] && existsSync(file_path)){
                 delete require.cache[file_path];
             }
+            this.hotConfig(file_path)
         })
         const listenPort = typeof port === "number" ? port : this.options.serve.port;
         this.options.serve.port = listenPort;
@@ -141,6 +144,36 @@ export class createAppServe implements AppServe{
             ncol.info(`ready in ${Math.ceil(performance.now() - global.__vite_start_time)}ms.`);
         }
         return Promise.resolve(this.Serve)
+    }
+
+    /**
+     * todo 配置文件热更新
+     * @param file_path
+     * @private
+     */
+    private hotConfig(file_path){
+        const config = [
+            // 系统内置配置
+            resolve(__dirname,'..','serve/config/index.ts'),
+            // 用户业务配置
+            resolve(process.cwd(),'wisdom.serve.config.ts'),
+        ]
+        if(config.includes(file_path)){
+            const hotNewConfig:any = config.map(e=>{
+                try {
+                    return (require(e) as any).default
+                }catch (e){
+                    // ad
+                    return  null
+                }
+            }).filter(e=>e).concat(this.originOptions)
+            try {
+                // eslint-disable-next-line prefer-spread
+                this.options = mergeConfig.apply(null, hotNewConfig)
+            }catch (e){
+                //
+            }
+        }
     }
 }
 

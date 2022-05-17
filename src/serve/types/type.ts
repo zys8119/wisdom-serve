@@ -7,10 +7,12 @@ export type Plugin = (this:AppServe, request: IncomingMessage, response: ServerR
 export interface AppServe extends Partial<AppServeInterface>{
     Serve:Server
     options?:Partial<AppServeOptions>;
+    originOptions?:Partial<AppServeOptions>;
     Plugins?:Array<Plugin>;
     use(this:AppServe, plugin:Plugin, options?:any):AppServe
     listen(port?: number): Promise<Server>;
-    RouteOptions: RouteOptions
+    RouteOptions?: RouteOptions
+    $url?: string
 }
 
 export type RouteOptions = {

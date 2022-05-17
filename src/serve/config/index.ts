@@ -15,5 +15,5 @@ export default <Partial<AppServeOptions>>{
         database:"unity_front_utils_admin",
         prefix:""
     },
-    mysqlAuto:true
+    mysqlAuto:false
 }
