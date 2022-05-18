@@ -95,6 +95,7 @@ export class $DBModel {
     app:AppServe
     request:IncomingMessage
     response:ServerResponse
+    outSql:boolean
     constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
         this.app = app;
         this.request = request;
@@ -122,11 +123,42 @@ export class $DBModel {
                 ctx,
                 path:e,
                 name:((e.match(/([^/\\]*)\.ts$/) || [])[1] || ""),
-                get:(conditions:Partial<Conditions> = {})=>{return this.get(info.name, conditions)},
-                delete:(conditions:Partial<Conditions> = {})=>{return this.delete(info.name, conditions)},
-                post:(data?:{[key:string]:any})=>{return this.post(info.name, data)},
-                update:(data:{[key:string]:any} = {}, conditions:Partial<Conditions> = {})=>{return this.update(info.name, data, conditions)},
-                createAPI:(options: Partial<CreateAPI> = {})=>{return this.createAPI(info.name,options)},
+                get:(outSql?:any, conditions:Partial<Conditions> = {})=>{
+                    if(outSql !== true){
+                        conditions = outSql
+                    }
+                    this.outSql = outSql === true;
+                    return this.get(info.name, conditions)
+                },
+                delete:(outSql?:any, conditions:Partial<Conditions> = {})=>{
+                    if(outSql !== true){
+                        conditions = outSql
+                    }
+                    this.outSql = outSql === true;
+                    return this.delete(info.name, conditions)
+                },
+                post:(outSql?:any, data?:{[key:string]:any})=>{
+                    if(outSql !== true){
+                        data = outSql
+                    }
+                    this.outSql = outSql === true;
+                    return this.post(info.name, data)
+                },
+                update:(outSql?:any, data:{[key:string]:any} = {}, conditions:Partial<Conditions> = {})=>{
+                    if(outSql !== true){
+                        conditions = data
+                        data = outSql
+                    }
+                    this.outSql = outSql === true;
+                    return this.update(info.name, data, conditions)
+                },
+                createAPI:(outSql?:any, options: Partial<CreateAPI> = {})=>{
+                    if(outSql !== true){
+                        options = outSql
+                    }
+                    this.outSql = outSql === true;
+                    return this.createAPI(info.name,options)
+                },
             }
             // 自动同步model数据库配置
             const mysqlAuto:any = app.options.mysqlAuto
@@ -223,18 +255,18 @@ export class $DBModel {
             ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
             ${config.using ? `USING = ${config.using ||  'BTREE'}` : ''}
             ROW_FORMAT = Dynamic
-        ` , tableName,`创建表`)
+        `,`创建表`, tableName)
         // 查询表字段
         const { results } = await this.runSql(`
             SELECT COLUMN_NAME as name from information_schema.COLUMNS where table_name = '${tableName}'
-        ` , "information_schema.COLUMNS",`查询表${tableName}字段`)
+        ` ,`查询表${tableName}字段`, "information_schema.COLUMNS")
         const table_columns:Array<any> = results.map(e=>e.name)
         const _old = columnsName.filter(e=>table_columns.includes(e))
         const _new = columnsName.filter(e=>!table_columns.includes(e))
         // 更新旧字段
-        await Promise.all(_old.map(name=> this.runSql(`ALTER TABLE ${tableName} MODIFY ${name} ${columns[name].str.replace('primary key','')}`, tableName, "更新表字段")))
+        await Promise.all(_old.map(name=> this.runSql(`ALTER TABLE ${tableName} MODIFY ${name} ${columns[name].str.replace('primary key','')}`, "更新表字段", tableName)))
         // 添加行字段
-        await Promise.all(_new.map(name=> this.runSql(`ALTER TABLE ${tableName} ADD ${name} ${columns[name].str.replace('primary key','')}`, tableName, "添加表字段")))
+        await Promise.all(_new.map(name=> this.runSql(`ALTER TABLE ${tableName} ADD ${name} ${columns[name].str.replace('primary key','')}`, "添加表字段", tableName)))
         // 更新表信息
         await this.runSql(`ALTER TABLE ${tableName}
             ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
@@ -242,15 +274,35 @@ export class $DBModel {
             ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
             ${config.using ? `USING = ${config.using ||  'BTREE'}` : ''}
             ${config.engine ? `ENGINE = ${config.engine ||  'MyISAM'}` : ''}
-        `, tableName, "更新表信息")
+        `, "更新表信息", tableName)
     }
 
-    async runSql(sql, tableName, message){
+    async runSql(sql, message?:string|boolean, tableName?:string){
         try {
+            if(typeof sql === "string"){
+                // 删除不必要的空字符
+                sql = sql
+                    .replace(/\n/img,"")
+                    .replace(/ +/img," ")
+            }
+            if(this.outSql === true || message === true){
+                this.outSql = false;
+                return Promise.resolve({
+                    results:sql,
+                    fields:null
+                });
+            }
             // 查询
             const res = await this.app.$DB.query(sql)
             ncol.color(function (){
-                this.success('【SQL】执行成功：').log(message+"-> ").log(tableName+' ').info(sql)
+                let _this = this.success('【SQL】执行成功：');
+                if(message){
+                    _this = _this.log(message+"-> ");
+                }
+                if(tableName){
+                    _this = _this.log(tableName+' ');
+                }
+                _this.info(sql)
             })
             console.log("=====================================================================")
             return res
@@ -262,12 +314,12 @@ export class $DBModel {
         }
     }
 
-    async getConditionsSql(conditions:Partial<Conditions> = {}){
+    async getWhere(whereConditions:Partial<whereConditionsItem>){
         let whereStr = '';
         let index = 0;
-        if(Object.prototype.toString.call(conditions.where) === '[object Object]'){
-            for (const k in conditions.where){
-                const where = conditions.where[k]
+        if(Object.prototype.toString.call(whereConditions) === '[object Object]'){
+            for (const k in whereConditions){
+                const where = whereConditions[k]
                 whereStr += index > 0 ? (where.and === true ? ' AND ' : '') : ''
                 whereStr += index > 0 ? (where.or === true ? ' OR ' : '') : ''
                 whereStr += ` ${k} `
@@ -275,28 +327,53 @@ export class $DBModel {
                 else if(typeof where.is_null === 'boolean'){whereStr += ` IS NULL `}
                 else if(typeof where.regexp === 'string'){whereStr += ` REGEXP '${where.regexp}' `}
                 else if(typeof where.between === 'string'){whereStr += ` BETWEEN '${where.regexp}' `}
-                else {whereStr += ` ${where.type || '='} '${where.value}' `}
+                else if(typeof where.in === 'string'){whereStr += ` IN (${where.in}) `}
+                else if(typeof where.not_in === 'string'){whereStr += ` NOT IN (${where.not_in}) `}
+                else if(typeof where.exists === 'string'){whereStr += ` EXISTS (${where.exists}) `}
+                else if(typeof where.not_exists === 'string'){whereStr += ` NOT EXISTS (${where.not_exists}) `}
+                else {whereStr += ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `}
                 index += 1
             }
         }
+        return whereStr
+    }
+
+    async createSQL(conditions:Partial<Conditions> = {}){
+        const whereStr = await this.getWhere(conditions.where as whereConditions)
+        const onStr = await this.getWhere(conditions.on as whereConditions)
         return `
-            ${conditions.as ? `${conditions.as}` : ''}
-            ${conditions.having ? `${conditions.having}` : ''}
-            ${conditions.distinct ? `${conditions.distinct}` : ''}
-            ${conditions.desc ? `order by ${conditions.desc.map(e=>`'${e}'`).join()} desc` : ''}
-            ${conditions.asc ? `order by ${conditions.desc.map(e=>`'${e}'`).join()} asc` : ''}
-            ${whereStr ? `where ${whereStr}` : ``}
-            ${conditions.limit ? `limit ${conditions.limit.length === 2 ? `${conditions.limit[0]} , ${conditions.limit[1]}` : conditions.limit[0]}` : ''}
+            ${conditions.insert ? ` INSERT ${conditions.insert === true ? '' : conditions.insert} ` : ''}
+            ${conditions.insert_into ? ` INSERT INTO ${conditions.insert_into === true ? '' : conditions.insert_into} ` : ''}
+            ${conditions.update ? ` UPDATE ${conditions.update === true ? '' : conditions.update} ` : ''}
+            ${conditions.delete ? ` DELETE ${conditions.delete === true ? '' : conditions.delete} ` : ''}
+            ${conditions.select ? ` SELECT ${conditions.select === true ? '*' : conditions.select} ` : ''}
+            ${conditions.from ? ` FROM ${conditions.from === true ? '' : conditions.from} ` : ''}
+            ${conditions.gather ? ` ( ${conditions.gather} ) ` : ''}
+            ${conditions.gather_alias ? ` ${conditions.gather_alias} ` : ''}
+            ${conditions.join ? ` JOIN ${conditions.join === true ? '' : conditions.join} ` : ''}
+            ${conditions.inner_join ? ` INNER JOIN ${conditions.inner_join === true ? '' : conditions.inner_join} ` : ''}
+            ${conditions.left_join ? ` LEFT JOIN ${conditions.left_join === true ? '' : conditions.left_join} ` : ''}
+            ${conditions.right_join ? ` RIGHT JOIN ${conditions.right_join === true ? '' : conditions.right_join} ` : ''}
+            ${conditions.left_outer_join ? ` LEFT OUTER JOIN ${conditions.left_outer_join === true ? '' : conditions.left_outer_join} ` : ''}
+            ${conditions.right_outer_join ? ` RIGHT OUTER JOIN ${conditions.right_outer_join === true ? '' : conditions.right_outer_join} ` : ''}
+            ${conditions.as ? ` ${conditions.as} ` : ''}
+            ${conditions.having ? ` ${conditions.having} ` : ''}
+            ${conditions.distinct ? ` ${conditions.distinct} ` : ''}
+            ${conditions.desc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} desc ` : ''}
+            ${conditions.asc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} asc ` : ''}
+            ${conditions.where ? ` where ${typeof conditions.where === "string" ? conditions.where : whereStr} ` : ``}
+            ${conditions.on ? ` on ${typeof conditions.on === "string" ? conditions.on : onStr} ` : ``}
+            ${conditions.limit ? ` limit ${conditions.limit.length === 2 ? ` ${conditions.limit[0]} , ${conditions.limit[1]} ` : conditions.limit[0]} ` : ''}
         `
     }
 
     async delete(tableName, conditions:Partial<Conditions> = {}){
-        const {results, fields} = await this.runSql(`DELETE from ${tableName} `+await this.getConditionsSql(conditions), tableName, "查询表数据")
+        const {results} = await this.runSql(`DELETE from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName)
         return results
     }
 
     async get(tableName, conditions:Partial<Conditions> = {}){
-        const {results, fields} = await this.runSql(`SELECT * from ${tableName} `+await this.getConditionsSql(conditions), tableName, "查询表数据")
+        const {results} = await this.runSql(`SELECT * from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName)
         return results
     }
 
@@ -327,12 +404,12 @@ export class $DBModel {
     }
 
     async post(tableName, data = {}, conditions:Partial<Conditions> = {}){
-        const {results} = await this.runSql(`INSERT INTO  ${tableName} ` + await this.getPostSql(tableName, data, true), tableName, "新增表数据")
+        const {results} = await this.runSql(`INSERT INTO  ${tableName} ` + await this.getPostSql(tableName, data, true), "新增表数据", tableName)
         return results
     }
 
     async update(tableName, data = {}, conditions:Partial<Conditions> = {}){
-        const {results} = await this.runSql(`UPDATE  ${tableName} ` + await this.getPostSql(tableName, data, true) + await this.getConditionsSql(conditions), tableName, "新增表数据")
+        const {results} = await this.runSql(`UPDATE  ${tableName} ` + await this.getPostSql(tableName, data, true) + await this.createSQL(conditions),  "新增表数据", tableName)
         return results
     }
 
@@ -382,7 +459,8 @@ export interface CreateAPI {
 
 export interface Conditions {
     // 条件查询
-    where:whereConditions,
+    where:string | whereConditions,
+    on:string | whereConditions
     // 倒叙
     desc:string [],
     // 正序
@@ -395,27 +473,53 @@ export interface Conditions {
     as:string,
     // 过滤分组
     having:string,
+    // 标识
+    insert:string | boolean
+    insert_into:string | boolean
+    update:string | boolean
+    delete:string | boolean
+    select:string | boolean
+    from:string | boolean
+    join:string | boolean
+    inner_join:string | boolean
+    left_join:string | boolean
+    right_join:string | boolean
+    left_outer_join:string | boolean
+    right_outer_join:string | boolean
+    // 集合
+    gather:string
+    // 集合别名
+    gather_alias:string
 }
 
 export interface whereConditions {
-    [key:string]: Partial<{
-        // 并且，从二字段才生效
-        and: boolean,
-        // 或者，从二字段才生效
-        or: boolean,
-        // 对应key值
-        value: any
-        // 模糊查询
-        like: string
-        // 区域查询
-        between: string
-        // 不是null
-        is_null: boolean
-        // 正则查询
-        regexp: string
-        // 对应key值的运算符，例如：=、>、<、>=、<=
-        type:string
-    }>
+    [key:string]: Partial<whereConditionsItem>
+}
+
+export interface whereConditionsItem {
+    // 并且，从二字段才生效
+    and: boolean,
+    // 或者，从二字段才生效
+    or: boolean,
+    // 对应key值
+    value: any
+    // 对应key源值,即不进行转义
+    source: boolean
+    // 模糊查询
+    like: string
+    // 区域查询
+    between: string
+    // 不是null
+    is_null: boolean
+    // 正则查询
+    regexp: string
+    // 对应key值的运算符，例如：=、>、<、>=、<=
+    type:string
+    // 子查询
+    in:string
+    not_in:string
+    exists:string
+    not_exists:string
 }
 
 export interface $DBModelTables {
@@ -427,10 +531,15 @@ export interface $DBModelTablesItem {
     path:string
     ctx:$DBModelTablesCtx
     get?(conditions?:Partial<Conditions>):Promise<any>
+    get?(outSql?:boolean, conditions?:Partial<Conditions>):Promise<any>
     delete?(conditions?:Partial<Conditions>):Promise<any>
+    delete?(outSql?:boolean, conditions?:Partial<Conditions>):Promise<any>
     post?(data?:{[key:string]:any}):Promise<any>
+    post?(outSql?:boolean, data?:{[key:string]:any}):Promise<any>
     update?(data?:{[key:string]:any}, conditions?:Partial<Conditions>):Promise<any>
+    update?(outSql?:boolean, data?:{[key:string]:any}, conditions?:Partial<Conditions>):Promise<any>
     createAPI?(options?: Partial<CreateAPI>):Promise<any>
+    createAPI?(outSql?:boolean, options?: Partial<CreateAPI>):Promise<any>
 }
 
 export type $DBModelTablesCtx = {

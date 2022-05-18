@@ -4,22 +4,23 @@ export default createRoute({
         {
             path:"/",
             controller:async function (r){
-                await this.$DBModel.tables.test2.createAPI({
-                    update:{
-                        data:{
-                            vs:Date.now()
-                        },
-                        conditions:{
-                            where:{
-                                id:{
-                                    type:">",
-                                    value:3
-                                }
-                            }
+                const a = await this.$DBModel.runSql(await this.$DBModel.createSQL({
+                    select:true,
+                    from:true,
+                    gather:await this.$DBModel.tables.test2.get(true),
+                    gather_alias:"a",
+                    left_join:await this.$DBModel.createSQL({
+                        gather:await this.$DBModel.tables.test3.get(true),
+                        gather_alias:'b'
+                    }),
+                    on: {
+                        'a.id':{
+                            source:true,
+                            value:"b.tid"
                         }
-                    }
-                })
-                this.$success()
+                    },
+                }))
+                this.$success(a.results)
             }
         }
     ]
