@@ -327,7 +327,7 @@ export class $DBModel {
                 else if(typeof where.is_null === 'boolean'){whereStr += ` IS NULL `}
                 else if(typeof where.regexp === 'string'){whereStr += ` REGEXP '${where.regexp}' `}
                 else if(typeof where.between === 'string'){whereStr += ` BETWEEN '${where.regexp}' `}
-                else if(typeof where.in === 'string'){whereStr += ` IN (${where.in}) `}
+                else if(typeof where.in === 'string' || Object.prototype.toString.call(where.in) === '[object Array]'){whereStr += ` IN (${Object.prototype.toString.call(where.in) === '[object Array]' ? where.in.join(" , ") : where.in}) `}
                 else if(typeof where.not_in === 'string'){whereStr += ` NOT IN (${where.not_in}) `}
                 else if(typeof where.exists === 'string'){whereStr += ` EXISTS (${where.exists}) `}
                 else if(typeof where.not_exists === 'string'){whereStr += ` NOT EXISTS (${where.not_exists}) `}
@@ -522,7 +522,7 @@ export interface whereConditionsItem {
     // 对应key值的运算符，例如：=、>、<、>=、<=
     type:string
     // 子查询
-    in:string
+    in:string | any[]
     not_in:string
     exists:string
     not_exists:string

@@ -12,7 +12,7 @@ export default createRoute({
                     gather_alias:"a",
                     join:await this.$DBModel.createSQL({
                         gather:await this.$DBModel.tables.test3.get(true),
-                        gather_alias:'b'
+                        gather_alias:'b',
                     }),
                     on: {
                         'a.id':{
