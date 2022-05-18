@@ -346,7 +346,13 @@ export class $DBModel {
             ${conditions.insert_into ? ` INSERT INTO ${conditions.insert_into === true ? '' : conditions.insert_into} ` : ''}
             ${conditions.update ? ` UPDATE ${conditions.update === true ? '' : conditions.update} ` : ''}
             ${conditions.delete ? ` DELETE ${conditions.delete === true ? '' : conditions.delete} ` : ''}
-            ${conditions.select ? ` SELECT ${conditions.select === true ? '*' : conditions.select} ` : ''}
+            ${conditions.select ? ` SELECT ${
+                conditions.select === true ? 
+                    '*' :
+                    Object.prototype.toString.call(conditions.select) === '[object Array]' ?
+                        (conditions.select as string[]).join(" , ") :
+                        conditions.select
+            } ` : ''}
             ${conditions.from ? ` FROM ${conditions.from === true ? '' : conditions.from} ` : ''}
             ${conditions.gather ? ` ( ${conditions.gather} ) ` : ''}
             ${conditions.gather_alias ? ` ${conditions.gather_alias} ` : ''}
@@ -478,7 +484,7 @@ export interface Conditions {
     insert_into:string | boolean
     update:string | boolean
     delete:string | boolean
-    select:string | boolean
+    select:string | boolean | string []
     from:string | boolean
     join:string | boolean
     inner_join:string | boolean
