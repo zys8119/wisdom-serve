@@ -4,7 +4,6 @@ export default createRoute({
         {
             path:"/",
             controller:async function (r){
-                // 联表查询
                 const a = await this.$DBModel.runSql(await this.$DBModel.createSQL({
                     select:["tid", 'b.id', 'a.id as c', 'b.*'],
                     from:true,
@@ -20,7 +19,7 @@ export default createRoute({
                             value:"b.tid",
                         }
                     },
-                }))
+                }),"联表查询",'表 test2、test3')
                 // 序列化数据
                 this.$success(this.$Serialize.def(a.results,{
                     "asda":['c'],
