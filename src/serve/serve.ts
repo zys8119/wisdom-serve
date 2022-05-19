@@ -39,7 +39,11 @@ export class createAppServe implements AppServe{
         this.hotConfig(true)
         //todo 核心插件注入
         CorePlug.forEach((pulg:Plugin)=>{
-            this.use(pulg, get(this.options,"CorePlugConfig",{})[pulg.name])
+            // this.use(pulg, get(this.options,"CorePlugConfig",{})[pulg.name])
+            this.Plugins.unshift({
+                plugin:pulg,
+                options:get(this.options,"CorePlugConfig",{})[pulg.name]
+            })
         })
         this.Serve = createServer(async (request,response) => {
             try {
@@ -132,8 +136,10 @@ export class createAppServe implements AppServe{
                     }
                 }).catch((err)=> {
                     //todo 插件执行错误
-                    ncol.error(err)
-                    errorEmit(response, 404, "Not Found")
+                    if(err !== false){
+                        ncol.error(err)
+                        errorEmit(response, 404, "Not Found")
+                    }
                 })
             }catch (err){
                 //todo 插件执行错误
