@@ -86,6 +86,9 @@ export class $Serialize {
     }
 
     get(...args){
+        if(Object.prototype.toString.call(args[0]) === '[object URLSearchParams]'){
+            args[0] = Object.fromEntries([...args[0].keys()].map(e=>[e, args[0].get(e)]))
+        }
         return get.apply(get, args)
     }
 }

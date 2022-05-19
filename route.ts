@@ -4,6 +4,8 @@ export default createRoute({
         {
             path:"/",
             controller:async function (r, p){
+                const pageNo = Number(this.$Serialize.get(this.$query,"pageNo", 1));
+                const pageSize = Number(this.$Serialize.get(this.$query,"pageSize", 15));
                 const a = await this.$DBModel.runSql(await this.$DBModel.createSQL({
                     select:["tid", 'b.id', 'a.id as c', 'b.*'],
                     from:true,
@@ -19,9 +21,10 @@ export default createRoute({
                             value:"b.tid",
                         }
                     },
+                    limit:[(pageNo - 1)*pageSize, pageSize]
                 }),"联表查询",'表 test2、test3')
                 // 序列化数据
-                return Promise.resolve(this.$Serialize.def(a.results,{
+                this.$success(this.$Serialize.def(a.results,{
                     "asda":['c'],
                     "name1":['name',4545],
                     name:false,
