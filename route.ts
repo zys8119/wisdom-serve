@@ -7,7 +7,6 @@ export default createRoute({
                 const pageNo = Number(this.$Serialize.get(this.$query,"pageNo", 1));
                 const pageSize = Number(this.$Serialize.get(this.$query,"pageSize", 15));
                 const search = String(this.$Serialize.get(this.$query,"search",''));
-                console.log(search, 222)
                 const p = await this.$DBModel.createSQL({
                     from:true,
                     gather:await this.$DBModel.tables.test2.get(true),
