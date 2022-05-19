@@ -8,7 +8,6 @@ import {
 import {createServer, Server} from "http"
 import {resolve} from "path"
 import {watch, existsSync} from "fs"
-import config from "./config"
 import {mergeConfig, RouteOptionsParse, ServeInfo} from "@wisdom-serve/utils";
 import * as ncol from "ncol"
 import CorePlug from "@wisdom-serve/core-plug"
@@ -24,9 +23,10 @@ export class createAppServe implements AppServe{
     Plugins = []
     RouteOptions = {}
     $url:string
+    $params = {}
     constructor(options?:Partial<AppServeOptions>) {
         this.originOptions = options;
-        this.options = mergeConfig(config, this.originOptions);
+        this.options = mergeConfig(require("./config"), this.originOptions);
         this.hotConfig(true)
         //todo 核心插件注入
         CorePlug.forEach((pulg:Plugin)=>{
@@ -44,12 +44,27 @@ export class createAppServe implements AppServe{
                         return Promise.reject("插件格式错误！")
                     }
                 })).then(async ()=> {
-                    const route:RouteOptionsRow = this.RouteOptions[this.$url]
+                    let route:RouteOptionsRow = this.RouteOptions[this.$url]
+                    if(!!this.options.query_params && !route){
+                        route = Object.values(this.RouteOptions).find((e:any)=>e.reg && e.reg.test(this.$url)) as any
+                        if(route && route.regName.length > 0){
+                            const params = {};
+                            const paramsMatch = this.$url.match(route.reg)
+                            if(paramsMatch){
+                                route.regName.forEach((n, k)=>{
+                                    params[n] = paramsMatch[k+1]
+                                })
+                            }
+                            this.$params = params;
+                        }
+                    }
+
                     const types = ["[object Function]", "[object AsyncFunction]"]
                     if(route && types.includes(Object.prototype.toString.call(route.controller))){
                         const Parents = route.Parents;
                         //todo 控制器执行
                         const controllerArrs = Parents.concat(route);
+                        const resultMap = {}
                         let index = 0;
                         while (index < controllerArrs.length){
                             const p_route = controllerArrs[index];
@@ -61,18 +76,22 @@ export class createAppServe implements AppServe{
                                 response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
                                 response.end(`请求失败，不支持${request.method}请求！`)
                                 index = controllerArrs.length;
-                                continue;
+                                break;
                             }
                             //todo 判断请求方式=====end
 
                             //todo 控制器兼容执行
                             if(types.includes(Object.prototype.toString.call(p_route.controller))){
                                 try {
-                                    const res: any = await p_route.controller.call(this, request, response)
+                                    let result: any = await p_route.controller.call(this, request, response, resultMap)
                                     try {
                                         //todo 兼容懒加载
-                                        const defaultController = (res && Object.prototype.toString.call(res.default) === "[object Function]" ? res.default : new Function);
-                                        await defaultController.call(this, request, response)
+                                        const defaultController = (result && Object.prototype.toString.call(result.default) === "[object Function]" ? result.default : new Function);
+                                        const awaitResult = await defaultController.call(this, request, response, resultMap)
+                                        if(awaitResult){
+                                            console.log(awaitResult)
+                                            result = awaitResult;
+                                        }
                                     }catch (err){
                                         if(err){
                                             ncol.error(err)
@@ -80,8 +99,9 @@ export class createAppServe implements AppServe{
                                         response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
                                         response.end("服务器内部错误！")
                                         index = controllerArrs.length;
-                                        continue;
+                                        break;
                                     }
+                                    resultMap[p_route.path] = result
                                 }catch (err){
                                     if(err){
                                         ncol.error(err)

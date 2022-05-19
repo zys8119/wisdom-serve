@@ -13,6 +13,9 @@ export interface AppServe extends Partial<AppServeInterface>{
     listen(port?: number): Promise<Server>;
     RouteOptions?: RouteOptions
     $url?: string
+    $params?: {
+        [key:string]:any
+    }
 }
 
 export type RouteOptions = {
@@ -22,7 +25,9 @@ export type RouteOptions = {
 export type RouteOptionsRow = routeRow & RouteOptionsExtends
 
 export type RouteOptionsExtends = {
-    Parents?:routes
+    Parents?:routes,
+    reg?:RegExp
+    regName?:string[]
 }
 
 export interface AppServeOptions extends ServerOptions {
@@ -32,6 +37,7 @@ export interface AppServeOptions extends ServerOptions {
         LogServeInfo?:boolean // 是否打印服务信息
     },
     debug?:boolean // 是否开启调试模式
+    query_params?:boolean // 如果为true则解析params参数，同时暴露全局参数 $params , 注： 开启可能会有微量的性能开销
     mysqlAuto?:boolean | RegExp // 是否自动创建数据字段， 当类型为RegExp判断
     mysqlConfig?:{
         [key:string]:any
@@ -64,7 +70,7 @@ export type routeRow = {
 
 export type HttpHeadersType =  HttpHeadersTypeInterface
 
-export type controller = (this:AppServe, req: IncomingMessage, res: ServerResponse) => void | Promise<any>
+export type controller = (this:AppServe, req: IncomingMessage, res: ServerResponse, resultMaps:{[key:string]:any}) => void | Promise<any>
 
 export type createApp = (options:AppServeOptions)=>AppServe;
 export type createRoute = (routerConfig:route)=>route;

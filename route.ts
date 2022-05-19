@@ -3,7 +3,7 @@ export default createRoute({
     routes:[
         {
             path:"/",
-            controller:async function (r){
+            controller:async function (r, p){
                 const a = await this.$DBModel.runSql(await this.$DBModel.createSQL({
                     select:["tid", 'b.id', 'a.id as c', 'b.*'],
                     from:true,
@@ -21,13 +21,22 @@ export default createRoute({
                     },
                 }),"联表查询",'表 test2、test3')
                 // 序列化数据
-                this.$success(this.$Serialize.def(a.results,{
+                return Promise.resolve(this.$Serialize.def(a.results,{
                     "asda":['c'],
                     "name1":['name',4545],
                     name:false,
                     "c":false,
                 },/tid|id/))
-            }
+            },
+            children:[
+                {
+                    path:"api/:aaa/:bbb",
+                    controller:async function(req, res){
+                        console.log(this.$params.aaa)
+                        this.$success()
+                    }
+                }
+            ]
         }
     ]
 });
