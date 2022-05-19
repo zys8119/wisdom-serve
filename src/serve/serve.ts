@@ -36,7 +36,6 @@ export class createAppServe implements AppServe{
     $route
     constructor(options?:Partial<AppServeOptions>) {
         this.originOptions = options;
-        this.options = mergeConfig(require("./config"), this.originOptions);
         this.hotConfig(true)
         //todo 核心插件注入
         CorePlug.forEach((pulg:Plugin)=>{
