@@ -13,9 +13,7 @@ export interface AppServe extends Partial<AppServeInterface>{
     listen(port?: number): Promise<Server>;
     RouteOptions?: RouteOptions
     $url?: string
-    $params?: {
-        [key:string]:any
-    }
+    $params?: { [key:string]:any }
 }
 
 export type RouteOptions = {
