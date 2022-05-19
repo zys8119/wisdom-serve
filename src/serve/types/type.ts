@@ -14,6 +14,7 @@ export interface AppServe extends Partial<AppServeInterface>{
     RouteOptions?: RouteOptions
     $url?: string
     $params?: { [key:string]:any }
+    $route?: RouteOptionsRow
 }
 
 export type RouteOptions = {

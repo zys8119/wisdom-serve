@@ -24,6 +24,7 @@ export class createAppServe implements AppServe{
     RouteOptions = {}
     $url:string
     $params = {}
+    $route
     constructor(options?:Partial<AppServeOptions>) {
         this.originOptions = options;
         this.options = mergeConfig(require("./config"), this.originOptions);
@@ -68,6 +69,7 @@ export class createAppServe implements AppServe{
 
                     const types = ["[object Function]", "[object AsyncFunction]"]
                     if(route && types.includes(Object.prototype.toString.call(route.controller))){
+                        this.$route = route;
                         const Parents = route.Parents;
                         //todo 控制器执行
                         const controllerArrs = Parents.concat(route);

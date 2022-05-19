@@ -32,7 +32,7 @@ export default createRoute({
                 {
                     path:"api/:aaa/:bbb",
                     controller:async function(req, res){
-                        console.log(this.$params.aaa)
+                        console.log(this.$route)
                         this.$success()
                     }
                 }
