@@ -80,7 +80,7 @@ export class createAppServe implements AppServe{
                         this.$route = route;
                         const Parents = route.Parents;
                         //todo 控制器执行
-                        const controllerArrs = Parents.concat(route);
+                        const controllerArrs = Parents.concat([route]);
                         const resultMap = {}
                         let index = 0;
                         while (index < controllerArrs.length){
