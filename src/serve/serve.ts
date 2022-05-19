@@ -16,7 +16,7 @@ import {get} from "lodash"
 
 const errorEmit = (response, code:number, message:any)=>{
     response.writeHead(code,{"Content-Type": "text/plain; charset=utf-8"})
-    response.end("请求失败，系统繁忙！")
+    response.end("资源不存在！")
     try {
         throw Error(message)
     }catch (e) {
