@@ -33,6 +33,13 @@ export class createAppServe implements AppServe{
             this.use(pulg, get(this.options,"CorePlugConfig",{})[pulg.name])
         })
         this.Serve = createServer(async (request,response) => {
+            if(this.options.debug){
+                ncol.color(function (){
+                    this.warnBG("【请求】")
+                        .warn("==========")
+                        .warn(request.url)
+                })
+            }
             try {
                 //todo 初始化路由
                 this.RouteOptions = await RouteOptionsParse(this.options)
