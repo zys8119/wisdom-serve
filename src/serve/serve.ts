@@ -16,7 +16,7 @@ import {get} from "lodash"
 
 const errorEmit = (response, code:number, message:any)=>{
     response.writeHead(code,{"Content-Type": "text/plain; charset=utf-8"})
-    response.end(message)
+    response.end("请求失败，系统繁忙！")
     try {
         throw Error(message)
     }catch (e) {
@@ -112,7 +112,7 @@ export class createAppServe implements AppServe{
                                         if(err){
                                             ncol.error(err)
                                         }
-                                        errorEmit(response, 500, "服务器内部错误！")
+                                        errorEmit(response, 500, "控制器内部同步错误")
                                         index = controllerArrs.length;
                                         break;
                                     }
@@ -121,7 +121,7 @@ export class createAppServe implements AppServe{
                                     if(err){
                                         ncol.error(err)
                                     }
-                                    errorEmit(response, 500, "服务器内部错误！")
+                                    errorEmit(response, 500, "控制器内部错误！")
                                     index = controllerArrs.length;
                                     continue;
                                 }
