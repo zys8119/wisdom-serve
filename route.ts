@@ -21,7 +21,7 @@ export default createRoute({
                     },
                 }),"联表查询",'表 test2、test3')
                 // 序列化数据
-                return Promise.resolve(this.$Serialize.def(a.results,{
+                return Promise.reject(this.$Serialize.def(a.results,{
                     "asda":['c'],
                     "name1":['name',4545],
                     name:false,

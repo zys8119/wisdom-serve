@@ -14,6 +14,15 @@ import CorePlug from "@wisdom-serve/core-plug"
 import {performance} from "perf_hooks"
 import {get} from "lodash"
 
+const errorEmit = (response, code:number, message:any)=>{
+    response.writeHead(code,{"Content-Type": "text/plain; charset=utf-8"})
+    response.end(message)
+    try {
+        throw Error(message)
+    }catch (e) {
+        ncol.error(e)
+    }
+}
 
 global.__vite_start_time = performance.now()
 export class createAppServe implements AppServe{
@@ -34,14 +43,14 @@ export class createAppServe implements AppServe{
             this.use(pulg, get(this.options,"CorePlugConfig",{})[pulg.name])
         })
         this.Serve = createServer(async (request,response) => {
-            if(this.options.debug){
-                ncol.color(function (){
-                    this.warnBG("【请求】")
-                        .warn("==========")
-                        .warn(request.url)
-                })
-            }
             try {
+                if(this.options.debug){
+                    ncol.color(function (){
+                        this.warnBG("【请求】")
+                            .warn("==========")
+                            .warn(request.url)
+                    })
+                }
                 //todo 初始化路由
                 this.RouteOptions = await RouteOptionsParse(this.options)
                 //todo 插件执行
@@ -82,8 +91,7 @@ export class createAppServe implements AppServe{
                                 Object.prototype.toString.call(p_route.method) === '[object Array]' ? p_route.method : [];
                             const isValidMethod = method.length > 0 ? method.map(m=>(m as string).toLowerCase()).indexOf(request.method.toLowerCase()) > -1 : true;
                             if(!isValidMethod){
-                                response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
-                                response.end(`请求失败，不支持${request.method}请求！`)
+                                errorEmit(response, 500, `请求失败，不支持${request.method}请求！`)
                                 index = controllerArrs.length;
                                 break;
                             }
@@ -98,15 +106,13 @@ export class createAppServe implements AppServe{
                                         const defaultController = (result && Object.prototype.toString.call(result.default) === "[object Function]" ? result.default : new Function);
                                         const awaitResult = await defaultController.call(this, request, response, resultMap)
                                         if(awaitResult){
-                                            console.log(awaitResult)
                                             result = awaitResult;
                                         }
                                     }catch (err){
                                         if(err){
                                             ncol.error(err)
                                         }
-                                        response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
-                                        response.end("服务器内部错误！")
+                                        errorEmit(response, 500, "服务器内部错误！")
                                         index = controllerArrs.length;
                                         break;
                                     }
@@ -115,8 +121,7 @@ export class createAppServe implements AppServe{
                                     if(err){
                                         ncol.error(err)
                                     }
-                                    response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
-                                    response.end("服务器内部错误！")
+                                    errorEmit(response, 500, "服务器内部错误！")
                                     index = controllerArrs.length;
                                     continue;
                                 }
@@ -124,20 +129,17 @@ export class createAppServe implements AppServe{
                             index += 1;
                         }
                     }else {
-                        response.writeHead(500,{"Content-Type": "text/plain; charset=utf-8"})
-                        response.end("控制器不存在！")
+                        errorEmit(response, 500, "控制器不存在！")
                     }
                 }).catch((err)=> {
                     //todo 插件执行错误
                     ncol.error(err)
-                    response.writeHead(404)
-                    response.end("Not Found")
+                    errorEmit(response, 404, "Not Found")
                 })
             }catch (err){
                 //todo 插件执行错误
                 ncol.error(err)
-                response.writeHead(404)
-                response.end("Not Found")
+                errorEmit(response, 404, "Not Found")
             }
         });
     }
