@@ -368,10 +368,11 @@ export class $DBModel {
             ${conditions.as ? ` ${conditions.as} ` : ''}
             ${conditions.having ? ` ${conditions.having} ` : ''}
             ${conditions.distinct ? ` ${conditions.distinct} ` : ''}
+            
+            ${conditions.on ? ` on ${typeof conditions.on === "string" ? conditions.on : onStr} ` : ``}
+            ${conditions.where ? ` where ${typeof conditions.where === "string" ? conditions.where : whereStr} ` : ``}
             ${conditions.desc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} desc ` : ''}
             ${conditions.asc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} asc ` : ''}
-            ${conditions.where ? ` where ${typeof conditions.where === "string" ? conditions.where : whereStr} ` : ``}
-            ${conditions.on ? ` on ${typeof conditions.on === "string" ? conditions.on : onStr} ` : ``}
             ${conditions.limit ? ` limit ${conditions.limit.length === 2 ? ` ${conditions.limit[0]} , ${conditions.limit[1]} ` : conditions.limit[0]} ` : ''}
         `
     }
