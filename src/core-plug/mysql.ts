@@ -356,6 +356,7 @@ export class $DBModel {
                         (conditions.select as string[]).join(" , ") :
                         conditions.select
             } ` : ''}
+            ${conditions.count ? `SELECT count(*) as  ${conditions.count === true ? 'total' : conditions.count}` : ''}
             ${conditions.from ? ` FROM ${conditions.from === true ? '' : conditions.from} ` : ''}
             ${conditions.gather ? ` ( ${conditions.gather} ) ` : ''}
             ${conditions.gather_alias ? ` ${conditions.gather_alias} ` : ''}
@@ -488,6 +489,7 @@ export interface Conditions {
     update:string | boolean
     delete:string | boolean
     select:string | boolean | string []
+    count:string | boolean // 总数， 默认名称 total
     from:string | boolean
     join:string | boolean
     inner_join:string | boolean

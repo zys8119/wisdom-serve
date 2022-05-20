@@ -33,7 +33,7 @@ export default createRoute({
                     limit:[(pageNo - 1)*pageSize, pageSize]
                 }),"联表查询",'表 test2、test3')
                 const {results:total} = await this.$DBModel.runSql(await this.$DBModel.createSQL({
-                    select:["count(*) as total"],
+                    count:true,
                     gather_alias:p as any,
                 }),"联表查询总数",'表 test2、test3')
                 // 序列化数据
