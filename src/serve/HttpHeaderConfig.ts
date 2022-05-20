@@ -75,6 +75,7 @@ const HttpHeaderConfig =  [
     "application/x-img",
     "application/x-internet-signup",
     "application/x-jpg",
+    "application/javascript",
     "application/x-javascript",
     "application/x-laplayer-reg",
     "application/x-latex",

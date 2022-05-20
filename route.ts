@@ -15,16 +15,16 @@ export default createRoute({
                         gather:await this.$DBModel.tables.test3.get(true),
                         gather_alias:'b',
                     }),
+                    where:{
+                        'a.vs':{
+                            like:`%${search}%`
+                        }
+                    },
                     on: {
                         'a.id':{
                             source:true,
                             value:"b.tid",
                         },
-                    },
-                    where:{
-                        'a.vs':{
-                            like:`%${search}%`
-                        }
                     }
                 })
                 const a = await this.$DBModel.runSql(await this.$DBModel.createSQL({

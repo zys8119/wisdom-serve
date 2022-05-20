@@ -39,7 +39,6 @@ export class createAppServe implements AppServe{
         this.hotConfig(true)
         //todo 核心插件注入
         CorePlug.forEach((pulg:Plugin)=>{
-            // this.use(pulg, get(this.options,"CorePlugConfig",{})[pulg.name])
             this.Plugins.unshift({
                 plugin:pulg,
                 options:get(this.options,"CorePlugConfig",{})[pulg.name]
@@ -54,11 +53,12 @@ export class createAppServe implements AppServe{
                             .warn(request.url)
                     })
                 }
+                const types = ["[object Function]", "[object AsyncFunction]"]
                 //todo 初始化路由
                 this.RouteOptions = await RouteOptionsParse(this.options)
                 //todo 插件执行
                 await Promise.all(this.Plugins.map(async ({plugin, options}:any)=>{
-                    if(Object.prototype.toString.call(plugin) === "[object Function]"){
+                    if(types.includes(Object.prototype.toString.call(plugin))){
                         return await plugin.call(this, request, response, (_any)=>Promise.resolve(_any), options)
                     }else {
                         return Promise.reject("插件格式错误！")
@@ -79,7 +79,7 @@ export class createAppServe implements AppServe{
                         }
                     }
 
-                    const types = ["[object Function]", "[object AsyncFunction]"]
+
                     if(route && types.includes(Object.prototype.toString.call(route.controller))){
                         this.$route = route;
                         const Parents = route.Parents;

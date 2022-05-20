@@ -45,7 +45,18 @@ export interface AppServeOptions extends ServerOptions {
     // 核心插件配置
     CorePlugConfig?:{
         [key:string]:any
+        // 静态资源插件配置
+        staticPulgin?:Partial<{
+            cwd:string // 静态资源根不如，默认是执行目录
+            dirName:string | string[] // 根目录下开放的静态资源目录名称， 默认 static
+            // 根据文件后缀返回对应的header头
+            extHeader:ExtHeader
+        }>
     }
+}
+
+export type ExtHeader = {
+    [key:string]:Partial<HttpHeadersType>
 }
 
 export type AppServeOptionsRoute = route | AppServeOptionsRouteLazy
