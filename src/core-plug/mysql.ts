@@ -366,11 +366,10 @@ export class $DBModel {
             ${conditions.left_outer_join ? ` LEFT OUTER JOIN ${conditions.left_outer_join === true ? '' : conditions.left_outer_join} ` : ''}
             ${conditions.right_outer_join ? ` RIGHT OUTER JOIN ${conditions.right_outer_join === true ? '' : conditions.right_outer_join} ` : ''}
             ${conditions.as ? ` ${conditions.as} ` : ''}
-            ${conditions.having ? ` ${conditions.having} ` : ''}
-            ${conditions.distinct ? ` ${conditions.distinct} ` : ''}
-            
             ${conditions.on ? ` on ${typeof conditions.on === "string" ? conditions.on : onStr} ` : ``}
             ${conditions.where ? ` where ${typeof conditions.where === "string" ? conditions.where : whereStr} ` : ``}
+            ${conditions.having ? ` ${conditions.having} ` : ''}
+            ${conditions.distinct ? ` ${conditions.distinct} ` : ''}
             ${conditions.desc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} desc ` : ''}
             ${conditions.asc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} asc ` : ''}
             ${conditions.limit ? ` limit ${conditions.limit.length === 2 ? ` ${conditions.limit[0]} , ${conditions.limit[1]} ` : conditions.limit[0]} ` : ''}
