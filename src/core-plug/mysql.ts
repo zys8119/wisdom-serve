@@ -78,7 +78,7 @@ export class $Serialize {
         if(Object.prototype.toString.call(excludeReg) === '[object RegExp]'){
             for(const k in data){
                 if(excludeReg.test(k)){
-                   delete data[k]
+                    delete data[k]
                 }
             }
         }
@@ -261,7 +261,7 @@ export class $DBModel {
         `,`创建表`, tableName)
         // 查询表字段
         const { results } = await this.runSql(`
-            SELECT COLUMN_NAME as name from information_schema.COLUMNS where table_name = '${tableName}'
+            SELECT COLUMN_NAME as name from information_schema.COLUMNS where TABLE_NAME = '${tableName}' and TABLE_SCHEMA = '${this.app.options.mysqlConfig.database}'
         ` ,`查询表${tableName}字段`, "information_schema.COLUMNS")
         const table_columns:Array<any> = results.map(e=>e.name)
         const _old = columnsName.filter(e=>table_columns.includes(e))
@@ -305,13 +305,13 @@ export class $DBModel {
                 if(tableName){
                     _this = _this.log(tableName+' ');
                 }
-                _this.info(sql)
+                _this.info(sql+';')
             })
             console.log("=====================================================================")
             return res
         }catch (err){
             ncol.error(err.err.message)
-            ncol.error(err.err.sql)
+            ncol.error(err.err.sql+';')
             console.log("=====================================================================")
             throw Error(err.err)
         }
@@ -350,12 +350,12 @@ export class $DBModel {
             ${conditions.update ? ` UPDATE ${conditions.update === true ? '' : conditions.update} ` : ''}
             ${conditions.delete ? ` DELETE ${conditions.delete === true ? '' : conditions.delete} ` : ''}
             ${conditions.select ? ` SELECT ${
-                conditions.select === true ? 
-                    '*' :
-                    Object.prototype.toString.call(conditions.select) === '[object Array]' ?
-                        (conditions.select as string[]).join(" , ") :
-                        conditions.select
-            } ` : ''}
+            conditions.select === true ?
+                '*' :
+                Object.prototype.toString.call(conditions.select) === '[object Array]' ?
+                    (conditions.select as string[]).join(" , ") :
+                    conditions.select
+        } ` : ''}
             ${conditions.count ? `SELECT count(*) as  ${conditions.count === true ? 'total' : conditions.count}` : ''}
             ${conditions.from ? ` FROM ${conditions.from === true ? '' : conditions.from} ` : ''}
             ${conditions.gather ? ` ( ${conditions.gather} ) ` : ''}

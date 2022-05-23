@@ -1,6 +1,7 @@
 import {IncomingMessage, Server, ServerOptions, ServerResponse} from "http";
 import {AppServeInterface} from "@wisdom-serve/serve";
 import {HttpHeadersTypeInterface, Method} from "@wisdom-serve/serve/HttpHeaderConfig";
+import {PoolConfig} from "mysql";
 
 export type Plugin = (this:AppServe, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>, options?:any) => Promise<any> | void
 
@@ -38,7 +39,7 @@ export interface AppServeOptions extends ServerOptions {
     debug?:boolean // 是否开启调试模式
     query_params?:boolean // 如果为true则解析params参数，同时暴露全局参数 $params , 注： 开启可能会有微量的性能开销
     mysqlAuto?:boolean | RegExp // 是否自动创建数据字段， 当类型为RegExp判断
-    mysqlConfig?:{
+    mysqlConfig?:Partial<PoolConfig> & {
         [key:string]:any
     },
     route?:AppServeOptionsRoute
