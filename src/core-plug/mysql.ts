@@ -3,7 +3,8 @@ import {IncomingMessage, ServerResponse} from "http";
 import {createPool, FieldInfo, MysqlError, Pool, QueryOptions} from "mysql";
 import {sync} from "fast-glob";
 import * as ncol from "ncol"
-import {get, update} from "lodash"
+import {get} from "lodash"
+import {v1 as uuidV1} from "uuid"
 export class DBSql{
     private app:AppServe
     private request:IncomingMessage
@@ -89,7 +90,16 @@ export class $Serialize {
         if(Object.prototype.toString.call(args[0]) === '[object URLSearchParams]'){
             args[0] = Object.fromEntries([...args[0].keys()].map(e=>[e, args[0].get(e)]))
         }
-        return get.apply(get, args)
+        if(args[0] === true){
+            args = args.slice(1)
+        }
+        const value = get.apply(get, args)
+        if(['[object Null]', '[object Undefined]'].includes(Object.prototype.toString.call(value)) || (['[object String]'].includes(Object.prototype.toString.call(value)) && /^\s{0,}$/.test(value))){
+            const message = `字段【${args[1]}】必填项不能为空`
+            this.app.$error(message)
+            throw Error(message)
+        }
+        return value
     }
 }
 
@@ -251,13 +261,13 @@ export class $DBModel {
         await this.runSql(`
             CREATE TABLE IF NOT EXISTS ${tableName}
             (
-            ${fieldsInfo.join(",")}
-            ${config.primary_key ? `, PRIMARY KEY (${config.primary_key.join(', ')})` : ''}
+                ${fieldsInfo.join(",")}
+                ${config.primary_key ? `, PRIMARY KEY (${config.primary_key.join(', ')})` : ''}
             ) ENGINE= ${config.engine || 'MyISAM'}
-            ${config.charset ? `DEFAULT CHARSET= ${config.charset || 'utf8'}` : ''}
-            ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
-            ${config.using ? `USING = ${config.using ||  'BTREE'}` : ''}
-            ROW_FORMAT = Dynamic
+                ${config.charset ? `DEFAULT CHARSET= ${config.charset || 'utf8'}` : ''}
+                ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
+                ${config.using ? `USING = ${config.using ||  'BTREE'}` : ''}
+                ROW_FORMAT = Dynamic
         `,`创建表`, tableName)
         // 查询表字段
         const { results } = await this.runSql(`
@@ -403,6 +413,9 @@ export class $DBModel {
                 if(!v && !['[object Boolean]','[object Number]'].includes(Object.prototype.toString.call(v))){
                     v = null
                 }
+                if(columns[k].is_uuid){
+                    v = uuidV1()
+                }
                 value.push(`${k} = ${typeof v === 'string' ? `'${v}'` : v}`)
             }
         }
@@ -414,7 +427,7 @@ export class $DBModel {
     }
 
     async post(tableName, data = {}, conditions:Partial<Conditions> = {}){
-        const {results} = await this.runSql(`INSERT INTO  ${tableName} ` + await this.getPostSql(tableName, data, true), "新增表数据", tableName)
+        const {results} = await this.runSql(`INSERT INTO  ${tableName} ` + await this.getPostSql(tableName, data, false), "新增表数据", tableName)
         return results
     }
 
@@ -573,6 +586,7 @@ export type DBModel_columns = {
 }
 
 export type DBModel_columns_config = {
+    is_uuid:boolean // 是否为uuid模式， 如果是则改字段写入数据将自动写入uuid格式
     not_null:boolean
     auto_increment:boolean
     unique:boolean
