@@ -285,7 +285,6 @@ export class $DBModel {
         await Promise.all(_new.map(name=> this.runSql(`ALTER TABLE ${tableName} ADD ${name} ${columns[name].str.replace('primary key','')}`, "添加表字段", tableName)))
         // 更新表信息
         await this.runSql(`ALTER TABLE ${tableName}
-            ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
             ${config.charset ? `DEFAULT CHARSET= ${config.charset || 'utf8'}` : ''}
             ${config.commit ? `COMMENT = \'${config.commit}\'` : ''}
             ${config.using ? `USING = ${config.using ||  'BTREE'}` : ''}
