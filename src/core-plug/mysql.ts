@@ -136,12 +136,15 @@ export class $DBModel {
                 ctx,
                 path:e,
                 name:((e.match(/([^/\\]*)\.ts$/) || [])[1] || ""),
-                get:(outSql?:any, conditions:Partial<Conditions> = {})=>{
+                get:(outSql?:any, conditions:any = {}, isExists?:boolean)=>{
+                    if(conditions === true){
+                        isExists = true
+                    }
                     if(outSql !== true){
                         conditions = outSql
                     }
                     this.outSql = outSql === true;
-                    return this.get(info.name, conditions)
+                    return this.get(info.name, conditions, isExists)
                 },
                 delete:(outSql?:any, conditions:Partial<Conditions> = {})=>{
                     if(outSql !== true){
@@ -392,8 +395,11 @@ export class $DBModel {
         return results
     }
 
-    async get(tableName, conditions:Partial<Conditions> = {}){
+    async get(tableName, conditions:Partial<Conditions> = {}, isExists?:boolean){
         const {results} = await this.runSql(`SELECT * from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName)
+        if(isExists){
+            return results.length > 0;
+        }
         return results
     }
 
@@ -554,8 +560,10 @@ export interface $DBModelTablesItem {
     name:string
     path:string
     ctx:$DBModelTablesCtx
+    get?(conditions?:Partial<Conditions>, isExists?:boolean):Promise<any>
     get?(conditions?:Partial<Conditions>):Promise<any>
     get?(outSql?:boolean, conditions?:Partial<Conditions>):Promise<any>
+    get?(outSql?:boolean, conditions?:Partial<Conditions>, isExists?:boolean):Promise<any>
     delete?(conditions?:Partial<Conditions>):Promise<any>
     delete?(outSql?:boolean, conditions?:Partial<Conditions>):Promise<any>
     post?(data?:{[key:string]:any}):Promise<any>
