@@ -95,7 +95,7 @@ export class $Serialize {
             args = args.slice(1)
         }
         const value = get.apply(get, args)
-        if(isRequired && ['[object Null]', '[object Undefined]'].includes(Object.prototype.toString.call(value)) || (['[object String]'].includes(Object.prototype.toString.call(value)) && /^\s{0,}$/.test(value))){
+        if(isRequired && (['[object Null]', '[object Undefined]'].includes(Object.prototype.toString.call(value)) || (['[object String]'].includes(Object.prototype.toString.call(value)) && /^\s{0,}$/.test(value)))){
             const message = `字段【${args[1]}】必填项不能为空`
             this.app.$error(message)
             throw Error(message)
