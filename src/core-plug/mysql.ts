@@ -90,11 +90,12 @@ export class $Serialize {
         if(Object.prototype.toString.call(args[0]) === '[object URLSearchParams]'){
             args[0] = Object.fromEntries([...args[0].keys()].map(e=>[e, args[0].get(e)]))
         }
-        if(args[0] === true){
+        const isRequired = args[0] === true
+        if(isRequired){
             args = args.slice(1)
         }
         const value = get.apply(get, args)
-        if(['[object Null]', '[object Undefined]'].includes(Object.prototype.toString.call(value)) || (['[object String]'].includes(Object.prototype.toString.call(value)) && /^\s{0,}$/.test(value))){
+        if(isRequired && ['[object Null]', '[object Undefined]'].includes(Object.prototype.toString.call(value)) || (['[object String]'].includes(Object.prototype.toString.call(value)) && /^\s{0,}$/.test(value))){
             const message = `字段【${args[1]}】必填项不能为空`
             this.app.$error(message)
             throw Error(message)
