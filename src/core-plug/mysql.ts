@@ -67,7 +67,7 @@ export class $Serialize {
             for(const k in defMap){
                 if(Object.prototype.toString.call(defMap[k]) === '[object Array]'){
                     if(Object.prototype.toString.call(defMap[k][0]) === '[object Function]'){
-                        data[k] = get(data, (defMap[k][0] as any)(data) as string, defMap[k][1])
+                        data[k] = (defMap[k][0] as any)(data) as any
                     }else {
                         data[k] = get(data, defMap[k][0] as string, defMap[k][1])
                     }
