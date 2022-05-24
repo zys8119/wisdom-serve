@@ -125,7 +125,7 @@ export class createAppServe implements AppServe{
                                         index = controllerArrs.length;
                                         break;
                                     }
-                                    resultMap[p_route.path] = result
+                                    resultMap[p_route.name || p_route.path] = result
                                 }catch (err){
                                     if(err){
                                         ncol.error(err)
