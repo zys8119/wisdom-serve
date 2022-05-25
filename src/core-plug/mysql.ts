@@ -87,12 +87,12 @@ export class $Serialize {
     }
 
     get(...args){
-        if(Object.prototype.toString.call(args[0]) === '[object URLSearchParams]'){
-            args[0] = Object.fromEntries([...args[0].keys()].map(e=>[e, args[0].get(e)]))
-        }
         const isRequired = args[0] === true
         if(isRequired){
             args = args.slice(1)
+        }
+        if(Object.prototype.toString.call(args[0]) === '[object URLSearchParams]'){
+            args[0] = Object.fromEntries([...args[0].keys()].map(e=>[e, args[0].get(e)]))
         }
         const value = get.apply(get, args)
         if(isRequired && (['[object Null]', '[object Undefined]'].includes(Object.prototype.toString.call(value)) || (['[object String]'].includes(Object.prototype.toString.call(value)) && /^\s{0,}$/.test(value)))){
