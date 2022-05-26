@@ -310,17 +310,19 @@ export class $DBModel {
             }
             // 查询
             const res = await this.app.$DB.query(sql)
-            ncol.color(function (){
-                let _this = this.success('【SQL】执行成功：');
-                if(message){
-                    _this = _this.log(message+"-> ");
-                }
-                if(tableName){
-                    _this = _this.log(tableName+' ');
-                }
-                _this.info(sql+';')
-            })
-            console.log("=====================================================================")
+            if(this.app.options.debug){
+                ncol.color(function (){
+                    let _this = this.success('【SQL】执行成功：');
+                    if(message){
+                        _this = _this.log(message+"-> ");
+                    }
+                    if(tableName){
+                        _this = _this.log(tableName+' ');
+                    }
+                    _this.info(sql+';')
+                })
+                console.log("=====================================================================")
+            }
             return res
         }catch (err){
             ncol.error(err.err.message)
@@ -336,18 +338,20 @@ export class $DBModel {
         if(Object.prototype.toString.call(whereConditions) === '[object Object]'){
             for (const k in whereConditions){
                 const where = whereConditions[k]
-                whereStr += index > 0 ? (where.and === true ? ' AND ' : '') : ''
-                whereStr += index > 0 ? (where.or === true ? ' OR ' : '') : ''
-                whereStr += ` ${k} `
-                if(typeof where.like === 'string'){whereStr += ` like '${where.like}' `}
-                else if(typeof where.is_null === 'boolean'){whereStr += ` IS NULL `}
-                else if(typeof where.regexp === 'string'){whereStr += ` REGEXP '${where.regexp}' `}
-                else if(typeof where.between === 'string'){whereStr += ` BETWEEN '${where.regexp}' `}
-                else if(typeof where.in === 'string' || Object.prototype.toString.call(where.in) === '[object Array]'){whereStr += ` IN (${Object.prototype.toString.call(where.in) === '[object Array]' ? where.in.join(" , ") : where.in}) `}
-                else if(typeof where.not_in === 'string'){whereStr += ` NOT IN (${where.not_in}) `}
-                else if(typeof where.exists === 'string'){whereStr += ` EXISTS (${where.exists}) `}
-                else if(typeof where.not_exists === 'string'){whereStr += ` NOT EXISTS (${where.not_exists}) `}
-                else {whereStr += ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `}
+                if(Object.prototype.toString.call(where) === '[object Object]'){
+                    whereStr += index > 0 ? (where.and === true ? ' AND ' : '') : ''
+                    whereStr += index > 0 ? (where.or === true ? ' OR ' : '') : ''
+                    whereStr += ` ${k} `
+                    if(typeof where.like === 'string'){whereStr += ` like '${where.like}' `}
+                    else if(typeof where.is_null === 'boolean'){whereStr += ` IS NULL `}
+                    else if(typeof where.regexp === 'string'){whereStr += ` REGEXP '${where.regexp}' `}
+                    else if(typeof where.between === 'string'){whereStr += ` BETWEEN '${where.regexp}' `}
+                    else if(typeof where.in === 'string' || Object.prototype.toString.call(where.in) === '[object Array]'){whereStr += ` IN (${Object.prototype.toString.call(where.in) === '[object Array]' ? where.in.join(" , ") : where.in}) `}
+                    else if(typeof where.not_in === 'string'){whereStr += ` NOT IN (${where.not_in}) `}
+                    else if(typeof where.exists === 'string'){whereStr += ` EXISTS (${where.exists}) `}
+                    else if(typeof where.not_exists === 'string'){whereStr += ` NOT EXISTS (${where.not_exists}) `}
+                    else {whereStr += ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `}
+                }
                 index += 1
             }
         }
