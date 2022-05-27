@@ -1,7 +1,8 @@
 import {IncomingMessage, Server, ServerOptions, ServerResponse} from "http";
-import {AppServeInterface} from "@wisdom-serve/serve";
+import {AppServeInterface, SocketListItemOptions} from "@wisdom-serve/serve";
 import {HttpHeadersTypeInterface, Method} from "@wisdom-serve/serve/HttpHeaderConfig";
 import {PoolConfig} from "mysql";
+import * as Buffer from "buffer";
 
 export type Plugin = (this:AppServe, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>, options?:any) => Promise<any> | void
 
@@ -54,7 +55,36 @@ export interface AppServeOptions extends ServerOptions {
             extHeader:ExtHeader
         }>
     }
+    // websocket url 访问正则规则， 默认为
+    websocketUrl?:RegExp
+    // websocket 事件钩子
+    websocket?:Partial<Websocket>
 }
+
+export interface Websocket {
+    "ws-end":(this:AppServe, SocketListItemOptions:SocketListItemOptions)=> void
+    "ws-timeout":(this:AppServe, SocketListItemOptions:SocketListItemOptions)=> void
+    "ws-error":(this:AppServe, SocketListItemOptions:SocketListItemOptions)=> void
+    "ws-close":(this:AppServe, SocketListItemOptions:SocketListItemOptions)=> void
+    "ws-connection":(this:AppServe, SocketListItemOptions:SocketListItemOptions)=> void
+    "ws-data":(this:AppServe, SocketListItemOptions:SocketListItemOptions, data:any, buffer:Buffer)=> void
+    "ws-payload":(this:AppServe, payloadDataStr:any)=> void
+
+    /**
+     * @如果想用自定义钩子，需注意如下事项：
+     *
+     * 1、其key 必须不能以 'ws-' 开头
+     * 2、客户端传输的 payload 数据必须是一个 json 字符串格式， 其格式如下：
+        payload = {
+            // emit必传，其值为 自定义 key 名称
+            "emit":'keyName',
+            // 其他的数据...
+        }
+     *
+     */
+    [key:string]:(this:AppServe, SocketListItemOptions:SocketListItemOptions, ...args:any[])=> void;
+}
+
 
 export type ExtHeader = {
     [key:string]:Partial<HttpHeadersType>

@@ -2,6 +2,7 @@ import {Plugin} from "@wisdom-serve/serve/types/type";
 import {createHash} from "crypto";
 import {Socket} from "net";
 import * as ncol from "ncol";
+import * as EventEmitter from "events";
 
 /**
  * 解码数据
@@ -78,12 +79,42 @@ const encodeWsFrame = (data)=> {
     return frame;
 }
 
+const socketWrite = (socket:Socket, payloadData:any, config:any = {})=>{
+    socket.write(encodeWsFrame({
+        payloadData,
+        opcode:1,
+        ...config,
+    }))
+}
+
+
+class myEmitter extends EventEmitter {
+    constructor() {
+        super();
+    }
+}
+
+const {on, emit, off, once} = new myEmitter()
+
+interface SocketListItem {
+    [key:string]:any
+    key:string,
+    socket:Socket,
+    send(payloadData:any, socketTargetKeys?:string[],config?:{[key:string]:any}):void,
+    payload?:any,
+}
+
+interface SocketList {
+    [key:string]:SocketListItem
+}
 const websocket:Plugin = function ({url, headers,socket}){
-    this.$on = socket.on
-    this.$emit = socket.emit
-    this.$off = socket.off
-    this.$once = socket.once
-    if(/^\/websocket/.test(url) && headers['upgrade'] === 'websocket'){
+    if(!this.$on) this.$on = on
+    if(!this.$emit) this.$emit = emit
+    if(!this.$off) this.$off = off
+    if(!this.$once) this.$once = once
+    this.$socketList = this.$socketList || {}
+    const reg = Object.prototype.toString.call(this.options.websocketUrl) === '[object RegExp]' ? this.options.websocketUrl : /^\/websocket/;
+    if(reg.test(url) && headers['upgrade'] === 'websocket'){
         if (headers['sec-websocket-version'] !== '13') {
             // 判断WebSocket版本是否为13，防止是其他版本，造成兼容错误
             Promise.reject('WebSocket版本错误')
@@ -106,40 +137,93 @@ const websocket:Plugin = function ({url, headers,socket}){
                     ncol.color(function (){this.log(`【websocket】：`).info(`websocket版本->sec-websocket-version：${headers['sec-websocket-version']}`)})
                     ncol.color(function (){this.log(`【websocket】：`).info(`websocket连接成功->客户端密钥：${key}`)})
                 }
-                this.$on("ws-connection", (a)=>{
-                    console.log(1111,a)
+                // 注册监听
+                Object.keys(this.options.websocket || {}).forEach(k=>{
+                    const fn = this.options.websocket[k];
+                    if(Object.prototype.toString.call(fn) === '[object Function]' && !(this.options.websocket[k] as any).isOn){
+                        (this.options.websocket[k] as any).isOn = true;
+                        this.$on(k, (...args)=>{
+                            fn.call(this, ...args)
+                        })
+                    }
                 })
-                this.$emit("ws-connection",456545)
+                // 写入连接缓存
+                const emitData:SocketListItem = {
+                    key,
+                    socket,
+                    send:(payloadData:any, socketTargetKeys:string[] = [],config:any = {})=>{
+                        try {
+                            if(socketTargetKeys.length === 0){
+                                // 全部广播
+                                for(const k in this.$socketList){
+                                    const {socket} = this.$socketList[k];
+                                    socketWrite(socket, payloadData, config)
+                                }
+                            }else {
+                                // 指定广播
+                                socketTargetKeys.forEach(k => {
+                                    if(this.$socketList[k]){
+                                        const {socket} = this.$socketList[k];
+                                        socketWrite(socket, payloadData, config)
+                                    }
+                                })
+                            }
+                        }catch (e){
+                            if(this.options.debug) ncol.error(e)
+                        }
+                    }
+                }
+                this.$socketList[key] = emitData
+                this.$emit("ws-connection", emitData)
                 // 若客户端校验结果正确，在控制台的Network模块可以看到HTTP请求的状态码变为101 Switching Protocols，同时客户端的ws.onopen事件被触发。
                 socket.on('data', (buffer) => {
                     const data = decodeWsFrame(buffer);
+                    this.$emit("ws-data", emitData, data, buffer)
                     // opcode为8，表示客户端发起了断开连接
                     if (data.opcode === 8) {
+                        delete this.$socketList[key]
                         socket.end()  // 与客户端断开连接
                     } else {
                         const payloadDataStr = data.payloadData.toString();
-                        socket.write(encodeWsFrame({
-                            payloadData: payloadDataStr,
-                            opcode:1
-                        }))
+                        let payload:any = {}
+                        try {
+                            payload = JSON.parse(payloadDataStr)
+                        }catch (e) {
+                            payload = {};
+                        }
+                        this.$emit("ws-payload", payloadDataStr)
+                        if(!/^ws-/.test(payload.emit) && payload.emit){
+                            this.$emit(payload.emit, {
+                                ...emitData,
+                                payload
+                            })
+                        }
                     }
                 })
                 socket.on("close",hadError => {
+                    this.$emit("ws-close", emitData)
+                    delete this.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error(hadError)
                     reject("连接已关闭")
                 })
                 socket.on("error",hadError => {
+                    this.$emit("ws-error", emitData)
+                    delete this.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error(hadError)
                     reject("连接错误")
                 })
                 socket.on("timeout",()=> {
+                    this.$emit("ws-timeout", emitData)
+                    delete this.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error("连接超时")
                     reject("连接超时")
                 })
                 socket.on("end",()=> {
+                    this.$emit("ws-end", emitData)
+                    delete this.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error("连接关闭")
                     reject("连接关闭")
@@ -154,10 +238,14 @@ const websocket:Plugin = function ({url, headers,socket}){
 export default websocket
 
 declare module "@wisdom-serve/serve" {
+    interface SocketListItemOptions extends SocketListItem {
+    }
+
     interface AppServeInterface {
-        $on:typeof Socket.prototype.on
-        $emit:typeof Socket.prototype.emit
-        $off:typeof Socket.prototype.off
-        $once:typeof Socket.prototype.once
+        $on?:typeof on
+        $emit?:typeof emit
+        $off?:typeof off
+        $once?:typeof once
+        $socketList?:SocketList
     }
 }
