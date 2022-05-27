@@ -114,6 +114,7 @@ const websocket:Plugin = function ({url, headers,socket}){
     if(!this.$emit) this.$emit = emit
     if(!this.$off) this.$off = off
     if(!this.$once) this.$once = once
+    this.$socketList = this.$socketList || {}
     if(!this.$socketSend) this.$socketSend = (payloadData:any, socketTargetKeys:string[] = [],config:any = {})=>{
         try {
             if(socketTargetKeys.length === 0){
@@ -135,7 +136,6 @@ const websocket:Plugin = function ({url, headers,socket}){
             if(this.options.debug) ncol.error(e)
         }
     }
-    this.$socketList = this.$socketList || {}
     const reg = Object.prototype.toString.call(this.options.websocketUrl) === '[object RegExp]' ? this.options.websocketUrl : /^\/websocket/;
     if(reg.test(url) && headers['upgrade'] === 'websocket'){
         if (headers['sec-websocket-version'] !== '13') {
