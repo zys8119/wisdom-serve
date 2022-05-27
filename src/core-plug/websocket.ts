@@ -1,5 +1,6 @@
 import {Plugin} from "@wisdom-serve/serve/types/type";
 import {createHash} from "crypto";
+import {Socket} from "net";
 import * as ncol from "ncol";
 
 /**
@@ -78,6 +79,10 @@ const encodeWsFrame = (data)=> {
 }
 
 const websocket:Plugin = function ({url, headers,socket}){
+    this.$on = socket.on
+    this.$emit = socket.emit
+    this.$off = socket.off
+    this.$once = socket.once
     if(/^\/websocket/.test(url) && headers['upgrade'] === 'websocket'){
         if (headers['sec-websocket-version'] !== '13') {
             // 判断WebSocket版本是否为13，防止是其他版本，造成兼容错误
@@ -101,6 +106,10 @@ const websocket:Plugin = function ({url, headers,socket}){
                     ncol.color(function (){this.log(`【websocket】：`).info(`websocket版本->sec-websocket-version：${headers['sec-websocket-version']}`)})
                     ncol.color(function (){this.log(`【websocket】：`).info(`websocket连接成功->客户端密钥：${key}`)})
                 }
+                this.$on("ws-connection", (a)=>{
+                    console.log(1111,a)
+                })
+                this.$emit("ws-connection",456545)
                 // 若客户端校验结果正确，在控制台的Network模块可以看到HTTP请求的状态码变为101 Switching Protocols，同时客户端的ws.onopen事件被触发。
                 socket.on('data', (buffer) => {
                     const data = decodeWsFrame(buffer);
@@ -146,5 +155,9 @@ export default websocket
 
 declare module "@wisdom-serve/serve" {
     interface AppServeInterface {
+        $on:typeof Socket.prototype.on
+        $emit:typeof Socket.prototype.emit
+        $off:typeof Socket.prototype.off
+        $once:typeof Socket.prototype.once
     }
 }
