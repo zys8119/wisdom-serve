@@ -138,15 +138,17 @@ const websocket:Plugin = function ({url, headers,socket}){
                     ncol.color(function (){this.log(`【websocket】：`).info(`websocket连接成功->客户端密钥：${key}`)})
                 }
                 // 注册监听
-                Object.keys(this.options.websocket || {}).forEach(k=>{
-                    const fn = this.options.websocket[k];
-                    if(Object.prototype.toString.call(fn) === '[object Function]' && !(this.options.websocket[k] as any).isOn){
-                        (this.options.websocket[k] as any).isOn = true;
-                        this.$on(k, (...args)=>{
-                            fn.call(this, ...args)
-                        })
-                    }
-                })
+                if(Object.prototype.toString.call(this.options.websocket) === '[object Object]'){
+                    Object.keys(this.options.websocket || {}).forEach(k=>{
+                        const fn = this.options.websocket[k];
+                        if(Object.prototype.toString.call(fn) === '[object Function]' && !(this.options.websocket[k] as any).isOn){
+                            (this.options.websocket[k] as any).isOn = true;
+                            this.$on(k, (...args)=>{
+                                fn.call(this, ...args)
+                            })
+                        }
+                    })
+                }
                 // 写入连接缓存
                 const emitData:SocketListItem = {
                     key,
