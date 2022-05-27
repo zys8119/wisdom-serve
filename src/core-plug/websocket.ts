@@ -96,11 +96,13 @@ class myEmitter extends EventEmitter {
 
 const {on, emit, off, once} = new myEmitter()
 
+type SocketSend = (payloadData:any, socketTargetKeys?:string[],config?:{[key:string]:any})=>void
+
 interface SocketListItem {
     [key:string]:any
     key:string,
     socket:Socket,
-    send(payloadData:any, socketTargetKeys?:string[],config?:{[key:string]:any}):void,
+    send:SocketSend,
     payload?:any,
 }
 
@@ -112,6 +114,27 @@ const websocket:Plugin = function ({url, headers,socket}){
     if(!this.$emit) this.$emit = emit
     if(!this.$off) this.$off = off
     if(!this.$once) this.$once = once
+    if(!this.$socketSend) this.$socketSend = (payloadData:any, socketTargetKeys:string[] = [],config:any = {})=>{
+        try {
+            if(socketTargetKeys.length === 0){
+                // 全部广播
+                for(const k in this.$socketList){
+                    const {socket} = this.$socketList[k];
+                    socketWrite(socket, payloadData, config)
+                }
+            }else {
+                // 指定广播
+                socketTargetKeys.forEach(k => {
+                    if(this.$socketList[k]){
+                        const {socket} = this.$socketList[k];
+                        socketWrite(socket, payloadData, config)
+                    }
+                })
+            }
+        }catch (e){
+            if(this.options.debug) ncol.error(e)
+        }
+    }
     this.$socketList = this.$socketList || {}
     const reg = Object.prototype.toString.call(this.options.websocketUrl) === '[object RegExp]' ? this.options.websocketUrl : /^\/websocket/;
     if(reg.test(url) && headers['upgrade'] === 'websocket'){
@@ -150,30 +173,11 @@ const websocket:Plugin = function ({url, headers,socket}){
                     })
                 }
                 // 写入连接缓存
+
                 const emitData:SocketListItem = {
                     key,
                     socket,
-                    send:(payloadData:any, socketTargetKeys:string[] = [],config:any = {})=>{
-                        try {
-                            if(socketTargetKeys.length === 0){
-                                // 全部广播
-                                for(const k in this.$socketList){
-                                    const {socket} = this.$socketList[k];
-                                    socketWrite(socket, payloadData, config)
-                                }
-                            }else {
-                                // 指定广播
-                                socketTargetKeys.forEach(k => {
-                                    if(this.$socketList[k]){
-                                        const {socket} = this.$socketList[k];
-                                        socketWrite(socket, payloadData, config)
-                                    }
-                                })
-                            }
-                        }catch (e){
-                            if(this.options.debug) ncol.error(e)
-                        }
-                    }
+                    send:this.$socketSend
                 }
                 this.$socketList[key] = emitData
                 this.$emit("ws-connection", emitData)
@@ -249,5 +253,6 @@ declare module "@wisdom-serve/serve" {
         $off?:typeof off
         $once?:typeof once
         $socketList?:SocketList
+        $socketSend?:SocketSend
     }
 }
