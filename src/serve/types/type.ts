@@ -120,6 +120,9 @@ export type createRoute = (routerConfig:route)=>route;
 declare module "@wisdom-serve/serve" {
     export const createApp:createApp
     export const createRoute:createRoute
+    export type PluginUse = Plugin
+    export type HttpHeaders = HttpHeadersType
     export interface AppServeInterface {
+
     }
 }

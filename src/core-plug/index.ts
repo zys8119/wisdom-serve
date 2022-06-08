@@ -4,6 +4,7 @@ import bodyData from "./bodyData"
 import mysql from "./mysql"
 import staticPlugin from "./staticPlugin"
 import websocket from "./websocket"
+import corsPlugin from "./corsPlugin"
 export default [
     urlParse,
     helperFun,
@@ -11,4 +12,5 @@ export default [
     mysql,
     staticPlugin,
     websocket,
+    corsPlugin,
 ]
