@@ -1,5 +1,6 @@
 import {Plugin, HttpHeadersType} from "@wisdom-serve/serve/types/type"
 import {merge} from "lodash"
+import * as ncol from "ncol"
 const helperFun:Plugin = function (request, response, next){
     /**
      * 正常返回
@@ -38,6 +39,13 @@ const helperFun:Plugin = function (request, response, next){
                         } : {}
                     ),
                 (options as any).headers || {}))
+        if(this.options.debug){
+            ncol.color(function (){
+                this.successBG(`【响应 ${request.method}】`)
+                    .success("==========")
+                    .success(request.url)
+            })
+        }
         response.end(code === "send" ? data : JSON.stringify({
             code:options.code || code,
             data:options.data || data,

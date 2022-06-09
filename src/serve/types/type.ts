@@ -11,8 +11,8 @@ export interface AppServe extends Partial<AppServeInterface>{
     options?:Partial<AppServeOptions>;
     originOptions?:Partial<AppServeOptions>;
     Plugins?:Array<Plugin>;
-    use(this:AppServe, plugin:Plugin, options?:any):AppServe
-    listen(port?: number): Promise<Server>;
+    use?(this:AppServe, plugin:Plugin, options?:any):AppServe
+    listen?(port?: number): Promise<Server>;
     RouteOptions?: RouteOptions
     $url?: string
     $params?: { [key:string]:any }
