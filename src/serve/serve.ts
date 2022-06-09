@@ -44,12 +44,10 @@ export class createAppServe implements AppServe{
         this.originOptions = options;
         this.hotConfig(true)
         //todo 核心插件注入
-        CorePlug.forEach((pulg:Plugin)=>{
-            this.Plugins.unshift({
-                plugin:pulg,
-                options:get(this.options,"CorePlugConfig",{})[pulg.name]
-            })
-        })
+        this.Plugins = this.Plugins.concat(CorePlug.map((pulg:Plugin)=>({
+            plugin:pulg,
+            options:get(this.options,"CorePlugConfig",{})[pulg.name]
+        })))
         this.Serve = createServer(async (request,response) => {
             try {
                 if(this.options.debug){
@@ -63,90 +61,100 @@ export class createAppServe implements AppServe{
                 //todo 初始化路由
                 this.RouteOptions = await RouteOptionsParse(this.options)
                 //todo 插件执行
-                await Promise.all(this.Plugins.map(async ({plugin, options}:any)=>{
-                    if(types.includes(Object.prototype.toString.call(plugin))){
-                        return await plugin.call(this, request, response, (_any)=>Promise.resolve(_any), options)
-                    }else {
-                        return Promise.reject("插件格式错误！")
-                    }
-                })).then(async ()=> {
-                    let route:RouteOptionsRow = this.RouteOptions[this.$url]
-                    if(!!this.options.query_params && !route){
-                        route = Object.values(this.RouteOptions).find((e:any)=>e.reg && e.reg.test(this.$url)) as any
-                        if(route && route.regName.length > 0){
-                            const params = {};
-                            const paramsMatch = this.$url.match(route.reg)
-                            if(paramsMatch){
-                                route.regName.forEach((n, k)=>{
-                                    params[n] = paramsMatch[k+1]
-                                })
-                            }
-                            this.$params = params;
+                let index = 0;
+                let isErr = false
+                while (index < this.Plugins.length){
+                    try {
+                        const {plugin, options} = this.Plugins[index];
+                        if(types.includes(Object.prototype.toString.call(plugin))){
+                            await plugin.call(this, request, response, (_any)=>Promise.resolve(_any), options)
+                        }else {
+                            throw Error("插件格式错误！")
                         }
+                    }catch (err) {
+                        //todo 插件执行错误
+                        if(err !== false){
+                            ncol.error(err)
+                            errorEmit(response, 404, "Not Found")
+                        }
+                        isErr = true
+                        break
                     }
+                    index +=1 ;
+                }
+                if(isErr) return
+
+                //todo 路由解析
+                let route:RouteOptionsRow = this.RouteOptions[this.$url]
+                if(!!this.options.query_params && !route){
+                    route = Object.values(this.RouteOptions).find((e:any)=>e.reg && e.reg.test(this.$url)) as any
+                    if(route && route.regName.length > 0){
+                        const params = {};
+                        const paramsMatch = this.$url.match(route.reg)
+                        if(paramsMatch){
+                            route.regName.forEach((n, k)=>{
+                                params[n] = paramsMatch[k+1]
+                            })
+                        }
+                        this.$params = params;
+                    }
+                }
 
 
-                    if(route && types.includes(Object.prototype.toString.call(route.controller))){
-                        this.$route = route;
-                        const Parents = route.Parents;
-                        //todo 控制器执行
-                        const controllerArrs = Parents.concat([route]);
-                        const resultMap = {}
-                        let index = 0;
-                        while (index < controllerArrs.length){
-                            const p_route = controllerArrs[index];
-                            //todo 判断请求方式
-                            const method:any = Object.prototype.toString.call(p_route.method) === '[object String]' ? [p_route.method] :
-                                Object.prototype.toString.call(p_route.method) === '[object Array]' ? p_route.method : [];
-                            const isValidMethod = method.length > 0 ? method.map(m=>(m as string).toLowerCase()).indexOf(request.method.toLowerCase()) > -1 : true;
-                            if(!isValidMethod){
-                                errorEmit(response, 500, `请求失败，不支持${request.method}请求！`)
-                                index = controllerArrs.length;
-                                break;
-                            }
-                            //todo 判断请求方式=====end
+                if(route && types.includes(Object.prototype.toString.call(route.controller))){
+                    this.$route = route;
+                    const Parents = route.Parents;
+                    //todo 控制器执行
+                    const controllerArrs = Parents.concat([route]);
+                    const resultMap = {}
+                    let index = 0;
+                    while (index < controllerArrs.length){
+                        const p_route = controllerArrs[index];
+                        //todo 判断请求方式
+                        const method:any = Object.prototype.toString.call(p_route.method) === '[object String]' ? [p_route.method] :
+                            Object.prototype.toString.call(p_route.method) === '[object Array]' ? p_route.method : [];
+                        const isValidMethod = method.length > 0 ? method.map(m=>(m as string).toLowerCase()).indexOf(request.method.toLowerCase()) > -1 : true;
+                        if(!isValidMethod){
+                            errorEmit(response, 500, `请求失败，不支持${request.method}请求！`)
+                            index = controllerArrs.length;
+                            break;
+                        }
+                        //todo 判断请求方式=====end
 
-                            //todo 控制器兼容执行
-                            if(types.includes(Object.prototype.toString.call(p_route.controller))){
+                        //todo 控制器兼容执行
+                        if(types.includes(Object.prototype.toString.call(p_route.controller))){
+                            try {
+                                let result: any = await p_route.controller.call(this, request, response, resultMap)
                                 try {
-                                    let result: any = await p_route.controller.call(this, request, response, resultMap)
-                                    try {
-                                        //todo 兼容懒加载
-                                        const defaultController = (result && Object.prototype.toString.call(result.default) === "[object Function]" ? result.default : new Function);
-                                        const awaitResult = await defaultController.call(this, request, response, resultMap)
-                                        if(awaitResult){
-                                            result = awaitResult;
-                                        }
-                                    }catch (err){
-                                        if(err){
-                                            ncol.error(err)
-                                        }
-                                        errorEmit(response, 500, "控制器内部同步错误")
-                                        index = controllerArrs.length;
-                                        break;
+                                    //todo 兼容懒加载
+                                    const defaultController = (result && Object.prototype.toString.call(result.default) === "[object Function]" ? result.default : new Function);
+                                    const awaitResult = await defaultController.call(this, request, response, resultMap)
+                                    if(awaitResult){
+                                        result = awaitResult;
                                     }
-                                    resultMap[p_route.name || p_route.path] = result
                                 }catch (err){
                                     if(err){
                                         ncol.error(err)
                                     }
-                                    errorEmit(response, 500, "控制器内部错误！")
+                                    errorEmit(response, 500, "控制器内部同步错误")
                                     index = controllerArrs.length;
-                                    continue;
+                                    break;
                                 }
+                                resultMap[p_route.name || p_route.path] = result
+                            }catch (err){
+                                if(err){
+                                    ncol.error(err)
+                                }
+                                errorEmit(response, 500, "控制器内部错误！")
+                                index = controllerArrs.length;
+                                continue;
                             }
-                            index += 1;
                         }
-                    }else {
-                        errorEmit(response, 500, "控制器不存在！")
+                        index += 1;
                     }
-                }).catch((err)=> {
-                    //todo 插件执行错误
-                    if(err !== false){
-                        ncol.error(err)
-                        errorEmit(response, 404, "Not Found")
-                    }
-                })
+                }else {
+                    errorEmit(response, 500, "控制器不存在！")
+                }
             }catch (err){
                 //todo 插件执行错误
                 ncol.error(err)

@@ -37,6 +37,8 @@ export interface AppServeOptions extends ServerOptions {
         port?:number
         LogServeInfo?:boolean // 是否打印服务信息
     },
+    cors?:boolean // 是否允许跨域
+    credentials?:boolean // 是否允许携带cookie
     debug?:boolean // 是否开启调试模式
     query_params?:boolean // 如果为true则解析params参数，同时暴露全局参数 $params , 注： 开启可能会有微量的性能开销
     mysqlAuto?:boolean | RegExp // 是否自动创建数据字段， 当类型为RegExp判断
@@ -75,7 +77,7 @@ export interface Websocket {
      *
      * 1、其key 必须不能以 'ws-' 开头
      * 2、客户端传输的 payload 数据必须是一个 json 字符串格式， 其格式如下：
-        payload = {
+     payload = {
             // emit必传，其值为 自定义 key 名称
             "emit":'keyName',
             // 其他的数据...
@@ -120,9 +122,10 @@ export type createRoute = (routerConfig:route)=>route;
 declare module "@wisdom-serve/serve" {
     export const createApp:createApp
     export const createRoute:createRoute
-    export type PluginUse = Plugin
-    export type HttpHeaders = HttpHeadersType
+    export type Controller = controller;
+    export type PluginUse = Plugin;
+    export type Route = route;
+    export type HttpHeaders = HttpHeadersType;
     export interface AppServeInterface {
-
     }
 }

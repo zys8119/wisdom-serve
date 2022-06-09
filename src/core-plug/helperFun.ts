@@ -23,9 +23,21 @@ const helperFun:Plugin = function (request, response, next){
             default:
                 throw Error("options 数据格式错误")
         }
-        response.writeHead((options as any).statusCode || 200,merge(code === "send" ? {} :{
-            "Content-Type":"application/json; charset=utf-8",
-        }, (options as any).headers || 200))
+        response.writeHead((options as any).statusCode || 200,
+            merge(code === "send" ? {} :
+                    merge(
+                        {
+                            "Content-Type":"application/json; charset=utf-8",
+                        }, this.options.cors ? {
+                            "access-control-allow-origin":request.headers.origin || "*",
+                            "access-control-allow-methods":"*",
+                            "access-control-allow-headers":"content-type,token",
+                        } : {},
+                        this.options.credentials ? {
+                            "access-control-allow-credentials":true as any,
+                        } : {}
+                    ),
+                (options as any).headers || {}))
         response.end(code === "send" ? data : JSON.stringify({
             code:options.code || code,
             data:options.data || data,
@@ -38,7 +50,9 @@ const helperFun:Plugin = function (request, response, next){
      * @param options
      */
     this.$error = (data, options = {})=>{
-        this.$success(data, options, 403)
+        this.$success(data, merge(options,{
+            message:"请求失败！"
+        }), 403)
     }
     /**
      * 任意返回
