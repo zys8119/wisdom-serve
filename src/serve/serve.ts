@@ -12,7 +12,7 @@ import {mergeConfig, RouteOptionsParse, ServeInfo} from "@wisdom-serve/utils";
 import * as ncol from "ncol"
 import CorePlug from "@wisdom-serve/core-plug"
 import {performance} from "perf_hooks"
-import {get, keys, merge} from "lodash"
+import {get, merge} from "lodash"
 
 const errorEmit = (_this, code:number, message:any)=>{
     try {
