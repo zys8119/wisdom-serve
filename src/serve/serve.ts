@@ -12,13 +12,24 @@ import {mergeConfig, RouteOptionsParse, ServeInfo} from "@wisdom-serve/utils";
 import * as ncol from "ncol"
 import CorePlug from "@wisdom-serve/core-plug"
 import {performance} from "perf_hooks"
-import {get, keys} from "lodash"
+import {get, keys, merge} from "lodash"
 
-const errorEmit = (response, code:number, message:any)=>{
+const errorEmit = (_this, code:number, message:any)=>{
     try {
-        if(!response.finished){
-            response.writeHead(code,{"Content-Type": "text/plain; charset=utf-8"})
-            response.end("资源不存在！")
+        if(!_this.response.finished){
+            _this.response.writeHead(code, merge(
+            {
+                    "Content-Type":"application/json; charset=utf-8",
+                }, _this.options.cors ? {
+                    "access-control-allow-origin":_this.request.headers.origin || "*",
+                    "access-control-allow-methods":"*",
+                    "access-control-allow-headers":_this.options.corsHeaders || "*",
+                } : {},
+                _this.options.credentials ? {
+                    "access-control-allow-credentials":true as any,
+                } : {}
+            ))
+            _this.response.end(_this.options.debug ? message : "资源不存在！")
         }
     }catch (e){
         ncol.error(e)
@@ -167,7 +178,7 @@ class requestListener implements AppServe{
                     //todo 插件执行错误
                     if(err !== false){
                         ncol.error(err)
-                        errorEmit(this.response, 404, "Not Found")
+                        errorEmit(this, 404, "Not Found")
                     }
                     isErr = true
                     break
@@ -241,7 +252,7 @@ class requestListener implements AppServe{
                             await fn(controllerArrs[index])
                             init(index+1)
                         }catch (e){
-                            errorEmit(this.response, 500, e)
+                            errorEmit(this, 500, e.message)
                         }
                     }else {
                         this.response.end()
@@ -249,12 +260,12 @@ class requestListener implements AppServe{
                 }
                 init( 0)
             }else {
-                errorEmit(this.response, 500, "控制器不存在！")
+                errorEmit(this, 500, "控制器不存在！")
             }
         }catch (err){
             //todo 插件执行错误
             ncol.error(err)
-            errorEmit(this.response, 404, "Not Found")
+            errorEmit(this, 404, "Not Found")
         }
     }
 }

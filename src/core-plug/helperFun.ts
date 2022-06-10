@@ -32,7 +32,7 @@ const helperFun:Plugin = function (request, response, next){
                         }, this.options.cors ? {
                             "access-control-allow-origin":request.headers.origin || "*",
                             "access-control-allow-methods":"*",
-                            "access-control-allow-headers":"content-type,token",
+                            "access-control-allow-headers":this.options.corsHeaders || "*",
                         } : {},
                         this.options.credentials ? {
                             "access-control-allow-credentials":true as any,

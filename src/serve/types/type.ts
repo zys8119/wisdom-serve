@@ -38,6 +38,7 @@ export interface AppServeOptions extends ServerOptions {
         LogServeInfo?:boolean // 是否打印服务信息
     },
     cors?:boolean // 是否允许跨域
+    corsHeaders?:string // 是否允许跨域header字段
     credentials?:boolean // 是否允许携带cookie
     debug?:boolean // 是否开启调试模式
     query_params?:boolean // 如果为true则解析params参数，同时暴露全局参数 $params , 注： 开启可能会有微量的性能开销
