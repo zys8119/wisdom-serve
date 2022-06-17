@@ -339,18 +339,54 @@ export class $DBModel {
             for (const k in whereConditions){
                 const where = whereConditions[k]
                 if(Object.prototype.toString.call(where) === '[object Object]'){
-                    whereStr += index > 0 ? (where.and === true ? ' AND ' : '') : ''
-                    whereStr += index > 0 ? (where.or === true ? ' OR ' : '') : ''
-                    whereStr += ` ${k} `
-                    if(typeof where.like === 'string'){whereStr += ` like '${where.like}' `}
-                    else if(typeof where.is_null === 'boolean'){whereStr += ` IS NULL `}
-                    else if(typeof where.regexp === 'string'){whereStr += ` REGEXP '${where.regexp}' `}
-                    else if(typeof where.between === 'string'){whereStr += ` BETWEEN '${where.regexp}' `}
-                    else if(typeof where.in === 'string' || Object.prototype.toString.call(where.in) === '[object Array]'){whereStr += ` IN (${Object.prototype.toString.call(where.in) === '[object Array]' ? where.in.join(" , ") : where.in}) `}
-                    else if(typeof where.not_in === 'string'){whereStr += ` NOT IN (${where.not_in}) `}
-                    else if(typeof where.exists === 'string'){whereStr += ` EXISTS (${where.exists}) `}
-                    else if(typeof where.not_exists === 'string'){whereStr += ` NOT EXISTS (${where.not_exists}) `}
-                    else {whereStr += ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `}
+                    const isValid = (k:string, v:string, type?:number)=> {
+                        const isArray = Object.prototype.toString.call(where[k]) === '[object Array]';
+                        const isString = typeof where[k] === 'string';
+                        const isBoolean = typeof where[k] === 'boolean';
+                        const keyName = v || (typeof k === 'string' ? k.toUpperCase() : null)
+                        let str = null
+                        switch (type) {
+                            case 1:
+                                str = index > 0 ? (where[k] === true ? ` ${keyName} ` : '') : ''
+                                break
+                            case 2:
+                                if(isString){ str = ` ${keyName} '${where[k]}' ` }
+                                break
+                            case 3:
+                                if(isBoolean){ str = ` ${keyName} ` }
+                                break
+                            case 4:
+                                str = ` ${k} `
+                                break
+                            case 5:
+                                if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where.in}) ` }
+                                break
+                            case 6:
+                                str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
+                                break
+                        }
+
+                        return str
+                    }
+                    const conditions = [
+                        isValid('like','LIKE', 2),
+                        isValid('is_null','IS NULL', 3),
+                        isValid('regexp','REGEXP', 2),
+                        isValid('between','BETWEEN', 2),
+                        isValid('in','IN',5),
+                        isValid('not_in','NOT IN',5),
+                        isValid('exists','EXISTS',5),
+                        isValid('not_exists','NOT EXISTS',5),
+                        isValid(null,null,6),
+                    ].find(e=>e);
+                    if(conditions){
+                        whereStr +=  [
+                            isValid('and','AND', 1),
+                            isValid('or','OR', 1),
+                            isValid(k,k, 4),
+                        ].filter(e=>e).join(" ");
+                        whereStr += conditions
+                    }
                 }
                 index += 1
             }
