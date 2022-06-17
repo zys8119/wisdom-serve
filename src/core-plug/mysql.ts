@@ -358,13 +358,13 @@ export class $DBModel {
                             str = ` ${k} `
                             break
                         case 5:
-                            if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where.in}) ` }
+                            if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where[k]}) ` }
                             break
                         case 6:
                             str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
                             break
                         case 7:
-                            if(isString || (isArray && where[k].length > 0)){ str =  ` (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where.in}) ` }
+                            if(isString || (isArray && where[k].length > 0)){ str =  ` (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") :  where[k]}) ` }
                             break
                     }
 
@@ -375,7 +375,7 @@ export class $DBModel {
                     isValid('or','OR', 1),
                 ]
                 if(k === '$arrStr'){
-                    whereStr += prefix.concat(isValid(null,null, 7)).join(" ")
+                    whereStr += prefix.concat(isValid('value',null, 7)).join(" ")
                 }else {
                     if(Object.prototype.toString.call(where) === '[object Object]'){
                         const conditions = [
