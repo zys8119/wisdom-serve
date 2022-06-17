@@ -332,7 +332,7 @@ export class $DBModel {
         }
     }
 
-    async getWhere(whereConditions:Partial<whereConditionsItem>){
+    async getWhere(whereConditions:Partial<whereConditions>){
         let whereStr = '';
         let index = 0;
         if(Object.prototype.toString.call(whereConditions) === '[object Object]'){
@@ -572,6 +572,8 @@ export interface Conditions {
 }
 
 export interface whereConditions {
+    // 集合查询
+    $arrStr?: Partial<whereConditionsItem>
     [key:string]: Partial<whereConditionsItem>
 }
 
