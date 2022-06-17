@@ -403,7 +403,7 @@ export class $DBModel {
         return whereStr
     }
 
-    async createSQL(conditions:Partial<Conditions> = {}){
+    async createSQL(conditions:Partial<Conditions> = {}, $arrStr?:boolean){
         const whereStr = await this.getWhere(conditions.where as whereConditions)
         const onStr = await this.getWhere(conditions.on as whereConditions)
         return `
@@ -430,7 +430,7 @@ export class $DBModel {
             ${conditions.right_outer_join ? ` RIGHT OUTER JOIN ${conditions.right_outer_join === true ? '' : conditions.right_outer_join} ` : ''}
             ${conditions.as ? ` ${conditions.as} ` : ''}
             ${conditions.on ? ` on ${typeof conditions.on === "string" ? conditions.on : onStr} ` : ``}
-            ${conditions.where ? ` where ${typeof conditions.where === "string" ? conditions.where : whereStr} ` : ``}
+            ${conditions.where ? ` ${$arrStr ? '' : 'WHERE'} ${typeof conditions.where === "string" ? conditions.where : whereStr} ` : ``}
             ${conditions.having ? ` ${conditions.having} ` : ''}
             ${conditions.distinct ? `DISTINCT ${conditions.distinct} ` : ''}
             ${conditions.desc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} desc ` : ''}
