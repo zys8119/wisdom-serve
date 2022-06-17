@@ -364,6 +364,9 @@ export class $DBModel {
                             case 6:
                                 str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
                                 break
+                            case 7:
+                                if(isString){ str = ` ( ${where[k]} ) `}
+                                break
                         }
 
                         return str
@@ -384,6 +387,7 @@ export class $DBModel {
                             isValid('and','AND', 1),
                             isValid('or','OR', 1),
                             isValid(k,k, 4),
+                            isValid('arrStr',null, 7),
                         ].filter(e=>e).join(" ");
                         whereStr += conditions
                     }
@@ -590,6 +594,9 @@ export interface whereConditionsItem {
     not_in:string
     exists:string
     not_exists:string
+
+    // 集合查询
+    arrStr:string
 }
 
 export interface $DBModelTables {
