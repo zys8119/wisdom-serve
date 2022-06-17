@@ -429,7 +429,7 @@ export class $DBModel {
             ${conditions.left_outer_join ? ` LEFT OUTER JOIN ${conditions.left_outer_join === true ? '' : conditions.left_outer_join} ` : ''}
             ${conditions.right_outer_join ? ` RIGHT OUTER JOIN ${conditions.right_outer_join === true ? '' : conditions.right_outer_join} ` : ''}
             ${conditions.as ? ` ${conditions.as} ` : ''}
-            ${conditions.on ? ` on ${typeof conditions.on === "string" ? conditions.on : onStr} ` : ``}
+            ${conditions.on ? ` ${$arrStr ? '' : 'on'} ${typeof conditions.on === "string" ? conditions.on : onStr} ` : ``}
             ${conditions.where ? ` ${$arrStr ? '' : 'WHERE'} ${typeof conditions.where === "string" ? conditions.where : whereStr} ` : ``}
             ${conditions.having ? ` ${conditions.having} ` : ''}
             ${conditions.distinct ? `DISTINCT ${conditions.distinct} ` : ''}
