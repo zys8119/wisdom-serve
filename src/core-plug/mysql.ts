@@ -338,58 +338,63 @@ export class $DBModel {
         if(Object.prototype.toString.call(whereConditions) === '[object Object]'){
             for (const k in whereConditions){
                 const where = whereConditions[k]
-                if(Object.prototype.toString.call(where) === '[object Object]'){
-                    const isValid = (k:string, v:string, type?:number)=> {
-                        const isArray = Object.prototype.toString.call(where[k]) === '[object Array]';
-                        const isString = typeof where[k] === 'string';
-                        const isBoolean = typeof where[k] === 'boolean';
-                        const keyName = v || (typeof k === 'string' ? k.toUpperCase() : null)
-                        let str = null
-                        switch (type) {
-                            case 1:
-                                str = index > 0 ? (where[k] === true ? ` ${keyName} ` : '') : ''
-                                break
-                            case 2:
-                                if(isString){ str = ` ${keyName} '${where[k]}' ` }
-                                break
-                            case 3:
-                                if(isBoolean){ str = ` ${keyName} ` }
-                                break
-                            case 4:
-                                str = ` ${k} `
-                                break
-                            case 5:
-                                if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where.in}) ` }
-                                break
-                            case 6:
-                                str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
-                                break
-                            case 7:
-                                if(isString){ str = ` ( ${where[k]} ) `}
-                                break
-                        }
-
-                        return str
+                const isValid = (k:string, v:string, type?:number)=> {
+                    const isArray = Object.prototype.toString.call(where[k]) === '[object Array]';
+                    const isString = typeof where[k] === 'string';
+                    const isBoolean = typeof where[k] === 'boolean';
+                    const keyName = v || (typeof k === 'string' ? k.toUpperCase() : null)
+                    let str = null
+                    switch (type) {
+                        case 1:
+                            str = index > 0 ? (where[k] === true ? ` ${keyName} ` : '') : ''
+                            break
+                        case 2:
+                            if(isString){ str = ` ${keyName} '${where[k]}' ` }
+                            break
+                        case 3:
+                            if(isBoolean){ str = ` ${keyName} ` }
+                            break
+                        case 4:
+                            str = ` ${k} `
+                            break
+                        case 5:
+                            if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where.in}) ` }
+                            break
+                        case 6:
+                            str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
+                            break
+                        case 7:
+                            if(isString || (isArray && where[k].length > 0)){ str =  ` (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where.in}) ` }
+                            break
                     }
-                    const conditions = [
-                        isValid('like','LIKE', 2),
-                        isValid('is_null','IS NULL', 3),
-                        isValid('regexp','REGEXP', 2),
-                        isValid('between','BETWEEN', 2),
-                        isValid('in','IN',5),
-                        isValid('not_in','NOT IN',5),
-                        isValid('exists','EXISTS',5),
-                        isValid('not_exists','NOT EXISTS',5),
-                        isValid(null,null,6),
-                    ].find(e=>e);
-                    if(conditions){
-                        whereStr +=  [
-                            isValid('and','AND', 1),
-                            isValid('or','OR', 1),
-                            isValid(k,k, 4),
-                            isValid('arrStr',null, 7),
-                        ].filter(e=>e).join(" ");
-                        whereStr += conditions
+
+                    return str
+                }
+                const prefix = [
+                    isValid('and','AND', 1),
+                    isValid('or','OR', 1),
+                ]
+                if(k === '$arrStr'){
+                    whereStr += prefix.concat(isValid(null,null, 7)).join(" ")
+                }else {
+                    if(Object.prototype.toString.call(where) === '[object Object]'){
+                        const conditions = [
+                            isValid('like','LIKE', 2),
+                            isValid('is_null','IS NULL', 3),
+                            isValid('regexp','REGEXP', 2),
+                            isValid('between','BETWEEN', 2),
+                            isValid('in','IN',5),
+                            isValid('not_in','NOT IN',5),
+                            isValid('exists','EXISTS',5),
+                            isValid('not_exists','NOT EXISTS',5),
+                            isValid(null,null,6),
+                        ].find(e=>e);
+                        if(conditions){
+                            whereStr +=  prefix.concat([
+                                isValid(k,k, 4),
+                            ]).filter(e=>e).join(" ");
+                            whereStr += conditions
+                        }
                     }
                 }
                 index += 1
@@ -594,9 +599,6 @@ export interface whereConditionsItem {
     not_in:string
     exists:string
     not_exists:string
-
-    // 集合查询
-    arrStr:string
 }
 
 export interface $DBModelTables {
