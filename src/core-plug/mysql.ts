@@ -418,7 +418,7 @@ export class $DBModel {
                     (conditions.select as string[]).join(" , ") :
                     conditions.select
         } ` : ''}
-            ${conditions.count ? `SELECT count(*) as  ${conditions.count === true ? 'total' : conditions.count}` : ''}
+            ${conditions.count ? `SELECT count(${Object.prototype.toString.call(conditions.count) === '[object Object]' ? ((conditions.count as any).select || '*') : '*'}) as  ${conditions.count === true ? 'total' : (Object.prototype.toString.call(conditions.count) === '[object Object]' ? ((conditions.count as any).name || '*') : '*')}` : ''}
             ${conditions.from ? ` FROM ${conditions.from === true ? '' : conditions.from} ` : ''}
             ${conditions.gather ? ` ( ${conditions.gather} ) ` : ''}
             ${conditions.gather_alias ? ` ${conditions.gather_alias} ` : ''}
@@ -557,7 +557,7 @@ export interface Conditions {
     update:string | boolean
     delete:string | boolean
     select:string | boolean | string []
-    count:string | boolean // 总数， 默认名称 total
+    count:{select?:string, name:string} | string | boolean  // 总数， 默认名称 total
     from:string | boolean
     join:string | boolean
     inner_join:string | boolean
