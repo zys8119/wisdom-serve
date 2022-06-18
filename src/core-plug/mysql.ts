@@ -3,7 +3,7 @@ import {IncomingMessage, ServerResponse} from "http";
 import {createPool, FieldInfo, MysqlError, Pool, QueryOptions} from "mysql";
 import {sync} from "fast-glob";
 import * as ncol from "ncol"
-import {get} from "lodash"
+import {get, unionWith, isEqual} from "lodash"
 import {v1 as uuidV1} from "uuid"
 export class DBSql{
     private app:AppServe
@@ -86,6 +86,10 @@ export class $Serialize {
         return  data;
     }
 
+    /**
+     * 获取数据
+     * @param args
+     */
     get(...args){
         const isRequired = args[0] === true
         if(isRequired){
@@ -101,6 +105,37 @@ export class $Serialize {
             throw Error(message)
         }
         return value
+    }
+
+    /**
+     * 获取分页格式数据
+     */
+    getPage(data:Array<Array<any> | {
+        results:any[];
+        [key:string]:any
+    }>, {pageNo = 1, pageSize = 15,  no_page = false}:Partial<{
+        // 当前页数
+        pageNo:number | string,
+        // 每页数量
+        pageSize:number | string,
+        // 是否分页
+        no_page:boolean | string,
+    }> = {}):Array<any> | {list:Array<any>, total:number, pageNo:number, pageSize:number}{
+        const list = unionWith(data.reduce<Array<any>>((a,b)=>{
+            return a.concat(Object.prototype.toString.call(b) === '[object Object]' ? (b as any).results : b);
+        }, []), isEqual);
+        if(no_page === true || (typeof no_page === 'string' && no_page.toLowerCase() === "true")){
+            return list
+        }else {
+            pageNo = Number(pageNo)
+            pageSize = Number(pageSize)
+            return {
+                list:list.slice((pageNo - 1) * pageSize, pageSize),
+                total:list.length,
+                pageNo,
+                pageSize
+            }
+        }
     }
 }
 
