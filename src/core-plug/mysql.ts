@@ -5,16 +5,16 @@ import {sync} from "fast-glob";
 import * as ncol from "ncol"
 import {get, unionWith, isEqual} from "lodash"
 import {v1 as uuidV1} from "uuid"
+
 export class DBSql{
     private app:AppServe
     private request:IncomingMessage
     private response:ServerResponse
-    private connection:Pool
     constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
         this.app = app
         this.request = request
         this.response = response
-        this.connection = createPool(app.options.mysqlConfig)
+        global.$mysql_connection = global.$mysql_connection || createPool(app.options.mysqlConfig)
     }
 
     query(options: string | QueryOptions, values?: any):Promise<Partial<{
@@ -23,12 +23,12 @@ export class DBSql{
         fields:FieldInfo[]
     }>>{
         return new Promise((resolve, reject) => {
-            this.connection.query(options, values, (err, results, fields)=>{
+            global.$mysql_connection.query(options, values, (err, results, fields)=>{
                 if(err){
                     reject({err})
                 }else {
                     // 释放连接池
-                    this.connection.getConnection(((err1, connection) => {
+                    global.$mysql_connection.getConnection(((err1, connection) => {
                         try {
                             connection.release()
                         }catch (e) {
