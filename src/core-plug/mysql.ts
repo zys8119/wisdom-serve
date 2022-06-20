@@ -167,7 +167,7 @@ export class $DBModel {
         this.request = request;
         this.response = response;
         this.DBKeyName = DBKeyName || '$DB'
-        sync("DB/*.ts",{cwd:process.cwd(), absolute:true}).forEach(e=> {
+        sync(`${this.DBKeyName.replace(/\$/img,'')}/*.ts`,{cwd:process.cwd(), absolute:true}).forEach(e=> {
             const ctx = require(e)
             for(const k in ctx){
                 if(Object.prototype.toString.call(ctx[k]) === '[object Function]' && !ctx[k].$$is__rewrite && ctx[k].name !== '$$is__rewrite'){
