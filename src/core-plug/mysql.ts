@@ -113,7 +113,7 @@ export class $Serialize {
     getPage(data:Array<Array<any> | {
         results:any[];
         [key:string]:any
-    }>, {pageNo = 1, pageSize = 15,  no_page = false}:Partial<{
+    } | any>, {pageNo = 1, pageSize = 15,  no_page = false}:Partial<{
         // 当前页数
         pageNo:number | string,
         // 每页数量
