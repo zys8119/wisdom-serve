@@ -756,7 +756,7 @@ export type DBModel_columns_config = {
 declare module "@wisdom-serve/serve" {
 
     type ext$DB = {
-        [k in `$DB_$${keyof ExtMysqlConfig}`]:$DBModel
+        [k in `$DB_$${keyof ExtMysqlConfig}`]:DBSql
     };
 
     type ext$DBModel = {
