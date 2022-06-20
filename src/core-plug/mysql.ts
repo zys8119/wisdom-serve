@@ -43,7 +43,7 @@ export class DBSql{
 }
 
 export type SerializeDef = {
-    [key:string]:[string | ((data:any)=>any)] | [string | ((data:any)=>any), any] | boolean
+    [key:string]:[string | ((data:any, value:any)=>any)] | [string | ((data:any, value:any)=>any), any] | boolean
 }
 
 export class $Serialize {
@@ -68,7 +68,7 @@ export class $Serialize {
             for(const k in defMap){
                 if(Object.prototype.toString.call(defMap[k]) === '[object Array]'){
                     if(Object.prototype.toString.call(defMap[k][0]) === '[object Function]'){
-                        data[k] = (defMap[k][0] as any)(data) as any
+                        data[k] = (defMap[k][0] as any)(data, data[k]) as any
                     }else {
                         data[k] = get(data, defMap[k][0] as string, defMap[k][1])
                     }
