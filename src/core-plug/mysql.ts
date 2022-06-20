@@ -328,7 +328,10 @@ export class $DBModel {
         `, "更新表信息", tableName)
     }
 
-    async runSql(sql, message?:string|boolean, tableName?:string){
+    async runSql(sql, message?:string|boolean, tableName?:string):Promise<{
+        results:any[],
+        fields:any[]
+    }>{
         try {
             if(typeof sql === "string"){
                 // 删除不必要的空字符
@@ -358,7 +361,7 @@ export class $DBModel {
                 })
                 console.log("=====================================================================")
             }
-            return res
+            return res as any
         }catch (err){
             ncol.error(err.err.message)
             ncol.error(err.err.sql+';')
