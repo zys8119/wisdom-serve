@@ -42,6 +42,9 @@ export class DBSql{
     }
 }
 
+export type SerializeDef = {
+    [key:string]:[string | ((data:any)=>any)] | [string | ((data:any)=>any), any] | boolean
+}
 
 export class $Serialize {
     app:AppServe
@@ -58,9 +61,7 @@ export class $Serialize {
      * @param data
      * @param defMap
      */
-    def(data:any, defMap:{
-        [key:string]:[string | ((data:any)=>any)] | [string | ((data:any)=>any), any] | boolean
-    } = {}, excludeReg?:RegExp):any{
+    def(data:any, defMap:SerializeDef = {}, excludeReg?:RegExp):any{
         if(Object.prototype.toString.call(data) === '[object Array]'){
             return data.map(d=>this.def(d, defMap, excludeReg))
         } else if(Object.prototype.toString.call(data) === '[object Object]'){
@@ -113,17 +114,30 @@ export class $Serialize {
     getPage(data:Array<Array<any> | {
         results:any[];
         [key:string]:any
-    } | any>, {pageNo = 1, pageSize = 15,  no_page = false}:Partial<{
+    } | any>, {
+                pageNo = 1,
+                pageSize = 15,
+                no_page = false,
+                defMap,
+                excludeReg = null,
+            }:Partial<{
         // 当前页数
         pageNo:number | string,
         // 每页数量
         pageSize:number | string,
         // 是否分页
         no_page:boolean | string,
+        // defMap
+        defMap:SerializeDef,
+        // excludeReg
+        excludeReg:RegExp
     }> = {}):Array<any> | {list:Array<any>, total:number, pageNo:number, pageSize:number}{
-        const list = unionWith(data.reduce<Array<any>>((a,b)=>{
+        let list = unionWith(data.reduce<Array<any>>((a,b)=>{
             return a.concat(Object.prototype.toString.call(b) === '[object Object]' ? (b as any).results : b);
         }, []), isEqual);
+        if(defMap || excludeReg){
+            list = this.def(list, defMap || {}, excludeReg)
+        }
         if(no_page === true || (typeof no_page === 'string' && no_page.toLowerCase() === "true")){
             return list
         }else {
