@@ -1,6 +1,6 @@
-import {AppServe, Plugin} from "@wisdom-serve/serve/types/type";
+import {AppServe, Plugin, ExtMysqlConfig} from "@wisdom-serve/serve/types/type";
 import {IncomingMessage, ServerResponse} from "http";
-import {createPool, FieldInfo, MysqlError, Pool, QueryOptions} from "mysql";
+import {createPool, FieldInfo, MysqlError, Pool, PoolConfig, QueryOptions} from "mysql";
 import {sync} from "fast-glob";
 import * as ncol from "ncol"
 import {get, unionWith, isEqual} from "lodash"
@@ -10,11 +10,13 @@ export class DBSql{
     private app:AppServe
     private request:IncomingMessage
     private response:ServerResponse
-    constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
+    public globalKeyName:string
+    constructor(app:AppServe, request:IncomingMessage, response:ServerResponse, keyName?:string, poolConfig?:PoolConfig) {
         this.app = app
         this.request = request
         this.response = response
-        global.$mysql_connection = global.$mysql_connection || createPool(app.options.mysqlConfig)
+        this.globalKeyName = `$mysql_connection_${keyName || ''}`
+        global[this.globalKeyName] = global[this.globalKeyName] || createPool(poolConfig || app.options.mysqlConfig)
     }
 
     query(options: string | QueryOptions, values?: any):Promise<Partial<{
@@ -23,12 +25,12 @@ export class DBSql{
         fields:FieldInfo[]
     }>>{
         return new Promise((resolve, reject) => {
-            global.$mysql_connection.query(options, values, (err, results, fields)=>{
+            global[this.globalKeyName].query(options, values, (err, results, fields)=>{
                 if(err){
                     reject({err})
                 }else {
                     // 释放连接池
-                    global.$mysql_connection.getConnection(((err1, connection) => {
+                    global[this.globalKeyName].getConnection(((err1, connection) => {
                         try {
                             connection.release()
                         }catch (e) {
@@ -159,10 +161,12 @@ export class $DBModel {
     request:IncomingMessage
     response:ServerResponse
     outSql:boolean
-    constructor(app:AppServe, request:IncomingMessage, response:ServerResponse) {
+    DBKeyName:string
+    constructor(app:AppServe, request:IncomingMessage, response:ServerResponse,DBKeyName?:string) {
         this.app = app;
         this.request = request;
         this.response = response;
+        this.DBKeyName = DBKeyName || '$DB'
         sync("DB/*.ts",{cwd:process.cwd(), absolute:true}).forEach(e=> {
             const ctx = require(e)
             for(const k in ctx){
@@ -361,7 +365,7 @@ export class $DBModel {
                 });
             }
             // 查询
-            const res = await this.app.$DB.query(sql)
+            const res = await this.app[this.DBKeyName].query(sql)
             if(this.app.options.debug){
                 ncol.color(function (){
                     let _this = this.success('【SQL】执行成功：');
@@ -566,11 +570,20 @@ export const def = (fn:(options?:{
     return fn
 }
 
+
+
 const mysql:Plugin = function (request, response){
     return new Promise<void>(resolve => {
         this.$DB = new DBSql(this, request, response);
         this.$DBModel = new $DBModel(this, request, response);
         this.$Serialize = new $Serialize(this, request, response);
+        if(Object.prototype.toString.call(this.options.extMysqlConfig) === '[object Object]'){
+            for(const k in this.options.extMysqlConfig){
+                const keyName = '$DB_$'+k;
+                this[keyName] = new DBSql(this, request, response, keyName, this.options.extMysqlConfig[k]);
+                this['$DBModel_$'+k] = new $DBModel(this, request, response, keyName);
+            }
+        }
         resolve()
     })
 }
@@ -740,9 +753,16 @@ export type DBModel_columns_config = {
     longblob:number| boolean // 0-4 294 967 295字节	二进制形式的极大文本数据
     longtext:number| boolean // 0-4 294 967 295字节	极大文本数据
 }
-
 declare module "@wisdom-serve/serve" {
-    interface AppServeInterface {
+
+    type ext$DB = {
+        [k in `$DB_$${keyof ExtMysqlConfig}`]:$DBModel
+    };
+
+    type ext$DBModel = {
+        [k in `$DBModel_$${keyof ExtMysqlConfig}`]:$DBModel
+    };
+    interface AppServeInterface extends ext$DB, ext$DBModel{
         $DB:DBSql
         $DBModel:$DBModel
         $Serialize:$Serialize

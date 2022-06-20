@@ -30,6 +30,13 @@ export type RouteOptionsExtends = {
     reg?:RegExp
     regName?:string[]
 }
+export type MysqlConfig = Partial<PoolConfig> & {
+    [key:string]:any
+}
+export type ExtMysqlConfig = {
+    // 其他数据库配置
+    // OtherDatabaseConfig:MysqlConfig
+}
 
 export interface AppServeOptions extends ServerOptions {
     serve?:{
@@ -43,9 +50,9 @@ export interface AppServeOptions extends ServerOptions {
     debug?:boolean // 是否开启调试模式
     query_params?:boolean // 如果为true则解析params参数，同时暴露全局参数 $params , 注： 开启可能会有微量的性能开销
     mysqlAuto?:boolean | RegExp // 是否自动创建数据字段， 当类型为RegExp判断
-    mysqlConfig?:Partial<PoolConfig> & {
-        [key:string]:any
-    },
+    mysqlConfig?:MysqlConfig,
+    // 多数据库扩展, 可以配置多个数据库
+    extMysqlConfig?:ExtMysqlConfig
     route?:AppServeOptionsRoute
     // 核心插件配置
     CorePlugConfig?:{
