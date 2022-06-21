@@ -167,7 +167,8 @@ export class $DBModel {
         this.request = request;
         this.response = response;
         this.DBKeyName = DBKeyName || '$DB'
-        sync(`${this.DBKeyName.replace(/\$/img,'')}/*.ts`,{cwd:process.cwd(), absolute:true}).forEach(e=> {
+        const dirName = this.DBKeyName.replace(/\$/img, "")
+        sync(`${dirName}/*.ts`,{cwd:process.cwd(), absolute:true}).forEach(e=> {
             const ctx = require(e)
             for(const k in ctx){
                 if(Object.prototype.toString.call(ctx[k]) === '[object Function]' && !ctx[k].$$is__rewrite && ctx[k].name !== '$$is__rewrite'){
@@ -231,7 +232,16 @@ export class $DBModel {
                 },
             }
             // 自动同步model数据库配置
-            const mysqlAuto:any = app.options.mysqlAuto
+            let mysqlAuto:any = app.options.mysqlAuto
+            if(Object.prototype.toString.call(mysqlAuto) === '[object Function]'){
+                mysqlAuto = mysqlAuto.call(this, {
+                    dirName,
+                    app,
+                    request,
+                    response,
+                    DBKeyName,
+                })
+            }
             if(mysqlAuto === true || (Object.prototype.toString.call(mysqlAuto) === '[object RegExp]' && mysqlAuto.test(request.url))){
                 this.runMysqlModel(info)
             }
@@ -756,7 +766,7 @@ export type DBModel_columns_config = {
 declare module "@wisdom-serve/serve" {
 
     type ext$DB = {
-        [k in `$DB_$${keyof ExtMysqlConfig}`]:DBSql
+        [k in `$DB_$${keyof ExtMysqlConfig}`]:$DBModel
     };
 
     type ext$DBModel = {
