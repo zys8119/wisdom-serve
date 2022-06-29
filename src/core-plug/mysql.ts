@@ -432,6 +432,11 @@ export class $DBModel {
                         case 7:
                             if(isString || (isArray && where[k].length > 0)){ str =  ` (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") :  where[k]}) ` }
                             break
+                        case 8:
+                            if(isString || (isArray && where[k].length > 0)){
+                                str =  `${keyName} ${isArray ? where[k].map(e=>`'${e}'`).join(" AND ") :  `'${where[k]}'`} `
+                            }
+                            break
                     }
 
                     return str
@@ -447,8 +452,9 @@ export class $DBModel {
                         const conditions = [
                             isValid('like','LIKE', 2),
                             isValid('is_null','IS NULL', 3),
+                            isValid('is_not_null','IS NOT NULL', 3),
                             isValid('regexp','REGEXP', 2),
-                            isValid('between','BETWEEN', 2),
+                            isValid('between','BETWEEN', 8),
                             isValid('in','IN',5),
                             isValid('not_in','NOT IN',5),
                             isValid('exists','EXISTS',5),
@@ -499,6 +505,7 @@ export class $DBModel {
             ${conditions.where ? ` ${$arrStr ? '' : 'WHERE'} ${typeof conditions.where === "string" ? conditions.where : whereStr} ` : ``}
             ${conditions.having ? ` ${conditions.having} ` : ''}
             ${conditions.distinct ? `DISTINCT ${conditions.distinct} ` : ''}
+            ${conditions.groupBy ? ` GROUP BY ${conditions.groupBy} ` : ''}
             ${conditions.desc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} desc ` : ''}
             ${conditions.asc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} asc ` : ''}
             ${conditions.limit ? ` limit ${conditions.limit.length === 2 ? ` ${conditions.limit[0]} , ${conditions.limit[1]} ` : conditions.limit[0]} ` : ''}
@@ -644,6 +651,7 @@ export interface Conditions {
     gather:string
     // 集合别名
     gather_alias:string
+    groupBy:string
 }
 
 export interface whereConditions {
@@ -664,18 +672,20 @@ export interface whereConditionsItem {
     // 模糊查询
     like: string
     // 区域查询
-    between: string
-    // 不是null
+    between: any | any[]
+    // 是null
     is_null: boolean
+    // 不是null
+    is_not_null: boolean
     // 正则查询
     regexp: string
     // 对应key值的运算符，例如：=、>、<、>=、<=
     type:string
     // 子查询
     in:string | any[]
-    not_in:string
-    exists:string
-    not_exists:string
+    not_in:string | any[]
+    exists:string | any[]
+    not_exists:string | any[]
 }
 
 export interface $DBModelTables {
