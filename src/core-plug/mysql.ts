@@ -404,51 +404,51 @@ export class $DBModel {
         if(Object.prototype.toString.call(whereConditions) === '[object Object]'){
             for (const k in whereConditions){
                 const where = whereConditions[k]
-                const isValid = (k:string, v:string, type?:number)=> {
-                    const isArray = Object.prototype.toString.call(where[k]) === '[object Array]';
-                    const isString = typeof where[k] === 'string';
-                    const isBoolean = typeof where[k] === 'boolean';
-                    const keyName = v || (typeof k === 'string' ? k.toUpperCase() : null)
-                    let str = null
-                    switch (type) {
-                        case 1:
-                            str = index > 0 ? (where[k] === true ? ` ${keyName} ` : '') : ''
-                            break
-                        case 2:
-                            if(isString){ str = ` ${keyName} '${where[k]}' ` }
-                            break
-                        case 3:
-                            if(isBoolean){ str = ` ${keyName} ` }
-                            break
-                        case 4:
-                            str = ` ${k} `
-                            break
-                        case 5:
-                            if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where[k]}) ` }
-                            break
-                        case 6:
-                            str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
-                            break
-                        case 7:
-                            if(isString || (isArray && where[k].length > 0)){ str =  ` (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") :  where[k]}) ` }
-                            break
-                        case 8:
-                            if(isString || (isArray && where[k].length > 0)){
-                                str =  `${keyName} ${isArray ? where[k].map(e=>`'${e}'`).join(" AND ") :  `'${where[k]}'`} `
-                            }
-                            break
-                    }
+                if(Object.prototype.toString.call(where) === '[object Object]'){
+                    const isValid = (k:string, v:string, type?:number)=> {
+                        const isArray = Object.prototype.toString.call(where[k]) === '[object Array]';
+                        const isString = typeof where[k] === 'string';
+                        const isBoolean = typeof where[k] === 'boolean';
+                        const keyName = v || (typeof k === 'string' ? k.toUpperCase() : null)
+                        let str = null
+                        switch (type) {
+                            case 1:
+                                str = index > 0 ? (where[k] === true ? ` ${keyName} ` : '') : ''
+                                break
+                            case 2:
+                                if(isString){ str = ` ${keyName} '${where[k]}' ` }
+                                break
+                            case 3:
+                                if(isBoolean){ str = ` ${keyName} ` }
+                                break
+                            case 4:
+                                str = ` ${k} `
+                                break
+                            case 5:
+                                if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where[k]}) ` }
+                                break
+                            case 6:
+                                str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
+                                break
+                            case 7:
+                                if(isString || (isArray && where[k].length > 0)){ str =  ` (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") :  where[k]}) ` }
+                                break
+                            case 8:
+                                if(isString || (isArray && where[k].length > 0)){
+                                    str =  `${keyName} ${isArray ? where[k].map(e=>`'${e}'`).join(" AND ") :  `'${where[k]}'`} `
+                                }
+                                break
+                        }
 
-                    return str
-                }
-                const prefix = [
-                    isValid('and','AND', 1),
-                    isValid('or','OR', 1),
-                ]
-                if(k === '$arrStr'){
-                    whereStr += prefix.concat(isValid('value',null, 7)).join(" ")
-                }else {
-                    if(Object.prototype.toString.call(where) === '[object Object]'){
+                        return str
+                    }
+                    const prefix = [
+                        isValid('and','AND', 1),
+                        isValid('or','OR', 1),
+                    ]
+                    if(k === '$arrStr'){
+                        whereStr += prefix.concat(isValid('value',null, 7)).join(" ")
+                    }else {
                         const conditions = [
                             isValid('like','LIKE', 2),
                             isValid('is_null','IS NULL', 3),
