@@ -124,6 +124,7 @@ export class $Serialize {
                 excludeReg = null,
                 mapData = null,
                 reduce = null,
+                reduceInitData = null,
             }:Partial<{
         // 当前页数
         pageNo:number | string,
@@ -139,6 +140,7 @@ export class $Serialize {
         mapData(data:any):any
         // reduce
         reduce(previousValue: any, currentValue:any, currentIndex: number, array: any[]):any;
+        reduceInitData:any;
     }> = {}):Array<any> | {list:Array<any>, total:number, pageNo:number, pageSize:number}{
         let list = unionWith(data.reduce<Array<any>>((a,b)=>{
             return a.concat(Object.prototype.toString.call(b) === '[object Object]' ? (b as any).results : b);
@@ -151,7 +153,7 @@ export class $Serialize {
         }
         if(no_page === true || (typeof no_page === 'string' && no_page.toLowerCase() === "true")){
             if(reduce){
-                list = list.reduce(reduce)
+                list = list.reduce(reduce, reduceInitData)
             }
             return list
         }else {
@@ -160,7 +162,7 @@ export class $Serialize {
             const total = list.length
             list = list.slice((pageNo - 1) * pageSize, pageSize)
             if(reduce){
-                list = list.reduce(reduce)
+                list = list.reduce(reduce, reduceInitData)
             }
             return {
                 list,
