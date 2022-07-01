@@ -159,7 +159,6 @@ export class $Serialize {
         if(no_page === true || (typeof no_page === 'string' && no_page.toLowerCase() === "true")){
             if(reduce){
                 list = list.reduce(reduce, reduceInitData)
-                console.log(list, 888, reduceInitData, reduce.toString())
             }
             return list
         }else {
