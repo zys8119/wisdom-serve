@@ -157,13 +157,14 @@ export class $Serialize {
         }else {
             pageNo = Number(pageNo)
             pageSize = Number(pageSize)
+            const total = list.length
             list = list.slice((pageNo - 1) * pageSize, pageSize)
             if(reduce){
                 list = list.reduce(reduce)
             }
             return {
                 list,
-                total:list.length,
+                total,
                 pageNo,
                 pageSize
             }
