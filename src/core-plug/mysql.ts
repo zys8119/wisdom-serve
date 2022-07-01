@@ -518,7 +518,16 @@ export class $DBModel {
     }
 
     async get(tableName, conditions:Partial<Conditions> = {}, isExists?:boolean){
-        const {results} = await this.runSql(`SELECT * from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName)
+        const select = conditions.select === true ?
+            '*' :
+            Object.prototype.toString.call(conditions.select) === '[object Array]' ?
+                (conditions.select as string[]).join(" , ") :
+                (conditions.select || "*")
+
+        if(conditions.select){
+            delete conditions.select
+        }
+        const {results} = await this.runSql(`SELECT ${select} from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName)
         if(isExists){
             return results.length > 0;
         }
