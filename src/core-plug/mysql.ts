@@ -125,7 +125,7 @@ export class $Serialize {
                 mapData = null,
                 reduce = null,
                 reduceInitData = null,
-                is_equal = null,
+                is_equal = true,
             }:Partial<{
         // 当前页数
         pageNo:number | string,
