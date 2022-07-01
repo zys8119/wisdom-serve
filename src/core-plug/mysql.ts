@@ -137,14 +137,8 @@ export class $Serialize {
         excludeReg:RegExp
         // mapData
         mapData(data:any):any
-        reduce(callbackfn: (previousValue: any, currentValue:any, currentIndex: number, array: any[]) => any):any;
-        reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue: any):any;
-        /**
-         * Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
-         * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
-         * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
-         */
-        reduce<U>(callbackfn: (previousValue: U, currentValue: any, currentIndex: number, array: any[]) => U, initialValue: U): U;
+        // reduce
+        reduce(previousValue: any, currentValue:any, currentIndex: number, array: any[]):any;
     }> = {}):Array<any> | {list:Array<any>, total:number, pageNo:number, pageSize:number}{
         let list = unionWith(data.reduce<Array<any>>((a,b)=>{
             return a.concat(Object.prototype.toString.call(b) === '[object Object]' ? (b as any).results : b);
