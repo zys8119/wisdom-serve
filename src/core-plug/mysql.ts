@@ -149,16 +149,20 @@ export class $Serialize {
         if(mapData){
             list = list.map(mapData)
         }
-        if(reduce){
-            list = list.reduce(reduce)
-        }
         if(no_page === true || (typeof no_page === 'string' && no_page.toLowerCase() === "true")){
+            if(reduce){
+                list = list.reduce(reduce)
+            }
             return list
         }else {
             pageNo = Number(pageNo)
             pageSize = Number(pageSize)
+            list = list.slice((pageNo - 1) * pageSize, pageSize)
+            if(reduce){
+                list = list.reduce(reduce)
+            }
             return {
-                list:list.slice((pageNo - 1) * pageSize, pageSize),
+                list,
                 total:list.length,
                 pageNo,
                 pageSize
