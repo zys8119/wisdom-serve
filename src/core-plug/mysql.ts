@@ -530,8 +530,8 @@ export class $DBModel {
             ${conditions.having ? ` ${conditions.having} ` : ''}
             ${conditions.distinct ? `DISTINCT ${conditions.distinct} ` : ''}
             ${conditions.groupBy ? ` GROUP BY ${conditions.groupBy} ` : ''}
-            ${conditions.desc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} desc ` : ''}
-            ${conditions.asc ? ` order by ${conditions.desc.map(e=>`'${e}'`).join()} asc ` : ''}
+            ${conditions.desc ? ` order by ${conditions.desc.join()} desc ` : ''}
+            ${conditions.asc ? ` order by ${conditions.desc.join()} asc ` : ''}
             ${conditions.limit ? ` limit ${conditions.limit.length === 2 ? ` ${conditions.limit[0]} , ${conditions.limit[1]} ` : conditions.limit[0]} ` : ''}
         `
     }
