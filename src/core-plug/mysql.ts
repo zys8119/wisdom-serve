@@ -165,7 +165,8 @@ export class $Serialize {
             pageNo = Number(pageNo)
             pageSize = Number(pageSize)
             const total = list.length
-            list = list.slice((pageNo - 1) * pageSize, pageSize)
+            const startIndex = (pageNo - 1) * pageSize
+            list = list.slice(startIndex, startIndex+pageSize)
             if(reduce){
                 list = list.reduce(reduce, reduceInitData)
             }
