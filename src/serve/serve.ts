@@ -7,7 +7,8 @@ import {
 } from "./types/type"
 import {createServer, IncomingMessage, Server, ServerResponse} from "http"
 import {resolve} from "path"
-import {watch, existsSync} from "fs"
+import {existsSync} from "fs"
+import watch from "node-watch"
 import {mergeConfig, RouteOptionsParse, ServeInfo} from "@wisdom-serve/utils";
 import * as ncol from "ncol"
 import CorePlug from "@wisdom-serve/core-plug"
@@ -18,7 +19,7 @@ const errorEmit = (_this, code:number, message:any)=>{
     try {
         if(!_this.response.finished){
             _this.response.writeHead(code, merge(
-            {
+                {
                     "Content-Type":"application/json; charset=utf-8",
                 }, _this.options.cors ? {
                     "access-control-allow-origin":_this.request.headers.origin || "*",
@@ -54,7 +55,6 @@ export class createAppServe implements AppServe{
     $url:string
     $params = {}
     $route
-    $query
     constructor(options?:Partial<AppServeOptions>) {
         this.originOptions = options;
         this.hotConfig(true)
