@@ -120,6 +120,7 @@ export class $Serialize {
                 pageNo = 1,
                 pageSize = 15,
                 no_page = false,
+                total,
                 defMap,
                 excludeReg = null,
                 mapData = null,
@@ -133,6 +134,8 @@ export class $Serialize {
         pageSize:number | string,
         // 是否分页
         no_page:boolean | string,
+        // 总数
+        total:number,
         // defMap
         defMap:SerializeDef,
         // excludeReg
@@ -147,6 +150,7 @@ export class $Serialize {
         let list = data.reduce<Array<any>>((a,b)=>{
             return a.concat(Object.prototype.toString.call(b) === '[object Object]' ? (b as any).results : b);
         }, []);
+        const total_index = Object.prototype.toString.call(total) === '[object Number]' ? total : list.length
         if(is_equal === true){
             list = unionWith(list, isEqual)
         }
@@ -164,7 +168,6 @@ export class $Serialize {
         }else {
             pageNo = Number(pageNo)
             pageSize = Number(pageSize)
-            const total = list.length
             const startIndex = (pageNo - 1) * pageSize
             list = list.slice(startIndex, startIndex+pageSize)
             if(reduce){
@@ -172,7 +175,7 @@ export class $Serialize {
             }
             return {
                 list,
-                total,
+                total:total_index,
                 pageNo,
                 pageSize
             }
