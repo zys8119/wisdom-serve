@@ -250,3 +250,15 @@ declare module "@wisdom-serve/serve" {
     interface AppServeInterface {
     }
 }
+
+
+declare global {
+    const globalThis:{
+        $on:typeof on
+        $emit:typeof emit
+        $off:typeof off
+        $once:typeof once
+        $socketList:SocketList
+        $socketSend:SocketSend
+    }
+}
