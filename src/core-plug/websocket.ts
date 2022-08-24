@@ -110,24 +110,24 @@ interface SocketList {
     [key:string]:SocketListItem
 }
 const websocket:Plugin = function ({url, headers,socket}){
-    if(!this.$on) this.$on = on
-    if(!this.$emit) this.$emit = emit
-    if(!this.$off) this.$off = off
-    if(!this.$once) this.$once = once
-    this.$socketList = this.$socketList || {}
-    if(!this.$socketSend) this.$socketSend = (payloadData:any, socketTargetKeys:string[] = [],config:any = {})=>{
+    if(!global.$on) global.$on = on
+    if(!global.$emit) global.$emit = emit
+    if(!global.$off) global.$off = off
+    if(!global.$once) global.$once = once
+    global.$socketList = global.$socketList || {}
+    if(!global.$socketSend) global.$socketSend = (payloadData:any, socketTargetKeys:string[] = [],config:any = {})=>{
         try {
             if(socketTargetKeys.length === 0){
                 // 全部广播
-                for(const k in this.$socketList){
-                    const {socket} = this.$socketList[k];
+                for(const k in global.$socketList){
+                    const {socket} = global.$socketList[k];
                     socketWrite(socket, payloadData, config)
                 }
             }else {
                 // 指定广播
                 socketTargetKeys.forEach(k => {
-                    if(this.$socketList[k]){
-                        const {socket} = this.$socketList[k];
+                    if(global.$socketList[k]){
+                        const {socket} = global.$socketList[k];
                         socketWrite(socket, payloadData, config)
                     }
                 })
@@ -166,7 +166,7 @@ const websocket:Plugin = function ({url, headers,socket}){
                         const fn = this.options.websocket[k];
                         if(Object.prototype.toString.call(fn) === '[object Function]' && !(this.options.websocket[k] as any).isOn){
                             (this.options.websocket[k] as any).isOn = true;
-                            this.$on(k, (...args)=>{
+                            global.$on(k, (...args)=>{
                                 fn.call(this, ...args)
                             })
                         }
@@ -177,17 +177,17 @@ const websocket:Plugin = function ({url, headers,socket}){
                 const emitData:SocketListItem = {
                     key,
                     socket,
-                    send:this.$socketSend
+                    send:global.$socketSend
                 }
-                this.$socketList[key] = emitData
-                this.$emit("ws-connection", emitData)
+                global.$socketList[key] = emitData
+                global.$emit("ws-connection", emitData)
                 // 若客户端校验结果正确，在控制台的Network模块可以看到HTTP请求的状态码变为101 Switching Protocols，同时客户端的ws.onopen事件被触发。
                 socket.on('data', (buffer) => {
                     const data = decodeWsFrame(buffer);
-                    this.$emit("ws-data", emitData, data, buffer)
+                    global.$emit("ws-data", emitData, data, buffer)
                     // opcode为8，表示客户端发起了断开连接
                     if (data.opcode === 8) {
-                        delete this.$socketList[key]
+                        delete global.$socketList[key]
                         socket.end()  // 与客户端断开连接
                     } else {
                         const payloadDataStr = data.payloadData.toString();
@@ -197,9 +197,9 @@ const websocket:Plugin = function ({url, headers,socket}){
                         }catch (e) {
                             payload = {};
                         }
-                        this.$emit("ws-payload", payloadDataStr)
+                        global.$emit("ws-payload", payloadDataStr)
                         if(!/^ws-/.test(payload.emit) && payload.emit){
-                            this.$emit(payload.emit, {
+                            global.$emit(payload.emit, {
                                 ...emitData,
                                 payload
                             })
@@ -207,29 +207,29 @@ const websocket:Plugin = function ({url, headers,socket}){
                     }
                 })
                 socket.on("close",hadError => {
-                    this.$emit("ws-close", emitData)
-                    delete this.$socketList[key]
+                    global.$emit("ws-close", emitData)
+                    delete global.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error(hadError)
                     reject("连接已关闭")
                 })
                 socket.on("error",hadError => {
-                    this.$emit("ws-error", emitData)
-                    delete this.$socketList[key]
+                    global.$emit("ws-error", emitData)
+                    delete global.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error(hadError)
                     reject("连接错误")
                 })
                 socket.on("timeout",()=> {
-                    this.$emit("ws-timeout", emitData)
-                    delete this.$socketList[key]
+                    global.$emit("ws-timeout", emitData)
+                    delete global.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error("连接超时")
                     reject("连接超时")
                 })
                 socket.on("end",()=> {
-                    this.$emit("ws-end", emitData)
-                    delete this.$socketList[key]
+                    global.$emit("ws-end", emitData)
+                    delete global.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error("连接关闭")
                     reject("连接关闭")
@@ -248,11 +248,5 @@ declare module "@wisdom-serve/serve" {
     }
 
     interface AppServeInterface {
-        $on?:typeof on
-        $emit?:typeof emit
-        $off?:typeof off
-        $once?:typeof once
-        $socketList?:SocketList
-        $socketSend?:SocketSend
     }
 }
