@@ -183,27 +183,36 @@ const websocket:Plugin = function ({url, headers,socket}){
                 global.$emit("ws-connection", emitData)
                 // 若客户端校验结果正确，在控制台的Network模块可以看到HTTP请求的状态码变为101 Switching Protocols，同时客户端的ws.onopen事件被触发。
                 socket.on('data', (buffer) => {
-                    const data = decodeWsFrame(buffer);
-                    global.$emit("ws-data", emitData, data, buffer)
-                    // opcode为8，表示客户端发起了断开连接
-                    if (data.opcode === 8) {
-                        delete global.$socketList[key]
-                        socket.end()  // 与客户端断开连接
-                    } else {
-                        const payloadDataStr = data.payloadData.toString();
-                        let payload:any = {}
-                        try {
-                            payload = JSON.parse(payloadDataStr)
-                        }catch (e) {
-                            payload = {};
+                    try {
+                        const data = decodeWsFrame(buffer);
+                        global.$emit("ws-data", emitData, data, buffer)
+                        // opcode为8，表示客户端发起了断开连接
+                        if (data.opcode === 8) {
+                            // delete global.$socketList[key]
+                            // socket.end()  // 与客户端断开连接
+                        } else {
+                            let payloadDataStr = '{}';
+                            try {
+                                payloadDataStr = data.payloadData.toString()
+                            }catch (e){
+                                payloadDataStr = '{}';
+                            }
+                            let payload:any = {}
+                            try {
+                                payload = JSON.parse(payloadDataStr)
+                            }catch (e) {
+                                payload = {};
+                            }
+                            global.$emit("ws-payload", payloadDataStr)
+                            if(!/^ws-/.test(payload.emit) && payload.emit){
+                                global.$emit(payload.emit, {
+                                    ...emitData,
+                                    payload
+                                })
+                            }
                         }
-                        global.$emit("ws-payload", payloadDataStr)
-                        if(!/^ws-/.test(payload.emit) && payload.emit){
-                            global.$emit(payload.emit, {
-                                ...emitData,
-                                payload
-                            })
-                        }
+                    }catch (e){
+                        console.log(e)
                     }
                 })
                 socket.on("close",hadError => {
@@ -211,28 +220,28 @@ const websocket:Plugin = function ({url, headers,socket}){
                     delete global.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error(hadError)
-                    reject("连接已关闭")
+                    reject(false)
                 })
                 socket.on("error",hadError => {
                     global.$emit("ws-error", emitData)
                     delete global.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error(hadError)
-                    reject("连接错误")
+                    reject(false)
                 })
                 socket.on("timeout",()=> {
                     global.$emit("ws-timeout", emitData)
                     delete global.$socketList[key]
                     socket.end()
                     if(this.options.debug) ncol.error("连接超时")
-                    reject("连接超时")
+                    reject(false)
                 })
                 socket.on("end",()=> {
                     global.$emit("ws-end", emitData)
-                    delete global.$socketList[key]
-                    socket.end()
+                    // delete global.$socketList[key]
+                    // socket.end()
                     if(this.options.debug) ncol.error("连接关闭")
-                    reject("连接关闭")
+                    reject(false)
                 })
             })
         }
