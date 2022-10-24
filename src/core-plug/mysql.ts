@@ -426,14 +426,14 @@ export class $DBModel {
         }
     }
 
-    async getWhere(whereConditions:Partial<whereConditions>){
+    async getWhere(whereConditions:Partial<whereConditions>, showType1?:boolean){
         let whereStr = '';
         let index = 0;
         if(Object.prototype.toString.call(whereConditions) === '[object Object]'){
-            for (const k in whereConditions){
-                const where = whereConditions[k]
+            for (const whereKeyName in whereConditions){
+                const where = whereConditions[whereKeyName]
                 if(Object.prototype.toString.call(where) === '[object Object]'){
-                    const isValid = (k:string, v:string, type?:number)=> {
+                    const isValid = async (k:string, v:string, type?:number)=> {
                         const isArray = Object.prototype.toString.call(where[k]) === '[object Array]';
                         const isString = typeof where[k] === 'string';
                         const isBoolean = typeof where[k] === 'boolean';
@@ -441,7 +441,7 @@ export class $DBModel {
                         let str = null
                         switch (type) {
                             case 1:
-                                str = index > 0 ? (where[k] === true ? ` ${keyName} ` : '') : ''
+                                str = index > 0 || showType1 ? (where[k] === true ? ` ${keyName} ` : '') : ''
                                 break
                             case 2:
                                 if(isString){ str = ` ${keyName} '${where[k]}' ` }
@@ -450,13 +450,25 @@ export class $DBModel {
                                 if(isBoolean){ str = ` ${keyName} ` }
                                 break
                             case 4:
-                                str = ` ${k} `
+                                if(!where.collection){
+                                    str = ` ${k} `
+                                }
                                 break
                             case 5:
                                 if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where[k]}) ` }
                                 break
                             case 6:
-                                str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
+                                if(where.collection && Object.prototype.toString.call(where.value) === '[object Array]'){
+                                    str =  await Promise.all(where.value.map((e:any)=>{
+                                        return this.getWhere({'<%= alias %>':e}, true)
+                                    }))
+                                    str = str.map((e,k)=>{
+                                        return e.replace(/<%= alias %>/, where.value[k].alias || whereKeyName)
+                                    }).join("")
+                                    str = ` ( ${str} ) `
+                                }else {
+                                    str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
+                                }
                                 break
                             case 7:
                                 if(isString || (isArray && where[k].length > 0)){ str =  ` (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") :  where[k]}) ` }
@@ -471,27 +483,27 @@ export class $DBModel {
                         return str
                     }
                     const prefix = [
-                        isValid('and','AND', 1),
-                        isValid('or','OR', 1),
+                        await isValid('and','AND', 1),
+                        await isValid('or','OR', 1),
                     ]
-                    if(k === '$arrStr'){
-                        whereStr += prefix.concat(isValid('value',null, 7)).join(" ")
+                    if(whereKeyName === '$arrStr'){
+                        whereStr += prefix.concat(await isValid('value',null, 7)).join(" ")
                     }else {
                         const conditions = [
-                            isValid('like','LIKE', 2),
-                            isValid('is_null','IS NULL', 3),
-                            isValid('is_not_null','IS NOT NULL', 3),
-                            isValid('regexp','REGEXP', 2),
-                            isValid('between','BETWEEN', 8),
-                            isValid('in','IN',5),
-                            isValid('not_in','NOT IN',5),
-                            isValid('exists','EXISTS',5),
-                            isValid('not_exists','NOT EXISTS',5),
-                            isValid(null,null,6),
+                            await isValid('like','LIKE', 2),
+                            await isValid('is_null','IS NULL', 3),
+                            await isValid('is_not_null','IS NOT NULL', 3),
+                            await isValid('regexp','REGEXP', 2),
+                            await isValid('between','BETWEEN', 8),
+                            await isValid('in','IN',5),
+                            await isValid('not_in','NOT IN',5),
+                            await isValid('exists','EXISTS',5),
+                            await isValid('not_exists','NOT EXISTS',5),
+                            await isValid(null,null,6),
                         ].find(e=>e);
                         if(conditions){
                             whereStr +=  prefix.concat([
-                                isValid(k,k, 4),
+                                await isValid(where.alias || whereKeyName, whereKeyName, 4),
                             ]).filter(e=>e).join(" ");
                             whereStr += conditions
                         }
@@ -503,7 +515,7 @@ export class $DBModel {
         return whereStr
     }
 
-    async createSQL(conditions:Partial<Conditions> = {}, $arrStr?:boolean){
+    async createSQL(conditions:Partial<Conditions<whereConditionsItem>> = {}, $arrStr?:boolean){
         const whereStr = await this.getWhere(conditions.where as whereConditions)
         const onStr = await this.getWhere(conditions.on as whereConditions)
         return `
@@ -540,12 +552,12 @@ export class $DBModel {
         `
     }
 
-    async delete(tableName, conditions:Partial<Conditions> = {}){
+    async delete(tableName, conditions:Partial<Conditions<whereConditionsItem>> = {}){
         const {results} = await this.runSql(`DELETE from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName)
         return results
     }
 
-    async get(tableName, conditions:Partial<Conditions> = {}, isExists?:boolean){
+    async get(tableName, conditions:Partial<Conditions<whereConditionsItem>> = {}, isExists?:boolean){
         const select = conditions.select === true ?
             '*' :
             Object.prototype.toString.call(conditions.select) === '[object Array]' ?
@@ -591,12 +603,12 @@ export class $DBModel {
         `
     }
 
-    async post(tableName, data = {}, conditions:Partial<Conditions> = {}){
+    async post(tableName, data = {}, conditions:Partial<Conditions<whereConditionsItem>> = {}){
         const {results} = await this.runSql(`INSERT INTO  ${tableName} ` + await this.getPostSql(tableName, data, false), "新增表数据", tableName)
         return results
     }
 
-    async update(tableName, data = {}, conditions:Partial<Conditions> = {}){
+    async update(tableName, data = {}, conditions:Partial<Conditions<whereConditionsItem>> = {}){
         const {results} = await this.runSql(`UPDATE  ${tableName} ` + await this.getPostSql(tableName, data, true) + await this.createSQL(conditions),  "新增表数据", tableName)
         return results
     }
@@ -645,19 +657,19 @@ const mysql:Plugin = function (request, response){
 export default mysql
 
 export interface CreateAPI {
-    get?:Partial<Conditions>
-    delete?:Partial<Conditions>
+    get?:Partial<Conditions<whereConditionsItem>>
+    delete?:Partial<Conditions<whereConditionsItem>>
     post?:Partial<{[key:string]:any}>
     update?:{
         data?:Partial<{[key:string]:any}>,
-        conditions?:Partial<Conditions>
+        conditions?:Partial<Conditions<whereConditionsItem>>
     }
 }
 
-export interface Conditions {
+export interface Conditions<T = any> {
     // 条件查询
-    where:string | whereConditions,
-    on:string | whereConditions
+    where:string | whereConditions<T>,
+    on:string | whereConditions<T>
     // 倒叙
     desc:string [],
     // 正序
@@ -691,19 +703,24 @@ export interface Conditions {
     groupBy:string
 }
 
-export interface whereConditions {
+export interface whereConditions<T = any> {
     // 集合查询
-    $arrStr?: Partial<whereConditionsItem>
-    [key:string]: Partial<whereConditionsItem>
+    $arrStr?: Partial<whereConditionsItem<T>>
+    [key:string]: Partial<whereConditionsItem<T>>
 }
 
-export interface whereConditionsItem {
+export type whereConditionsItem<T = whereConditionsItem<any>> =  {
+    [key:string]:any
     // 并且，从二字段才生效
     and: boolean,
     // 或者，从二字段才生效
     or: boolean,
+    // 对应key别名
+    alias: string
     // 对应key值
-    value: any
+    value: T extends whereConditionsItem ? Array<whereConditionsItem<T>> : T
+    // 是否集合
+    collection:boolean;
     // 对应key源值,即不进行转义
     source: boolean
     // 模糊查询
@@ -734,15 +751,23 @@ export interface $DBModelTablesItem {
     path:string
     ctx:$DBModelTablesCtx
     get?(conditions?:Partial<Conditions>, isExists?:boolean):Promise<any>
+    get?(conditions?:Partial<Conditions<whereConditionsItem>>, isExists?:boolean):Promise<any>
     get?(conditions?:Partial<Conditions>):Promise<any>
+    get?(conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
     get?(outSql?:boolean, conditions?:Partial<Conditions>):Promise<any>
+    get?(outSql?:boolean, conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
     get?(outSql?:boolean, conditions?:Partial<Conditions>, isExists?:boolean):Promise<any>
+    get?(outSql?:boolean, conditions?:Partial<Conditions<whereConditionsItem>>, isExists?:boolean):Promise<any>
     delete?(conditions?:Partial<Conditions>):Promise<any>
+    delete?(conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
     delete?(outSql?:boolean, conditions?:Partial<Conditions>):Promise<any>
+    delete?(outSql?:boolean, conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
     post?(data?:{[key:string]:any}):Promise<any>
     post?(outSql?:boolean, data?:{[key:string]:any}):Promise<any>
     update?(data?:{[key:string]:any}, conditions?:Partial<Conditions>):Promise<any>
+    update?(data?:{[key:string]:any}, conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
     update?(outSql?:boolean, data?:{[key:string]:any}, conditions?:Partial<Conditions>):Promise<any>
+    update?(outSql?:boolean, data?:{[key:string]:any}, conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
     createAPI?(options?: Partial<CreateAPI>):Promise<any>
     createAPI?(outSql?:boolean, options?: Partial<CreateAPI>):Promise<any>
 }
