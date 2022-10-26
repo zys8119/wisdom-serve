@@ -515,7 +515,7 @@ export class $DBModel {
         return whereStr
     }
 
-    async createSQL(conditions:Partial<Conditions<whereConditionsItem>> = {}, $arrStr?:boolean){
+    async createSQL(conditions:Partial<Conditions<ApplicationWhereConditionsItem>> = {}, $arrStr?:boolean){
         const whereStr = await this.getWhere(conditions.where as whereConditions)
         const onStr = await this.getWhere(conditions.on as whereConditions)
         return `
@@ -708,6 +708,8 @@ export interface whereConditions<T = any> {
     $arrStr?: Partial<whereConditionsItem<T>>
     [key:string]: Partial<whereConditionsItem<T>>
 }
+
+export type ApplicationWhereConditionsItem = whereConditionsItem | string | number | boolean | object | null | Array<any>
 
 export type whereConditionsItem<T = whereConditionsItem<any>> =  {
     [key:string]:any
