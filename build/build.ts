@@ -55,4 +55,6 @@ new BuildServe({
     onError(error: Error): Promise<any> | void {
         console.error(error)
     }
-}).compile()
+}).compile().then(()=>{
+    process.exit()
+})
