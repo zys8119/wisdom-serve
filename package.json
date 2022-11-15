@@ -40,6 +40,6 @@
     "eslint": "^8.13.0",
     "eslint-plugin-react": "^7.29.4",
     "javascript-obfuscator": "^4.0.0",
-    "ts-node-build": "^0.1.1"
+    "ts-node-build": "^0.1.2"
   }
 }
