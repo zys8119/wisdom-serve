@@ -3,7 +3,6 @@ import {create as tsNode} from "ts-node"
 import BuildServe from "ts-node-build"
 import {obfuscate} from "javascript-obfuscator";
 new BuildServe({
-    isOutDir:false,
     inputFiles:[
         "!(node_modules|.git|.idea|.DS_Store|dist|build|unit_test)/**/**",
         "!package-lock.json"
