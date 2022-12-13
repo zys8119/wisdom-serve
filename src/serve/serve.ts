@@ -83,19 +83,23 @@ export class createAppServe implements AppServe{
     }
 
     async listenStart({host, port}:{host:string, port:number}):Promise<number>{
-        return new Promise((resolve1, reject) => {
-            const onError = async (e:Error & {code:string})=>{
-                this.Serve.removeListener('error', onError)
-                if(e.code === 'EADDRINUSE'){
+        return new Promise((resolve, reject) => {
+            const onError = (e: Error & { code?: string }) => {
+                if (e.code === 'EADDRINUSE') {
                     console.log(`Port ${port} is in use, trying another one...`)
-                    await this.listenStart({port:port+1, host})
-                }else {
+                    this.Serve.listen(++port, host)
+                } else {
+                    this.Serve.removeListener('error', onError)
                     reject(e)
                 }
             }
+
             this.Serve.on('error', onError)
-            this.Serve.listen({host, port})
-            resolve1(port)
+
+            this.Serve.listen(port, host, () => {
+                this.Serve.removeListener('error', onError)
+                resolve(port)
+            })
         })
     }
 
