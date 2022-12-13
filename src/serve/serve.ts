@@ -114,11 +114,10 @@ export class createAppServe implements AppServe{
         this.options.serve.port = listenPort;
         if(this.options.serve.LogServeInfo){
             ncol.log("Server running at:")
-            console.log(await this.listenStart({
+            ServeInfo.ouinputAddress(await this.listenStart({
                 host:this.options.serve.host,
                 port:listenPort,
             }))
-            ServeInfo.ouinputAddress()
             ncol.info(`ready in ${Math.ceil(performance.now() - global.__vite_start_time)}ms.`);
         }
         return this.Serve
