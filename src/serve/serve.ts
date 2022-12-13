@@ -82,8 +82,24 @@ export class createAppServe implements AppServe{
         return this
     }
 
+    async listenStart({host, port}:{host:string, port:number}):Promise<number>{
+        return new Promise((resolve1, reject) => {
+            const onError = async (e:Error & {code:string})=>{
+                this.Serve.removeListener('error', onError)
+                if(e.code === 'EADDRINUSE'){
+                    console.log(`Port ${port} is in use, trying another one...`)
+                    await this.listenStart({port:port+1, host})
+                }else {
+                    reject(e)
+                }
+            }
+            this.Serve.on('error', onError)
+            this.Serve.listen({host, port})
+            resolve1(port)
+        })
+    }
 
-    listen(port?: number): Promise<Server> {
+    async listen(port?: number): Promise<Server> {
         // 文件监听，实现热更新
         watch(process.cwd(),{
             recursive:true
@@ -96,16 +112,16 @@ export class createAppServe implements AppServe{
         })
         const listenPort = typeof port === "number" ? port : this.options.serve.port;
         this.options.serve.port = listenPort;
-        this.Serve.listen({
-            host:this.options.serve.host,
-            port:listenPort,
-        })
         if(this.options.serve.LogServeInfo){
             ncol.log("Server running at:")
-            ServeInfo.ouinputAddress(listenPort)
+            console.log(await this.listenStart({
+                host:this.options.serve.host,
+                port:listenPort,
+            }))
+            ServeInfo.ouinputAddress()
             ncol.info(`ready in ${Math.ceil(performance.now() - global.__vite_start_time)}ms.`);
         }
-        return Promise.resolve(this.Serve)
+        return this.Serve
     }
 
     /**
