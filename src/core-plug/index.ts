@@ -5,6 +5,7 @@ import mysql from "./mysql"
 import staticPlugin from "./staticPlugin"
 import websocket from "./websocket"
 import corsPlugin from "./corsPlugin"
+import mailerPlugin from "./mailerPlugin"
 export default [
     urlParse,
     helperFun,
@@ -13,4 +14,5 @@ export default [
     staticPlugin,
     websocket,
     corsPlugin,
+    mailerPlugin,
 ]

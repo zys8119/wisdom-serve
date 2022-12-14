@@ -2,6 +2,7 @@ import {IncomingMessage, Server, ServerOptions, ServerResponse} from "http";
 import {AppServeInterface, SocketListItemOptions} from "@wisdom-serve/serve";
 import {HttpHeadersTypeInterface, Method} from "@wisdom-serve/serve/HttpHeaderConfig";
 import {PoolConfig} from "mysql";
+import {Options} from "nodemailer/lib/smtp-transport";
 import * as Buffer from "buffer";
 
 export type Plugin = (this:AppServe & Record<any, any>, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>, options?:any) => Promise<any> | void
@@ -80,6 +81,8 @@ export interface AppServeOptions extends ServerOptions {
     websocketUrl?:RegExp
     // websocket 事件钩子
     websocket?:Partial<Websocket>
+    // 邮件配置
+    mailConfig?:Options
 }
 
 export interface Websocket {

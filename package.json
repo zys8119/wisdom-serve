@@ -36,6 +36,7 @@
     "mysql": "^2.18.1",
     "ncol": "^0.0.7",
     "node-watch": "^0.7.3",
+    "nodemailer": "^6.8.0",
     "ts-node": "^10.7.0",
     "ts-node-build": "^0.1.2",
     "uuid": "^8.3.2"
