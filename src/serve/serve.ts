@@ -179,7 +179,7 @@ class requestListener implements AppServe{
                         .warn(_this.request.url)
                 })
             }
-            const types = ["[object Function]", "[object AsyncFunction]"]
+            const types = ["[object Function]", "[object AsyncFunction]", "[object Promise]"]
             //todo 初始化路由
             this.RouteOptions = await RouteOptionsParse(this.options)
             //todo 插件执行
@@ -222,7 +222,6 @@ class requestListener implements AppServe{
                 }
             }
 
-
             if(route && types.includes(Object.prototype.toString.call(route.controller))){
                 this.$route = route;
                 const Parents = route.Parents;
@@ -242,10 +241,22 @@ class requestListener implements AppServe{
                     //todo 控制器兼容执行
                     if(types.includes(Object.prototype.toString.call(p_route.controller))){
                         try {
+
+                            if(Object.prototype.toString.call(p_route.controller) === "[object Promise]"){
+                                if(Object.prototype.toString.call(await p_route.controller) === '[object Object]'){
+                                    p_route.controller = (await p_route.controller)?.['default'] || p_route.controller
+
+                                }
+                            }
+
                             let result: any = await p_route.controller.call(this, this.request, this.response, resultMap)
+
                             try {
                                 //todo 兼容懒加载
-                                const defaultController = (result && Object.prototype.toString.call(result.default) === "[object Function]" ? result.default : new Function);
+                                let defaultController = new Function;
+                                if(Object.prototype.toString.call(result) === '[object Object]'){
+                                    defaultController = (await result)?.['default']
+                                }
                                 const awaitResult = await defaultController.call(this, this.request, this.response, resultMap)
                                 if(awaitResult){
                                     result = awaitResult;

@@ -133,7 +133,7 @@ export type routeRow = {
 
 export type HttpHeadersType =  HttpHeadersTypeInterface
 
-export type controller = (this:AppServe, req: IncomingMessage, res: ServerResponse, resultMaps:{[key:string]:any}) => void | Promise<any>
+export type controller = ((this:AppServe, req: IncomingMessage, res: ServerResponse, resultMaps:{[key:string]:any}) => void | Promise<any>) | Promise<any>
 
 export type createApp = (options:AppServeOptions)=>AppServe;
 export type createRoute = (routerConfig:route)=>route;
