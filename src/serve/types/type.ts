@@ -4,7 +4,7 @@ import {HttpHeadersTypeInterface, Method} from "@wisdom-serve/serve/HttpHeaderCo
 import {PoolConfig} from "mysql";
 import * as Buffer from "buffer";
 
-export type Plugin = (this:AppServe, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>, options?:any) => Promise<any> | void
+export type Plugin = (this:AppServe & Record<any, any>, request: IncomingMessage, response: ServerResponse, next:(arg?:any)=>Promise<any>, options?:any) => Promise<any> | void
 
 export interface AppServe extends Partial<AppServeInterface>{
     Serve:Server
