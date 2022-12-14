@@ -124,6 +124,7 @@ export type routes = routeRow[]
 export type routeRow = {
     path:string,
     name?:string,
+    funName?:string,
     controller?:controller;
     children?:routes
     method?:Method | Method[];

@@ -240,11 +240,11 @@ class requestListener implements AppServe{
 
                     //todo 控制器兼容执行
                     if(types.includes(Object.prototype.toString.call(p_route.controller))){
+                        const controllerName = p_route.funName || 'default'
                         try {
-
                             if(Object.prototype.toString.call(p_route.controller) === "[object Promise]"){
                                 if(Object.prototype.toString.call(await p_route.controller) === '[object Object]'){
-                                    p_route.controller = (await p_route.controller)?.['default'] || p_route.controller
+                                    p_route.controller = (await p_route.controller)?.[controllerName] || p_route.controller
 
                                 }
                             }
@@ -255,7 +255,7 @@ class requestListener implements AppServe{
                                 //todo 兼容懒加载
                                 let defaultController = new Function;
                                 if(Object.prototype.toString.call(result) === '[object Object]'){
-                                    defaultController = (await result)?.['default']
+                                    defaultController = (await result)?.[controllerName]
                                 }
                                 const awaitResult = await defaultController.call(this, this.request, this.response, resultMap)
                                 if(awaitResult){
