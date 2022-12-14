@@ -1,6 +1,6 @@
 {
   "name": "wisdom-serve",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "node 服务",
   "main": "src/serve/index.ts",
   "scripts": {
@@ -21,21 +21,23 @@
   "dependencies": {
     "@types/lodash": "^4.14.181",
     "@types/mysql": "^2.15.21",
+    "@types/node": "^17.0.24",
     "@types/uuid": "^8.3.4",
-    "@wisdom-serve/core-plug": "workspace:*",
-    "@wisdom-serve/serve": "workspace:*",
-    "@wisdom-serve/utils": "workspace:*",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
+    "@wisdom-serve/core-plug": "workspaces:*",
+    "@wisdom-serve/serve": "workspaces:*",
+    "@wisdom-serve/utils": "workspaces:*",
+    "eslint": "^8.13.0",
+    "eslint-plugin-react": "^7.29.4",
     "fast-glob": "^3.2.11",
+    "javascript-obfuscator": "^4.0.0",
     "lodash": "^4.17.21",
     "mysql": "^2.18.1",
     "ncol": "^0.0.7",
     "node-watch": "^0.7.3",
     "ts-node": "^10.7.0",
-    "uuid": "^8.3.2",
-    "@types/node": "^17.0.24",
-    "@typescript-eslint/eslint-plugin": "^5.19.0",
-    "@typescript-eslint/parser": "^5.19.0",
-    "eslint": "^8.13.0",
-    "eslint-plugin-react": "^7.29.4"
+    "ts-node-build": "^0.1.2",
+    "uuid": "^8.3.2"
   }
 }
