@@ -23,7 +23,7 @@ export default createRoute({
                             return result
                         }
                         result = result + data.choices[0].text
-                        console.log(result)
+                        console.log(data.choices[0].text)
                         return await init(result)
                     }catch (e) {
                         try {
