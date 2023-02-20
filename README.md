@@ -72,3 +72,11 @@ await createCompletion({
 [playground 在线api配置使用演示](https://platform.openai.com/playground) 需要翻墙
 
 [chat 开发文档](https://platform.openai.com/docs/introduction)
+
+## vpn 相关资料
+
+http://front-end.zhijiasoft.com:50201/ 每次使用手动更新，每日流量30G,有效期一天
+
+http://front-end.zhijiasoft.com:50201/clashNode 每日更新， 流量不固定
+
+https://ikuuu.eu/auth/register?code=UI9T  每月50G高速流量， 推荐使用
