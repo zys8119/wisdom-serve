@@ -18,9 +18,8 @@ const createCompletion = async (options:InitOptions= {})=>{
     const {data} = await config.adapter.createCompletion(merge({
         model: "text-davinci-003",
         prompt: config.query ,
-        temperature: 1,
+        temperature: 0,
         top_p: 1,
-        max_tokens:40,
         frequency_penalty: 0,
         presence_penalty: 0,
     } as CreateCompletionRequest, config.createCompletion), merge({
