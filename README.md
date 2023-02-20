@@ -73,10 +73,22 @@ await createCompletion({
 
 [chat 开发文档](https://platform.openai.com/docs/introduction)
 
-## vpn 相关资料
+## vpn 节点相关资料
 
 http://front-end.zhijiasoft.com:50201/ 每次使用手动更新，每日流量30G,有效期一天
 
 http://front-end.zhijiasoft.com:50201/clashNode 每日更新， 流量不固定，包含美国节点
 
 https://ikuuu.eu/auth/register?code=UI9T  每月50G高速流量， 推荐使用，如需要使用，请自行注册
+
+## vpn 相关软件
+
+[二爷翻墙](https://github.com/ugvf2009/Miles) 文章中会介绍每个平台的软件工具
+
+[V2RayN](https://github.com/v2ray/V2RayN)
+
+[v2rayNG](https://github.com/2dust/v2rayNG)
+
+[ClashForAndroid](https://github.com/Kr328/ClashForAndroid)
+
+[clash_for_windows_pkg](https://github.com/Fndroid/clash_for_windows_pkg)
