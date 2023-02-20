@@ -20,9 +20,10 @@ const createCompletion = async (options:InitOptions= {})=>{
         prompt: config.query ,
         temperature: 1,
         top_p: 1,
+        max_tokens:150,
         frequency_penalty: 0,
         presence_penalty: 0,
-    }, config.createCompletion), merge({
+    } as CreateCompletionRequest, config.createCompletion), merge({
         timeout:0,
     }, config.axiosRequest));
     config.callback?.(data)
@@ -42,7 +43,7 @@ export default createRoute({
             controller:async function (){
                 try {
                     this.$success(await createCompletion({
-                        query:'农历怎么计算',
+                        query:'js正则表达式',
                         callback(data: CreateCompletionResponse) {
                             console.log(data.choices[0].text)
                         },
