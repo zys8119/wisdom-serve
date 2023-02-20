@@ -1,83 +1,74 @@
-# node-serve
+# ChatGpt AI node代码简易封装
 
-轻量级node 服务框架
-
-
-# 参考文档
-
-[MySql语法](http://c.biancheng.net/view/2548.html)
-
-[mysql工具](https://www.npmjs.com/package/mysql#connection-options)
-
-## 目录说明
+## 安装依赖
 
 ```
-build --------> 打包程序目录
-    build.ts -------->  打包程序，将当前项目所有文件打包到dist目录，并且资源进行了代码混淆加密，作用于商业化代码
-DB --------> mysql 数据表模型配置
-src --------> 主要资源
-    core-plug --------> 核心插件
-        bodyData.ts --------> 获取body数据
-        corsPlugin.ts --------> 跨域处理
-        helperFun.ts --------> 帮助函数
-        index.ts --------> 核心插件入口
-        mailerPlugin.ts --------> 发送邮件插件
-        mysql.ts --------> mysql封装插件
-        package.json --------> 
-        staticPlugin.ts --------> 静态资源插件，会将更目录下的 static 目录作为静态资源目录
-        urlParse.ts --------> url路由解析
-        websocket.ts --------> websocket插件
-    serve -------->
-        config --------> 服务底层默认配置
-        types --------> ts类型补充
-        HttpHeaderConfig.ts --------> http header头相关配置
-        index.ts --------> 服务入口
-        package.json -------->
-        serve.ts --------> 服务程序，初始化服务程序（创建http服务、文件热更新、路由解析、合并插件并注入插件、请求方式拦截）
-    utils -------->
-        bufferSplit.ts --------> buffer 分割
-        ForEach.ts --------> 递归循环 
-        formData.ts --------> 解析前端 formData
-        getNetworkIPaddress.ts --------> 获取请求来源的网络Ip地址
-        getSvgCode.ts --------> 动态随机创建svg图形验证码
-        index.ts --------> 工具入口
-        mergeConfig.ts --------> 合并配置
-        package.json --------> 
-        RouteOptionsParse.ts --------> 路由解析
-        ServeInfo.ts --------> 服务地址信息打印
-static --------> 静态资源存放目录
-.eslintrc.js --------> eslint 规则
-.gitignore --------> git忽略
-global.ts --------> 全局类型补充
-LICENSE --------> 开源许可证
-main.ts --------> 业务程序入口
-package.json --------> 
-package-lock.json -------->
-README.md --------> 项目描述
-route.ts --------> 路由文件，即api接口地址
-tsconfig.json --------> ts配置
-websocket.ts --------> websocket 事件监听
-wisdom.serve.config.ts --------> 业务服务配置，可替换覆盖底层服务配置，优先级最高
+npm install openai lodash axios --save-dev
 ```
 
-## 使用指南
+## 封装代码
 
 ```typescript
-import {createApp} from "@wisdom-serve/serve"
-import "./global.ts"
-import websocket from "./websocket"
-// 创建服务
-createApp({
-    route:()=> import("./route"),
-    websocket
-})
-// 使用插件
-.use(PluginConfig)
-// ...
-// 监听服务
-.listen()
-// 服务成功回调
-.then()
-// 服务失败
-.catch();
+import { ConfigurationParameters, Configuration, OpenAIApi, CreateCompletionResponse } from "openai"
+import { merge } from "lodash"
+import {CreateCompletionRequest} from "openai/api";
+import {AxiosRequestConfig} from "axios";
+type InitOptions = Partial<{
+    query:string
+    isContinue:boolean,
+    callback(data:CreateCompletionResponse):void
+    adapter:OpenAIApi
+    configuration:ConfigurationParameters
+    createCompletion:CreateCompletionRequest
+    axiosRequest:AxiosRequestConfig
+}>
+const createCompletion = async (options:InitOptions= {})=>{
+    const config = merge({} as InitOptions, options)
+    config.adapter = config.adapter || new OpenAIApi(new Configuration(config.configuration));
+    const {data} = await config.adapter.createCompletion(merge({
+        model: "text-davinci-003",
+        prompt: config.query ,
+        temperature: 1,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+    }, config.createCompletion), merge({
+        timeout:0,
+    }, config.axiosRequest));
+    config.callback?.(data)
+    if(!config.isContinue){config.query = ''}
+    config.query = config.query + data.choices[0].text
+    if(data.choices[0].finish_reason === 'stop'){
+        return  config.query
+    }
+    return await createCompletion(merge(config, {
+        isContinue:true
+    } as InitOptions))
+}
+export default createCompletion
 ```
+
+
+## 使用
+
+```typescript
+import createCompletion from "./createCompletion";
+
+await createCompletion({
+    query:'农历怎么计算',
+    callback(data: CreateCompletionResponse) {
+        console.log(data.choices[0].text)
+    },
+    configuration:{
+        apiKey:"请填写你openai私人的apikey",
+    },
+})
+```
+
+## 相关资料
+
+[chat 在线演示](https://chat.openai.com/chat) 需要翻墙，最好是美国节点
+
+[playground 在线api配置使用演示](https://platform.openai.com/playground) 需要翻墙
+
+[chat 开发文档](https://platform.openai.com/docs/introduction)
