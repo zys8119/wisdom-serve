@@ -73,12 +73,6 @@ await createCompletion({
 
 [chat 开发文档](https://platform.openai.com/docs/introduction)
 
-## vpn 节点相关资料
-
-http://front-end.zhijiasoft.com:50201/ 每次使用手动更新，每日流量30G,有效期一天
-
-http://front-end.zhijiasoft.com:50201/clashNode 每日更新， 流量不固定，包含美国节点
-
 https://ikuuu.eu/auth/register?code=UI9T  每月50G高速流量， 推荐使用，如需要使用，请自行注册
 
 ## vpn 相关软件
