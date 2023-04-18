@@ -23,8 +23,6 @@ export default <Partial<Websocket>>{
         currChunk.push(payload)
         currChunk[payload.index] = payload
         if(currChunk.length === payload.total){
-            const img = currChunk.map(e=>e.img).join('')
-            payload.img = img
             drawEndMap.delete(payload.id)
         }
         send(JSON.stringify(payload))
