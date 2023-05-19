@@ -54,6 +54,35 @@ export default createRoute({
                     })
                 }
             },
+        },
+        {
+            path:"/v1/images/generations",
+            controller:async function (){
+                try {
+                    const res = await axios({
+                        baseURL:'https://api.openai.com',
+                        url:this.$url,
+                        proxy:{
+                            protocol:'http',
+                            host:'127.0.0.1',
+                            port:7890
+                        },
+                        method:this.request.method,
+                        data:this.$body,
+                        headers:{
+                            'Content-Type': 'application/json',
+                            authorization:this.request.headers['authorization']
+                        } as any,
+                    })
+                    this.$send(JSON.stringify(res.data), {
+                        headers:{
+                            "Content-Type":"application/json; charset=utf-8",
+                        }
+                    })
+                }catch (e){
+                   this.$error(e.message)
+                }
+            },
         }
     ]
 });
