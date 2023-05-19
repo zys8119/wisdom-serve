@@ -14,5 +14,6 @@ export default <Partial<AppServeOptions>>{
         database:"system_monitoring_node",
         prefix:""
     },
+    cors:true,
     mysqlAuto:false
 }
