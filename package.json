@@ -5,7 +5,7 @@
   "main": "src/serve/index.ts",
   "scripts": {
     "start": "npm run dev",
-    "dev": "ts-node main.ts",
+    "dev": "ts-node-dev main.ts",
     "build": "ts-node build/build.ts --trace-warnings"
   },
   "repository": {
@@ -19,6 +19,8 @@
   ],
   "types": "./global.d.ts",
   "dependencies": {
+    "@keyvhq/core": "^2.0.0",
+    "@keyvhq/mysql": "^2.0.1",
     "@types/lodash": "^4.14.181",
     "@types/mysql": "^2.15.21",
     "@types/node": "^17.0.24",
