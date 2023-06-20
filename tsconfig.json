@@ -2,9 +2,13 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "esnext",
-        "sourceMap": true,
+        "sourceMap": true
     },
     "exclude": [
         "node_modules"
+    ],
+    "include": [
+        "*.ts",
+        "**/*.ts",
     ]
 }

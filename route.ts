@@ -1,6 +1,8 @@
 import {createRoute} from "@wisdom-serve/serve"
 import axios from "axios"
 import {ReadStream} from "fs"
+import * as Keyv from "@keyvhq/core"
+import * as KeyvMySQL from "@keyvhq/mysql"
 export default createRoute({
     routes:[
         {
@@ -83,6 +85,16 @@ export default createRoute({
                    this.$error(e.message)
                 }
             },
+        },
+        {
+            path:'/db',
+            async controller(){
+                const keyv = new Keyv({store: new KeyvMySQL('mysql://root:rootroot@localhost:3306/dbname')})
+                for await (const  [,v] of  keyv.iterator() as any){
+                    console.log(v)
+                }
+                this.$success()
+            }
         }
     ]
 });
