@@ -15,4 +15,9 @@ export default [
     websocket,
     corsPlugin,
     mailerPlugin,
+    async function (){
+        if(/coi-serviceworker\.min\.js$/.test(this.$url)){
+            return Promise.reject(false)
+        }
+    }
 ]
