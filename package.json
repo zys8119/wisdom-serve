@@ -8,10 +8,6 @@
     "dev": "ts-node-dev main.ts",
     "build": "ts-node build/build.ts --trace-warnings"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://gitlab.zhijiasoft.com/zhangyunshan/node-serve.git"
-  },
   "author": "",
   "license": "ISC",
   "workspaces": [
