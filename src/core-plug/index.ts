@@ -6,6 +6,7 @@ import staticPlugin from "./staticPlugin"
 import websocket from "./websocket"
 import corsPlugin from "./corsPlugin"
 import mailerPlugin from "./mailerPlugin"
+import puppeteerPlugin from "./puppeteerPlugin"
 export default [
     urlParse,
     helperFun,
@@ -19,5 +20,6 @@ export default [
         if(/coi-serviceworker\.min\.js$/.test(this.$url)){
             return Promise.reject(false)
         }
-    }
+    },
+    puppeteerPlugin
 ]

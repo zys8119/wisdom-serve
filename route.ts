@@ -95,6 +95,24 @@ export default createRoute({
                 }
                 this.$success()
             }
+        },
+        {
+            path:'/test',
+            async controller(){
+                const page = global.$page
+                await page.evaluate((search:string)=>{
+                    const input = document.querySelector('#kw') as HTMLInputElement
+                    input.value = search
+                },this.$query.get('search'))
+                await page.click('#su')
+                await new Promise(r=>setTimeout(r, 1000))
+                this.$success(await page.evaluate(()=>{
+                    return [...document.querySelectorAll('div > div > h3 > a')].map((e:any)=>({
+                        title:e.innerText,
+                        url:e.href
+                    }))
+                }))
+            }
         }
     ]
 });

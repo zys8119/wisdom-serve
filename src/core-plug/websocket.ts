@@ -262,7 +262,7 @@ declare module "@wisdom-serve/serve" {
 
 
 declare global {
-    const globalThis:{
+    interface globalThis extends GlobalThis{
         $on:typeof on
         $emit:typeof emit
         $off:typeof off
@@ -270,4 +270,5 @@ declare global {
         $socketList:SocketList
         $socketSend:SocketSend
     }
+    const globalThis:globalThis
 }
