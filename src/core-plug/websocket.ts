@@ -3,6 +3,7 @@ import {createHash} from "crypto";
 import {Socket} from "net";
 import * as ncol from "ncol";
 import * as EventEmitter from "events";
+import {Page} from "puppeteer";
 
 /**
  * 解码数据
@@ -262,6 +263,8 @@ declare module "@wisdom-serve/serve" {
 
 
 declare global {
+    interface GlobalThis {
+    }
     interface globalThis extends GlobalThis{
         $on:typeof on
         $emit:typeof emit
