@@ -2,10 +2,10 @@ import {Controller} from "@wisdom-serve/serve";
 import {launch} from "puppeteer"
 
 export default (async function (){
-    const cookies = this.$body.cookies
+    const cookies = this.$body.cookies || []
     const pageUrl = this.$body.pageUrl
     const activeUnit = this.$body.activeUnit
-    if(!cookies || !pageUrl || typeof activeUnit !== 'number'){
+    if(Object.prototype.toString.call(cookies) !== '[object Array]' || !pageUrl || typeof activeUnit !== 'number'){
         return this.$error("请求参数错误")
     }
     const browser = await launch({
@@ -13,7 +13,9 @@ export default (async function (){
         defaultViewport:null
     })
     const page = await browser.newPage()
-    await page.setCookie.apply(null,cookies)
+    await Promise.all(cookies.map((e:any)=>{
+        return page.setCookie(e)
+    }))
     await page.goto(pageUrl)
     let res:any = await page.waitForSelector('.menu>ul').then(el=>{
         return el.evaluate(async ()=>{
