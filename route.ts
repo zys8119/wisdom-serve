@@ -7,6 +7,7 @@ import {merge, omit} from "lodash"
 import * as dayjs from "dayjs"
 import puppeteer from "puppeteer"
 import {sign} from "jsonwebtoken"
+import beiwai from "./beiwai"
 export default createRoute({
     routes:[
         {
@@ -289,6 +290,10 @@ export default createRoute({
                     token,
                 })
             }
+        },
+        {
+            path:'/beiwai',
+            controller:beiwai
         }
     ]
 });
