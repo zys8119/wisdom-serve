@@ -50,30 +50,36 @@ export default (async function (){
         const p = await browser.newPage()
         await p.goto(e.url)
         await p.waitForSelector('iframe')
-        await p.goto(p.frames()[1].url())
-        await p.waitForSelector('.time-button').then(async res=>{
-            const isClick = await p.evaluate(()=>{
-                return document.querySelector<HTMLDivElement>('.time-button').innerText === '我要提交'
+        try {
+            await new Promise(resolve => {setTimeout(resolve, 1000)})
+            await p.goto(p.frames()[1].url())
+            await p.waitForSelector('.time-button').then(async res=>{
+                const isClick = await p.evaluate(()=>{
+                    return document.querySelector<HTMLDivElement>('.time-button').innerText === '我要提交'
+                })
+                if(isClick){
+                    await res.click()
+                    await p.waitForSelector('.ivu-btn-primary').then(res=>{
+                        return res.click()
+                    })
+                }
             })
-            if(isClick){
-                await res.click()
-                await p.waitForSelector('.ivu-btn-primary').then(res=>{
-                    return res.click()
-                })
-            }
-        })
-        const item = await p.evaluate(async (info:any)=>{
-            return {
-                title:info.title,
-                data:[...document.querySelectorAll('.quiz-widget')].map(e=>{
-                    return {
-                        title:e.querySelector<HTMLDivElement>('.question-stem').innerText,
-                        value:[...e.querySelectorAll<HTMLDivElement>('.choice-options .color-47A66F')].map(e=>e.innerText),
-                    }
-                })
-            }
-        },e)
-        results.push(item)
+            const item = await p.evaluate(async (info:any)=>{
+                return {
+                    title:info.title,
+                    data:[...document.querySelectorAll('.quiz-widget')].map(e=>{
+                        return {
+                            title:e.querySelector<HTMLDivElement>('.question-stem').innerText,
+                            value:[...e.querySelectorAll<HTMLDivElement>('.choice-options .color-47A66F')].map(e=>e.innerText),
+                        }
+                    })
+                }
+            },e)
+            results.push(item)
+        }catch (e){
+            // err
+        }
+
         await p.close()
         index += 1
     }
