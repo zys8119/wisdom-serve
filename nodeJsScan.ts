@@ -15,13 +15,13 @@ export default (async function (){
         })
         const {
             data:scan,
-            status
         } = await axios({
             url:'http://192.168.110.140:9090/upload/',
             method:'post',
             headers:formdata.getHeaders(),
             data:formdata
         })
+        scan.url = `http://192.168.110.140:9090/${scan.url}`
         // pnpm 依赖检测
         mkdirSync(root,{recursive:true})
         writeFileSync(`${root}/package.json`, this.$body.package?.[0].fileBuff || JSON.stringify({}))
