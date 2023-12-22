@@ -8,6 +8,7 @@ import * as dayjs from "dayjs"
 import puppeteer from "puppeteer"
 import {sign} from "jsonwebtoken"
 import beiwai from "./beiwai"
+
 export default createRoute({
     routes:[
         {
@@ -294,6 +295,12 @@ export default createRoute({
         {
             path:'/beiwai',
             controller:beiwai
+        },
+        {
+            path:'/nodeJsScan',
+            async controller(...args){
+                await ((await import("./nodeJsScan") as any)?.default ?.call(this,...args));
+            }
         }
     ]
 });
