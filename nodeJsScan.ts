@@ -5,8 +5,11 @@ import axios from "axios"
 import * as FormData from "form-data"
 
 export default (async function (){
+    const root = './nodeJsScan/data'
+    mkdirSync(root,{recursive:true})
+    writeFileSync(`${root}/package.json`, this.$body.package?.[0].fileBuff || JSON.stringify({}))
+    let scanData = null
     try {
-        const root = './nodeJsScan/data'
         // 代码检测
         const formdata = new FormData()
         formdata.append('file',this.$body.dist?.[0].fileBuff, {
@@ -22,11 +25,13 @@ export default (async function (){
             data:formdata
         })
         scan.url = `http://192.168.110.140:9090/${scan.url}`
-        // pnpm 依赖检测
-        mkdirSync(root,{recursive:true})
-        writeFileSync(`${root}/package.json`, this.$body.package?.[0].fileBuff || JSON.stringify({}))
-        let json = null;
-
+        scanData = scan
+    }catch (e) {
+        scanData = null
+    }
+    // pnpm 依赖检测
+    let json = null;
+    try {
         await new Promise((resolve, reject) => {
             const childProcess = exec(`git init && pnpm i`, {cwd:root}, (error,stdout) => {
                 if (error) {
@@ -47,11 +52,11 @@ export default (async function (){
         }catch (e) {
             json = e.stdout.toString()
         }
-        this.$success({
-            depsInfo:JSON.parse(json),
-            scan
-        })
     }catch (e){
-        this.$error(e)
+        console.error(e)
     }
+    this.$success({
+        depsInfo:JSON.parse(json),
+        scanData
+    })
 }) as Controller
