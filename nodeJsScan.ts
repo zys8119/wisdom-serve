@@ -48,9 +48,9 @@ export default (async function (){
             })
         })
         try {
-            json =  execSync('pnpm audit --json', {cwd:root}).toString()
+            json =  execSync('pnpm audit --json --ignore-registry-errors', {cwd:root}).toString()
         }catch (e) {
-            json = e.stdout.toString()
+            json = e.stdout.toString().replace(/(.|\n)*?\{/,'{')
         }
     }catch (e){
         console.error(e)
