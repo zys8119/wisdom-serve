@@ -6,7 +6,7 @@ const _launch = launch({
 })
 const szrd:PluginUse = async function (request, response){
     const reg = /\/szrd\/(.*)/
-    const host = 'https://szrd.nbyz.cn/'
+    const host = 'https://你的域名/'
     if(reg.test(request.url)){
         const m = reg.exec(request.url)
         const browser =  await _launch
