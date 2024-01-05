@@ -6,13 +6,14 @@ const _launch = launch({
 })
 const szrd:PluginUse = async function (request, response){
     const reg = /\/szrd\/(.*)/
+    const host = 'https://szrd.nbyz.cn/'
     if(reg.test(request.url)){
         const m = reg.exec(request.url)
         const browser =  await _launch
         const page = await browser.newPage()
-        await page.goto('https://szrd.nbyz.cn/')
+        await page.goto(host)
         const config = {
-            url:`https://你的域名/${m[1]}`,
+            url:`${host}/${m[1]}`,
             method:request.method,
             headers:request.headers as any,
             body:Object.prototype.toString.call(this.$body) === '[object Object]' ? JSON.stringify(this.$body) : (this.$body || null)
