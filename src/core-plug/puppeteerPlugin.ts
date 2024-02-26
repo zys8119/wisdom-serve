@@ -9,7 +9,6 @@ const puppeteerPlugin:Plugin = async function (request, response){
             // headless:false
         })
         const page = await browser.newPage()
-        await page.goto('https://baidu.com')
         global.$page =  page
     }
 

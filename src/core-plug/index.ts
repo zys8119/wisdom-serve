@@ -6,7 +6,7 @@ import staticPlugin from "./staticPlugin"
 import websocket from "./websocket"
 import corsPlugin from "./corsPlugin"
 import mailerPlugin from "./mailerPlugin"
-// import puppeteerPlugin from "./puppeteerPlugin"
+import puppeteerPlugin from "./puppeteerPlugin"
 export default [
     urlParse,
     helperFun,
@@ -21,5 +21,5 @@ export default [
             return Promise.reject(false)
         }
     },
-    // puppeteerPlugin
+    puppeteerPlugin
 ]

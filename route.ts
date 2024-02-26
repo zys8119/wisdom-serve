@@ -301,6 +301,12 @@ export default createRoute({
             async controller(...args){
                 await ((await import("./nodeJsScan") as any)?.default ?.call(this,...args));
             }
+        },
+        {
+            path:'/youdaoTranslate',
+            async controller(...args){
+                await ((await import("./youdaoTranslate") as any)?.default ?.call(this,...args));
+            }
         }
     ]
 });
