@@ -127,6 +127,7 @@ export type routes = routeRow[]
 export type routeRow = {
     path:string,
     name?:string,
+    strict?:boolean,
     funName?:string,
     controller?:controller;
     children?:routes
