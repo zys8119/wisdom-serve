@@ -8,6 +8,7 @@ import * as dayjs from "dayjs"
 import puppeteer from "puppeteer"
 import {sign} from "jsonwebtoken"
 import beiwai from "./beiwai"
+import express from "./express"
 
 export default createRoute({
     routes:[
@@ -306,6 +307,13 @@ export default createRoute({
             path:'/youdaoTranslate',
             async controller(...args){
                 await ((await import("./youdaoTranslate") as any)?.default ?.call(this,...args));
+            }
+        },
+        {
+            path:'/express',
+            // controller:express
+            async controller(){
+                this.$success("asdas")
             }
         }
     ]

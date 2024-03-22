@@ -17,6 +17,7 @@
   "dependencies": {
     "@keyvhq/core": "^2.0.0",
     "@keyvhq/mysql": "^2.0.1",
+    "@types/express": "^4.17.21",
     "@types/fs-extra": "^11.0.4",
     "@types/glob": "^8.1.0",
     "@types/jsonwebtoken": "^9.0.3",
@@ -32,6 +33,7 @@
     "dayjs": "^1.11.10",
     "eslint": "^8.13.0",
     "eslint-plugin-react": "^7.29.4",
+    "express": "^4.19.1",
     "fast-glob": "^3.2.11",
     "javascript-obfuscator": "^4.0.0",
     "jsonwebtoken": "^9.0.2",
