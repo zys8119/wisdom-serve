@@ -26,7 +26,7 @@ export default async (options:Partial<AppServeOptions>)=>{
                     result[orginPath].regName.push(it.replace(/^:/,""))
                 })
             }
-            return `^${path}($|\/$)`;
+            return `^${path}${item.strict === false ? '':'($|\/$)'}`;
         })(path, path, path.match(/:([^\/]+)/img)));
     })
     return result
