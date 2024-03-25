@@ -1,0 +1,49 @@
+import { DBModel} from "@wisdom-serve/core-plug/mysql";
+export default <DBModel>{
+    collate: "utf8_unicode_ci",
+    charset:"utf8",
+    commit:"用户表",
+    columns:{
+        id:{
+            varchar:255,
+            primary_key:true,
+            comment:"用户id",
+        },
+        username:{
+            varchar:255,
+            not_null:true,
+            comment:"用户名称"
+        },
+        password:{
+            varchar:255,
+            not_null:true,
+            comment:"用户密码"
+        },
+        mobile:{
+            varchar:255,
+            not_null:true,
+            comment:"手机号"
+        },
+        createTime:{
+            datetime:true,
+            not_null:true,
+            comment:"创建时间"
+        },
+        updateTime:{
+            datetime:true,
+            comment:"更新时间"
+        },
+        isAdmin:{
+            varchar:255,
+            not_null:true,
+            comment:"是否为超级管理员",
+            default:1,
+        },
+        del:{
+            varchar:255,
+            not_null:true,
+            default:1,
+            comment:"是否删除",
+        },
+    },
+}
