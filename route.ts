@@ -8,6 +8,14 @@ export default createRoute({
             controller:async function (){
                 this.$send(readFileSync(resolve(__dirname, './views/welcome.html')))
             },
+        },
+        {
+            path:"/saas/api/v1/captcha",
+            controller:async ()=> import("./application/captcha")
+        },
+        {
+            path:"/saas/api/v1/captcha/:id",
+            controller:async ()=> import("./application/captcha")
         }
     ]
 });
