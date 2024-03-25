@@ -2,13 +2,14 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "esnext",
-        "sourceMap": true
+        "sourceMap": true,
+        "experimentalDecorators": true
     },
     "exclude": [
         "node_modules"
     ],
     "include": [
         "*.ts",
-        "**/*.ts",
+        "**/*.ts"
     ]
 }

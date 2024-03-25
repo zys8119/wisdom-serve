@@ -311,10 +311,14 @@ export default createRoute({
         },
         {
             path:'/express',
-            // controller:express
-            async controller(){
-                this.$success("asdas")
+            strict:false,
+            async controller(...args){
+                await ((await import("./express") as any)?.default ?.call(this,...args));
             }
+            // controller:express,
+            // async controller(){
+            //     this.$success("asdas")
+            // }
         }
     ]
 });

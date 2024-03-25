@@ -14,9 +14,15 @@ importers:
       '@keyvhq/mysql':
         specifier: ^2.0.1
         version: 2.0.3
+      '@types/body-parser':
+        specifier: ^1.19.5
+        version: 1.19.5
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.21
+      '@types/express-serve-static-core':
+        specifier: ^4.17.43
+        version: 4.17.43
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
@@ -53,6 +59,9 @@ importers:
       '@wisdom-serve/utils':
         specifier: ^1.0.0
         version: link:src/utils
+      body-parser:
+        specifier: ^1.20.2
+        version: 1.20.2
       dayjs:
         specifier: ^1.11.10
         version: 1.11.10
@@ -65,6 +74,12 @@ importers:
       express:
         specifier: ^4.19.1
         version: 4.19.1
+      express-body:
+        specifier: ^1.0.6
+        version: 1.0.6
+      express-serve-static-core:
+        specifier: ^0.1.1
+        version: 0.1.1
       fast-glob:
         specifier: ^3.2.11
         version: 3.3.1
@@ -1458,6 +1473,16 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
+  /express-body@1.0.6:
+    resolution: {integrity: sha512-/PGlfviFMf8r27KHu7plrcZxNQwX5hYu68Izh70BQ7Z/iu+dEiwYqEC1/Mb1oqLWA1cQR3kgpnS3HfqdNxYXrw==}
+    dependencies:
+      kc-qstr: 1.0.7
+    dev: false
+
+  /express-serve-static-core@0.1.1:
+    resolution: {integrity: sha512-phQFPo1vVwBLOjDq+EspUY6PpWZIs/s62Lvu6QuReViQ9j9ANBnMqPBRwdxs3zxNmpMJ9KBKrmMqCjMwHnGRyQ==}
+    dev: false
+
   /express@4.19.1:
     resolution: {integrity: sha512-K4w1/Bp7y8iSiVObmCrtq8Cs79XjJc/RU2YYkZQ7wpUu5ZyZ7MtPHkqoMz4pf+mgXfNvo2qft8D9OnrH2ABk9w==}
     engines: {node: '>= 0.10.0'}
@@ -1650,6 +1675,10 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /fun2mod@1.0.6:
+    resolution: {integrity: sha512-ndQEaVGPoMJ+YKPC0VfTodTIl8DecxVV7MSas6vG20cwPvvILYGbh+SejFgkK8waV0iUY8va93Zuni0LRSXZ7w==}
+    dev: false
 
   /function-bind@1.1.1:
     resolution: {integrity: sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A==}
@@ -2212,6 +2241,12 @@ packages:
     dependencies:
       jwa: 1.4.1
       safe-buffer: 5.2.1
+    dev: false
+
+  /kc-qstr@1.0.7:
+    resolution: {integrity: sha512-SATWxEkexmkEu6WQKjS3Rmbg2dvyXheXZMlDd3wsUYWFHKozRVshCBcF88jWMPvpfgzn78Q9V7/Zhr2JenJrFQ==}
+    dependencies:
+      fun2mod: 1.0.6
     dev: false
 
   /levn@0.3.0:
