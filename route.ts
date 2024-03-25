@@ -1,27 +1,13 @@
 import {createRoute} from "@wisdom-serve/serve"
+import {readFileSync} from "fs";
+import {resolve} from "path";
 export default createRoute({
     routes:[
         {
             path:"/",
             controller:async function (){
-                // this.$success()
+                this.$send(readFileSync(resolve(__dirname, './views/welcome.html')))
             },
-            children:[
-                {
-                    path:"api/:aaa/:bbb",
-                    controller:async function(req, res){
-                        this.$success()
-                    }
-                },
-                {
-                    path:"express/.*/:b",
-                    // strict:false,
-                    controller:async function(req, res){
-                        console.log(this.$params)
-                        this.$success({s:44555})
-                    }
-                }
-            ]
         }
     ]
 });
