@@ -38,6 +38,12 @@ export default createRoute({
                     path:'user/list',
                     funName:"getUserList",
                     controller:async ()=> import("./application/user")
+                },
+                {
+                    path:'user/create',
+                    funName:"createUser",
+                    method:"post",
+                    controller:async ()=> import("./application/user")
                 }
             ]
         }
