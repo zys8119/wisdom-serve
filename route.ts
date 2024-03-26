@@ -24,6 +24,12 @@ export default createRoute({
             controller:async ()=> import("./application/auth")
         },
         {
+            path:"/file/api/v1/file/upload",
+            funName:"upload",
+            method:"post",
+            controller:async ()=> import("./application/file")
+        },
+        {
             path:"/saas/api/v1/",
             funName:"interceptor",
             name:"user",
