@@ -31,10 +31,13 @@ export default createRoute({
             children:[
                 {
                     path:'menu/get_menus_by_user/:userId',
-                    controller:async function(req, res, resultMaps){
-                        console.log(3333, resultMaps.user)
-                        this.$success("asda")
-                    }
+                    funName:"get_menus_by_user",
+                    controller:async ()=> import("./application/user")
+                },
+                {
+                    path:'user/list',
+                    funName:"getUserList",
+                    controller:async ()=> import("./application/user")
                 }
             ]
         }
