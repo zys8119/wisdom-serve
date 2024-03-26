@@ -1,5 +1,6 @@
 import {Controller} from "@wisdom-serve/serve"
 import {createHash} from "crypto"
+import {merge, pickBy, isUndefined} from "lodash"
 import * as dayjs from "dayjs";
 /**
  * 获取用户菜单
@@ -44,11 +45,14 @@ export const getUserList:Controller = async function () {
 /**
  * 创建用户
  */
-export const createUser:Controller = async function () {
+export const createUser:Controller = async function (req, res, {
+    isUpdateUser,
+    user
+}) {
     if(!this.$body.username){
         return this.$error("用户名不能为空")
     }
-    if(!this.$body.password){
+    if(!isUpdateUser && !this.$body.password){
         return this.$error("密码不能为空")
     }
     if(!this.$body.nickname){
@@ -65,18 +69,29 @@ export const createUser:Controller = async function () {
     })){
         return this.$error("系统已存在用户，无法创建")
     }
-    console.log(this.$body.status,this.$body.status === true, this.$body.status === true ? 1 : 0)
-    await this.$DBModel.tables.user.post({
+    const data = merge({
         username:this.$body.username,
-        password:createHash('md5').update(this.$body.password).digest('hex'),
         nickname:this.$body.nickname,
         mobile:this.$body.mobile,
-        email:this.$body.email,
+        email:this.$body.email || null,
         enable:this.$body.status === true ? 1 : 0,
         createTime:dayjs().format(),
         updateTime:dayjs().format(),
-        avatar:this.$body.avatarId,
+        avatar:this.$body.avatarId || null,
+    },isUpdateUser ? {} : {
+        password:createHash('md5').update(this.$body.password).digest('hex'),
     })
+    if(isUpdateUser){
+        await this.$DBModel.tables.user.update(pickBy(data, value => !isUndefined(value)), {
+            where:{
+                id:{
+                    value:this.$body.id
+                }
+            }
+        })
+    }else {
+        await this.$DBModel.tables.user.post(data)
+    }
     this.$success()
 }
 
@@ -96,4 +111,15 @@ export const deleteUser:Controller = async function () {
         }
     })
     this.$success()
+}
+
+
+/**
+ * 修改用户
+ */
+export const updateUser:Controller = async function (req, res, resultMaps) {
+    await createUser.call(this,req, res, {
+        ...resultMaps,
+        isUpdateUser:true
+    })
 }

@@ -56,6 +56,12 @@ export default createRoute({
                     funName:"deleteUser",
                     method:"post",
                     controller:async ()=> import("./application/user")
+                },
+                {
+                    path:'user/update',
+                    funName:"updateUser",
+                    method:"post",
+                    controller:async ()=> import("./application/user")
                 }
             ]
         }
