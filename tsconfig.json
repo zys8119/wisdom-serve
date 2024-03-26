@@ -3,6 +3,7 @@
         "module": "commonjs",
         "target": "esnext",
         "sourceMap": true,
+        "allowImportingTsExtensions": true
     },
     "exclude": [
         "node_modules"
