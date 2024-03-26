@@ -3,7 +3,7 @@
         "module": "commonjs",
         "target": "esnext",
         "sourceMap": true,
-        "allowImportingTsExtensions": true
+        "allowImportingTsExtensions": true,
         "resolveJsonModule": true
     },
     "exclude": [
