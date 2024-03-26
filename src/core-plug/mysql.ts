@@ -127,6 +127,7 @@ export class $Serialize {
                 reduce = null,
                 reduceInitData = null,
                 is_equal = true,
+                listFieldName = 'data',
             }:Partial<{
         // 当前页数
         pageNo:number | string,
@@ -146,7 +147,13 @@ export class $Serialize {
         reduce(previousValue: any, currentValue:any, currentIndex: number, array: any[]):any;
         reduceInitData:any;
         is_equal:boolean;
-    }> = {}):Array<any> | {list:Array<any>, total:number, pageNo:number, pageSize:number}{
+        listFieldName:string;
+    }> = {}):Array<any> | {
+        [key:string | 'list' | 'data']:Array<any> | any
+        total:number,
+        pageNo:number,
+        pageSize:number,
+    }{
         let list = data.reduce<Array<any>>((a,b)=>{
             return a.concat(Object.prototype.toString.call(b) === '[object Object]' ? (b as any).results : b);
         }, []);
@@ -174,7 +181,7 @@ export class $Serialize {
                 list = list.reduce(reduce, reduceInitData)
             }
             return {
-                list,
+                [listFieldName]:list,
                 total:total_index,
                 pageNo,
                 pageSize

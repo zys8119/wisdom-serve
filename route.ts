@@ -33,6 +33,11 @@ export default createRoute({
                     path:'menu/get_menus_by_user/:userId',
                     funName:"get_menus_by_user",
                     controller:async ()=> import("./application/user")
+                },
+                {
+                    path:'user/list',
+                    funName:"getUserList",
+                    controller:async ()=> import("./application/user")
                 }
             ]
         }
