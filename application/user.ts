@@ -75,10 +75,10 @@ export const createUser:Controller = async function (req, res, {
         mobile:this.$body.mobile,
         email:this.$body.email || null,
         enable:this.$body.status === true ? 1 : 0,
-        createTime:dayjs().format(),
         updateTime:dayjs().format(),
         avatar:this.$body.avatarId || null,
     },isUpdateUser ? {} : {
+        createTime:dayjs().format(),
         password:createHash('md5').update(this.$body.password).digest('hex'),
     })
     if(isUpdateUser){
