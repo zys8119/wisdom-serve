@@ -22,6 +22,21 @@ export default createRoute({
             funName:"login",
             method:"post",
             controller:async ()=> import("./application/auth")
+        },
+        {
+            path:"/saas/api/v1/",
+            funName:"interceptor",
+            name:"user",
+            controller:async ()=> import("./application/auth"),
+            children:[
+                {
+                    path:'menu/get_menus_by_user/:userId',
+                    controller:async function(req, res, resultMaps){
+                        console.log(3333, resultMaps.user)
+                        this.$success("asda")
+                    }
+                }
+            ]
         }
     ]
 });

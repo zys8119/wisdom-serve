@@ -1,0 +1,637 @@
+{
+  "data": [
+    {
+      "id": "501271445834301442",
+      "sort": 1,
+      "name": "performance-management",
+      "title": "履职管理",
+      "icon": "menus-menu",
+      "menu_type": 0,
+      "url": "performance-management",
+      "redirect": "/performance-management/duty-posting",
+      "component": null,
+      "hidden": false,
+      "hidden_in_tab": false,
+      "fixed": false,
+      "remark": null,
+      "meta": "{\"title\": \"履职管理\"}",
+      "parent_id": null,
+      "permissions": [],
+      "nodeType": "menu",
+      "children": [
+        {
+          "id": "501271445985492994",
+          "sort": 0,
+          "name": "popular-will-event-dispose",
+          "title": "民意事件处理",
+          "icon": null,
+          "menu_type": 0,
+          "url": "popular-will-event-dispose",
+          "redirect": null,
+          "component": "/performance-management/popular-will-event-dispose/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"民意事件处理\", \"hidden\": false}",
+          "parent_id": "501271445834301442",
+          "permissions": [],
+          "nodeType": "menu",
+          "children": [
+            {
+              "id": "501271445985951746",
+              "sort": 0,
+              "name": "popular-will-event-dispose-detail",
+              "title": "民意事件处理详情",
+              "icon": null,
+              "menu_type": 0,
+              "url": "popular-will-event-dispose-detail",
+              "redirect": null,
+              "component": "/performance-management/popular-will-event-dispose/popular-will-event-dispose-detail.vue",
+              "hidden": true,
+              "hidden_in_tab": false,
+              "fixed": false,
+              "remark": null,
+              "meta": "{\"title\": \"民意事件处理详情\", \"hidden\": true}",
+              "parent_id": "501271445985492994",
+              "permissions": [],
+              "nodeType": "menu",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "501271445985427458",
+          "sort": 0,
+          "name": "statistics",
+          "title": "代表履职统计",
+          "icon": null,
+          "menu_type": 0,
+          "url": "statistics",
+          "redirect": null,
+          "component": "/performance-management/statistics/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"代表履职统计\"}",
+          "parent_id": "501271445834301442",
+          "permissions": [],
+          "nodeType": "menu",
+          "children": [
+            {
+              "id": "501271445985755138",
+              "sort": 0,
+              "name": "performance-report-library",
+              "title": "履职报告库",
+              "icon": null,
+              "menu_type": 0,
+              "url": "performance-report-library",
+              "redirect": null,
+              "component": "/performance-management/statistics/performance-report-library/index.vue",
+              "hidden": true,
+              "hidden_in_tab": false,
+              "fixed": false,
+              "remark": null,
+              "meta": "{\"title\": \"履职报告库\", \"hidden\": true}",
+              "parent_id": "501271445985427458",
+              "permissions": [],
+              "nodeType": "menu",
+              "children": [
+                {
+                  "id": "501271445985886210",
+                  "sort": 0,
+                  "name": "libraryDetail",
+                  "title": "履职报告库详情",
+                  "icon": null,
+                  "menu_type": 0,
+                  "url": "library-detail",
+                  "redirect": null,
+                  "component": "/performance-management/statistics/performance-report-library/detail.vue",
+                  "hidden": true,
+                  "hidden_in_tab": false,
+                  "fixed": false,
+                  "remark": null,
+                  "meta": "{\"title\": \"履职报告库详情\", \"hidden\": true}",
+                  "parent_id": "501271445985755138",
+                  "permissions": [],
+                  "nodeType": "menu",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "501271445985689602",
+              "sort": 0,
+              "name": "representative-performance-statistics",
+              "title": "代表履职统计",
+              "icon": null,
+              "menu_type": 0,
+              "url": "representative-performance-statistics",
+              "redirect": null,
+              "component": "/performance-management/statistics/representative-performance-statistics/index.vue",
+              "hidden": true,
+              "hidden_in_tab": false,
+              "fixed": false,
+              "remark": null,
+              "meta": "{\"title\": \"代表履职统计\", \"hidden\": true}",
+              "parent_id": "501271445985427458",
+              "permissions": [],
+              "nodeType": "menu",
+              "children": [
+                {
+                  "id": "501271445985820674",
+                  "sort": 0,
+                  "name": "StatisticsDetail",
+                  "title": "代表履职统计详情",
+                  "icon": null,
+                  "menu_type": 0,
+                  "url": "statistics-detail",
+                  "redirect": null,
+                  "component": "/performance-management/statistics/representative-performance-statistics/detail.vue",
+                  "hidden": true,
+                  "hidden_in_tab": false,
+                  "fixed": false,
+                  "remark": null,
+                  "meta": "{\"title\": \"代表履职统计详情\", \"hidden\": true}",
+                  "parent_id": "501271445985689602",
+                  "permissions": [],
+                  "nodeType": "menu",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "501271445985296386",
+          "sort": 0,
+          "name": "duty-posting",
+          "title": "履职发布",
+          "icon": null,
+          "menu_type": 0,
+          "url": "duty-posting",
+          "redirect": null,
+          "component": "/performance-management/duty-posting/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"履职发布\", \"hidden\": false}",
+          "parent_id": "501271445834301442",
+          "permissions": [],
+          "nodeType": "menu",
+          "children": [
+            {
+              "id": "501271445985558530",
+              "sort": 0,
+              "name": "duty-posting-detail",
+              "title": "履职发布详情",
+              "icon": null,
+              "menu_type": 0,
+              "url": "duty-posting-detail",
+              "redirect": null,
+              "component": "/performance-management/duty-posting/duty-posting-detail.vue",
+              "hidden": true,
+              "hidden_in_tab": false,
+              "fixed": false,
+              "remark": null,
+              "meta": "{\"title\": \"履职发布详情\", \"hidden\": true}",
+              "parent_id": "501271445985296386",
+              "permissions": [],
+              "nodeType": "menu",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "501271445985361922",
+          "sort": 4,
+          "name": "performance-audits",
+          "title": "履职审核",
+          "icon": "menus-menu",
+          "menu_type": 0,
+          "url": "performance-audits",
+          "redirect": null,
+          "component": "/performance-management/performance-audits/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"履职审核\", \"hidden\": false}",
+          "parent_id": "501271445834301442",
+          "permissions": [],
+          "nodeType": "menu",
+          "children": [
+            {
+              "id": "501271445985624066",
+              "sort": 0,
+              "name": "performance-audits-detail",
+              "title": "履职审核详情",
+              "icon": null,
+              "menu_type": 0,
+              "url": "performance-audits-detail",
+              "redirect": null,
+              "component": "/performance-management/performance-audits/performance-audits-detail.vue",
+              "hidden": true,
+              "hidden_in_tab": false,
+              "fixed": false,
+              "remark": null,
+              "meta": "{\"title\": \"履职审核详情\", \"hidden\": true}",
+              "parent_id": "501271445985361922",
+              "permissions": [],
+              "nodeType": "menu",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "501271445986017282",
+      "sort": 2,
+      "name": "represents-repository-info",
+      "title": "代表信息库",
+      "icon": "menus-menu",
+      "menu_type": 0,
+      "url": "represents-repository-info",
+      "redirect": "/represents-repository-info/home",
+      "component": null,
+      "hidden": false,
+      "hidden_in_tab": false,
+      "fixed": false,
+      "remark": null,
+      "meta": "{\"title\": \"代表信息库\"}",
+      "parent_id": null,
+      "permissions": [],
+      "nodeType": "menu",
+      "children": [
+        {
+          "id": "501271445986213890",
+          "sort": 0,
+          "name": "learning-library",
+          "title": "学习文库管理",
+          "icon": null,
+          "menu_type": 0,
+          "url": "learning-library",
+          "redirect": null,
+          "component": "/represents-repository-info/learning-library/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"学习文库管理\", \"hidden\": false}",
+          "parent_id": "501271445986017282",
+          "permissions": [],
+          "nodeType": "menu",
+          "children": [
+            {
+              "id": "501271445986344962",
+              "sort": 0,
+              "name": "learning-library-detail",
+              "title": "学习文库管理详情",
+              "icon": null,
+              "menu_type": 0,
+              "url": "learning-library-detail",
+              "redirect": null,
+              "component": "/represents-repository-info/learning-library/learning-library-detail.vue",
+              "hidden": true,
+              "hidden_in_tab": false,
+              "fixed": false,
+              "remark": null,
+              "meta": "{\"title\": \"学习文库管理详情\", \"hidden\": true}",
+              "parent_id": "501271445986213890",
+              "permissions": [],
+              "nodeType": "menu",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "501271445986148354",
+          "sort": 0,
+          "name": "interface-location",
+          "title": "联络站管理",
+          "icon": null,
+          "menu_type": 0,
+          "url": "interface-location",
+          "redirect": null,
+          "component": "/represents-repository-info/interface-location/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"联络站管理\", \"hidden\": false}",
+          "parent_id": "501271445986017282",
+          "permissions": [],
+          "nodeType": "menu",
+          "children": [
+            {
+              "id": "501271445986279426",
+              "sort": 0,
+              "name": "interface-location-detail",
+              "title": "联络站管理详情",
+              "icon": null,
+              "menu_type": 0,
+              "url": "interface-location-detail",
+              "redirect": null,
+              "component": "/represents-repository-info/interface-location/interface-location-detail.vue",
+              "hidden": true,
+              "hidden_in_tab": false,
+              "fixed": false,
+              "remark": null,
+              "meta": "{\"title\": \"联络站管理详情\", \"hidden\": true}",
+              "parent_id": "501271445986148354",
+              "permissions": [],
+              "nodeType": "menu",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "501271445986082818",
+          "sort": 0,
+          "name": "information-management",
+          "title": "代表信息管理",
+          "icon": null,
+          "menu_type": 0,
+          "url": "information-management",
+          "redirect": null,
+          "component": "/represents-repository-info/information-management/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"代表信息管理\", \"hidden\": false}",
+          "parent_id": "501271445986017282",
+          "permissions": [],
+          "nodeType": "menu",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "501271445986476034",
+      "sort": 3,
+      "name": "System",
+      "title": "系统管理",
+      "icon": "menus-menu",
+      "menu_type": 0,
+      "url": "system",
+      "redirect": "/login/organization",
+      "component": null,
+      "hidden": false,
+      "hidden_in_tab": false,
+      "fixed": false,
+      "remark": null,
+      "meta": "{\"title\": \"系统管理\", \"hidden\": false}",
+      "parent_id": null,
+      "permissions": [],
+      "nodeType": "menu",
+      "children": [
+        {
+          "id": "501271445986541570",
+          "sort": 0,
+          "name": "Organization",
+          "title": "组织架构",
+          "icon": null,
+          "menu_type": 0,
+          "url": "organization",
+          "redirect": null,
+          "component": "/system/organization/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"组织架构\", \"permissions\": [{\"name\": \"新建单位\", \"code\": \"addOrganization\", \"menu_id\": \"501271445986541570\"}, {\"name\": \"新建子单位\", \"code\": \"addSubOrganization\", \"menu_id\": \"501271445986541570\"}, {\"name\": \"新增部门\", \"code\": \"addDepartment\", \"menu_id\": \"501271445986541570\"}, {\"name\": \"编辑组织架构\", \"code\": \"editOrganization\", \"menu_id\": \"501271445986541570\"}, {\"name\": \"删除组织架构\", \"code\": \"deleteDepartment\", \"menu_id\": \"501271445986541570\"}, {\"name\": \"新增用户\", \"code\": \"addUser\", \"menu_id\": \"501271445986541570\"}, {\"name\": \"绑定用户\", \"code\": \"bindUser\", \"menu_id\": \"501271445986541570\"}, {\"name\": \"编辑用户\", \"code\": \"editUser\", \"menu_id\": \"501271445986541570\"}, {\"name\": \"删除用户\", \"code\": \"deleteUser\", \"menu_id\": \"501271445986541570\"}, {\"name\": \"批量密码修改\", \"code\": \"batchUpdatePassword\", \"menu_id\": \"501271445986541570\"}]}",
+          "parent_id": "501271445986476034",
+          "permissions": [
+            {
+              "id": "501271445986803714",
+              "name": "新建单位",
+              "code": "addOrganization",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987393538",
+              "name": "批量密码修改",
+              "code": "batchUpdatePassword",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987328002",
+              "name": "删除用户",
+              "code": "deleteUser",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987262466",
+              "name": "编辑用户",
+              "code": "editUser",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987196930",
+              "name": "绑定用户",
+              "code": "bindUser",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987131394",
+              "name": "新增用户",
+              "code": "addUser",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987065858",
+              "name": "删除组织架构",
+              "code": "deleteDepartment",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987000322",
+              "name": "编辑组织架构",
+              "code": "editOrganization",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445986934786",
+              "name": "新增部门",
+              "code": "addDepartment",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445986869250",
+              "name": "新建子单位",
+              "code": "addSubOrganization",
+              "nodeType": "button"
+            }
+          ],
+          "nodeType": "menu",
+          "children": []
+        },
+        {
+          "id": "501271445986672642",
+          "sort": 1,
+          "name": "Menu",
+          "title": "菜单管理",
+          "icon": "menus-menu",
+          "menu_type": 0,
+          "url": "menu",
+          "redirect": null,
+          "component": "/system/menu/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"菜单管理\", \"hidden\": false, \"permissions\": [{\"name\": \"新增菜单\", \"code\": \"addMenu\", \"menu_id\": \"501271445986672642\"}, {\"name\": \"编辑菜单\", \"code\": \"editMenu\", \"menu_id\": \"501271445986672642\"}, {\"name\": \"删除菜单\", \"code\": \"deleteMenu\", \"menu_id\": \"501271445986672642\"}, {\"name\": \"按钮设置\", \"code\": \"buttonSet\", \"menu_id\": \"501271445986672642\"}]}",
+          "parent_id": "501271445986476034",
+          "permissions": [
+            {
+              "id": "501271445987852290",
+              "name": "按钮设置",
+              "code": "buttonSet",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987786754",
+              "name": "删除菜单",
+              "code": "deleteMenu",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987721218",
+              "name": "编辑菜单",
+              "code": "editMenu",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987655682",
+              "name": "新增菜单",
+              "code": "addMenu",
+              "nodeType": "button"
+            }
+          ],
+          "nodeType": "menu",
+          "children": []
+        },
+        {
+          "id": "501271445986738178",
+          "sort": 3,
+          "name": "Role",
+          "title": "角色管理",
+          "icon": "menus-menu",
+          "menu_type": 0,
+          "url": "role",
+          "redirect": null,
+          "component": "/system/role/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"角色管理\", \"hidden\": false, \"permissions\": [{\"name\": \"新增角色\", \"code\": \"addRole\", \"menu_id\": \"501271445986738178\"}, {\"name\": \"编辑角色\", \"code\": \"editRole\", \"menu_id\": \"501271445986738178\"}, {\"name\": \"删除角色\", \"code\": \"deleteRole\", \"menu_id\": \"501271445986738178\"}, {\"name\": \"绑定人员\", \"code\": \"bindUser\", \"menu_id\": \"501271445986738178\"}, {\"name\": \"菜单权限\", \"code\": \"menuAuth\", \"menu_id\": \"501271445986738178\"}, {\"name\": \"接口权限\", \"code\": \"apiAuth\", \"menu_id\": \"501271445986738178\"}]}",
+          "parent_id": "501271445986476034",
+          "permissions": [
+            {
+              "id": "501271445988245506",
+              "name": "接口权限",
+              "code": "apiAuth",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445988179970",
+              "name": "菜单权限",
+              "code": "menuAuth",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445988114434",
+              "name": "绑定人员",
+              "code": "bindUser",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445988048898",
+              "name": "删除角色",
+              "code": "deleteRole",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987983362",
+              "name": "编辑角色",
+              "code": "editRole",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987917826",
+              "name": "新增角色",
+              "code": "addRole",
+              "nodeType": "button"
+            }
+          ],
+          "nodeType": "menu",
+          "children": []
+        },
+        {
+          "id": "501271445986607106",
+          "sort": 4,
+          "name": "User",
+          "title": "用户管理",
+          "icon": "menus-menu",
+          "menu_type": 0,
+          "url": "user",
+          "redirect": null,
+          "component": "/system/user/index.vue",
+          "hidden": false,
+          "hidden_in_tab": false,
+          "fixed": false,
+          "remark": null,
+          "meta": "{\"title\": \"用户管理\", \"hidden\": false, \"permissions\": [{\"name\": \"新增用户\", \"code\": \"addUser\", \"menu_id\": \"501271445986607106\"}, {\"name\": \"编辑用户\", \"code\": \"editUser\", \"menu_id\": \"501271445986607106\"}, {\"name\": \"删除用户\", \"code\": \"deleteUser\", \"menu_id\": \"501271445986607106\"}]}",
+          "parent_id": "501271445986476034",
+          "permissions": [
+            {
+              "id": "501271445987524610",
+              "name": "编辑用户",
+              "code": "editUser",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987590146",
+              "name": "删除用户",
+              "code": "deleteUser",
+              "nodeType": "button"
+            },
+            {
+              "id": "501271445987459074",
+              "name": "新增用户",
+              "code": "addUser",
+              "nodeType": "button"
+            }
+          ],
+          "nodeType": "menu",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "501271445986410498",
+      "sort": 4,
+      "name": "home",
+      "title": "数字人大驾驶舱",
+      "icon": "menus-menu",
+      "menu_type": 0,
+      "url": "home",
+      "redirect": null,
+      "component": "/represents-repository-info/home/index.vue",
+      "hidden": false,
+      "hidden_in_tab": false,
+      "fixed": false,
+      "remark": null,
+      "meta": "{\"title\": \"数字人大驾驶舱\", \"hidden\": false}",
+      "parent_id": null,
+      "permissions": [],
+      "nodeType": "menu",
+      "children": []
+    }
+  ]
+}

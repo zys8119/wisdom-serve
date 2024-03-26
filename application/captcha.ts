@@ -2,6 +2,10 @@ import {Controller} from "@wisdom-serve/serve"
 import {create} from "svg-captcha"
 import * as dayjs from "dayjs"
 import {v1 as uuidV1} from "uuid"
+
+/**
+ * 图形验证码
+ */
 export default (async function (){
     if(this.$params.id){
         const res = await this.$DBModel.tables.captcha.get({where:{

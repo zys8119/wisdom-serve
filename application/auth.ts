@@ -2,7 +2,11 @@ import {Controller} from "@wisdom-serve/serve"
 import * as dayjs from "dayjs"
 import {createHash} from "crypto"
 import {merge} from "lodash"
-import {sign} from "jsonwebtoken"
+import {sign, verify} from "jsonwebtoken"
+
+/**
+ * 登录
+ */
 export const login:Controller = async function (){
     if(!await this.$DBModel.tables.captcha.get({
         where:{
@@ -41,4 +45,45 @@ export const login:Controller = async function (){
         tokenType:"bearer",
         user:user[0]
     })
+}
+
+
+/**
+ * 登录拦截器
+ */
+
+export const interceptor:Controller = async function (req, res, resultMaps){
+    // 校验登录
+    const token = req.headers.authorization
+    const options = {
+        code:100010
+    }
+    if(typeof token !== "string"){
+        this.$error("token不存在，请登录！", options)
+        return Promise.reject("token不存在，请登录！")
+    }
+    if(!/^Bearer\s.*/.test(token)){
+        this.$error("token格式错误，请登录！",options)
+        return Promise.reject("token格式错误，请登录！")
+    }
+    const tokenContent = token.replace(/^Bearer\s*/,'')
+    try {
+        const {id} = verify(tokenContent, this.options.token.secret) as {
+            id:string
+        }
+        const userRow = await this.$DBModel.tables.user.get({
+            where:{
+                id:{value:id},
+                del:{value:1, and:true},
+            }
+        })
+        if(userRow.length === 0){
+            this.$error("该用户不存在！",options)
+            return Promise.reject("该用户不存在！")
+        }
+        return Promise.resolve(userRow[0])
+    }catch (e) {
+        this.$error(e.message,options)
+        return Promise.reject(e)
+    }
 }
