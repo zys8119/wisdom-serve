@@ -31,7 +31,14 @@ export const login:Controller = async function (){
     const token = sign({...user[0]}, this.options.token.secret, {
         expiresIn: this.options.token.expiresIn
     })
-    this.$success(merge(user[0],{
-        token
-    }))
+    await this.$DBModel.tables.userlogin.post({
+        id:user[0].id,
+        token,
+        createTime:dayjs().format(),
+    })
+    this.$success({
+        accessToken:`Bearer ${token}`,
+        tokenType:"bearer",
+        user:user[0]
+    })
 }
