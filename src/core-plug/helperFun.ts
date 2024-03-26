@@ -59,7 +59,7 @@ const helperFun:Plugin = function (request, response, next){
      */
     this.$error = (data, options = {})=>{
         this.$success(data, merge(options,{
-            message:"请求失败！"
+            message:typeof data === 'string' ? data : "请求失败！"
         }), 403)
     }
     /**

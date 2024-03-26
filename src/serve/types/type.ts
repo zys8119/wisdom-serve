@@ -22,6 +22,11 @@ export interface AppServe extends Partial<AppServeInterface>{
     response?:ServerResponse
 }
 
+export type TokenConfig = {
+    secret:string
+    expiresIn:number | string
+}
+
 export type RouteOptions = {
     [key:string]:RouteOptionsRow
 }
@@ -82,7 +87,9 @@ export interface AppServeOptions extends ServerOptions {
     // websocket 事件钩子
     websocket?:Partial<Websocket>
     // 邮件配置
-    mailConfig?:Options
+    mailConfig?:Options,
+    // jwt-token 配置
+    token?:TokenConfig
 }
 
 export interface Websocket {

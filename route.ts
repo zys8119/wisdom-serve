@@ -16,6 +16,12 @@ export default createRoute({
         {
             path:"/saas/api/v1/captcha/:id",
             controller:async ()=> import("./application/captcha")
+        },
+        {
+            path:"/saas/api/v1/auth/login",
+            funName:"login",
+            method:"post",
+            controller:async ()=> import("./application/auth")
         }
     ]
 });

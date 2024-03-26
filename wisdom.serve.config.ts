@@ -14,4 +14,8 @@ export default <Partial<AppServeOptions>>{
         database:"basicPermissions",
         prefix:""
     },
+    token:{
+        secret:"asasda",
+        expiresIn:1000*60*60*24
+    }
 }
