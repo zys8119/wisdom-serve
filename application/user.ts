@@ -79,3 +79,21 @@ export const createUser:Controller = async function () {
     })
     this.$success()
 }
+
+
+/**
+ * 删除用户
+ */
+export const deleteUser:Controller = async function () {
+    if(!this.$body.ids && this.$body.ids.length === 0){
+        return this.$error("用户id不能为空")
+    }
+    await this.$DBModel.tables.user.update({
+        del:1,
+    },{
+        where:{
+            id:{in:this.$body.ids},
+        }
+    })
+    this.$success()
+}
