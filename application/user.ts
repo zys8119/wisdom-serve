@@ -75,7 +75,7 @@ export const createUser:Controller = async function () {
         enable:this.$body.status === true ? 1 : 0,
         createTime:dayjs().format(),
         updateTime:dayjs().format(),
-        avatar:null,
+        avatar:this.$body.avatarId,
     })
     this.$success()
 }
