@@ -6,7 +6,6 @@ export default <DBModel>{
     columns:{
         id:{
             varchar:255,
-            primary_key:true,
             comment:"用户id",
         },
         token:{
