@@ -21,7 +21,7 @@ export const getUserList:Controller = async function () {
                             like:`%${this.$Serialize.get(this.$query,'search','')}%`
                         },
                         del:{
-                            value:1,
+                            value:0,
                             and:true,
                         }
                     }
@@ -65,7 +65,7 @@ export const createUser:Controller = async function () {
     })){
         return this.$error("系统已存在用户，无法创建")
     }
-    console.log(this.$body)
+    console.log(this.$body.status,this.$body.status === true, this.$body.status === true ? 1 : 0)
     await this.$DBModel.tables.user.post({
         username:this.$body.username,
         password:createHash('md5').update(this.$body.password).digest('hex'),

@@ -55,13 +55,13 @@ export default <DBModel>{
         enable:{
             int:true,
             not_null:true,
-            default:1,
+            default:0,
             comment:"是否启用",
         },
         del:{
             int:true,
             not_null:true,
-            default:1,
+            default:0,
             comment:"是否删除",
         },
     },

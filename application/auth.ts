@@ -20,7 +20,7 @@ export const login:Controller = async function (){
     const where = {
         username:{value:this.$body.username},
         password:{value:createHash('md5').update(this.$body.password).digest("hex"), and:true},
-        del:{value:1,and:true},
+        del:{value:0,and:true},
         enable:{value:1,and:true},
     }
     if(!await this.$DBModel.tables.user.get({
@@ -74,7 +74,7 @@ export const interceptor:Controller = async function (req, res, resultMaps){
         const userRow = await this.$DBModel.tables.user.get({
             where:{
                 id:{value:id},
-                del:{value:1, and:true},
+                del:{value:0, and:true},
                 enable:{value:1, and:true},
             }
         })
