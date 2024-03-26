@@ -13,12 +13,23 @@ export const getUserList:Controller = async function () {
     this.$success(await this.$Serialize.getPage(
         [
             {
-                results:await this.$DBModel.tables.user.get()
+                results:await this.$DBModel.tables.user.get({
+                    where:{
+                        username:{
+                            like:`%${this.$Serialize.get(this.$query,'search','')}%`
+                        }
+                    }
+                })
             }
         ],
         {
         pageNo:this.$query.get('page'),
         pageSize:this.$query.get('pageSize'),
         no_page:this.$query.get('no_page'),
+        defMap:{
+            password:false,
+            nickname:['username'],
+            status:[d=>d.del === '1']
+        }
     }))
 }
