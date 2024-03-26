@@ -24,6 +24,12 @@ export default createRoute({
             controller:async ()=> import("./application/auth")
         },
         {
+            path:"/file/api/v1/file/upload",
+            funName:"upload",
+            method:"post",
+            controller:async ()=> import("./application/file")
+        },
+        {
             path:"/saas/api/v1/",
             funName:"interceptor",
             name:"user",
@@ -53,6 +59,24 @@ export default createRoute({
                     path:'role/update',
                     funName:"updateRole",
                     controller:async ()=> import("./application/role")
+                },
+                {
+                    path:'user/create',
+                    funName:"createUser",
+                    method:"post",
+                    controller:async ()=> import("./application/user")
+                },
+                {
+                    path:'user/delete',
+                    funName:"deleteUser",
+                    method:"post",
+                    controller:async ()=> import("./application/user")
+                },
+                {
+                    path:'user/update',
+                    funName:"updateUser",
+                    method:"post",
+                    controller:async ()=> import("./application/user")
                 }
             ]
         }

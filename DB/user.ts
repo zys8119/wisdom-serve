@@ -7,12 +7,17 @@ export default <DBModel>{
         id:{
             varchar:255,
             primary_key:true,
+            is_uuid:true,
             comment:"用户id",
         },
         username:{
             varchar:255,
             not_null:true,
             comment:"用户名称"
+        },
+        nickname:{
+            varchar:255,
+            comment:"昵称"
         },
         password:{
             varchar:255,
@@ -33,16 +38,30 @@ export default <DBModel>{
             datetime:true,
             comment:"更新时间"
         },
-        isAdmin:{
+        avatar:{
             varchar:255,
+            comment:"头像",
+        },
+        email:{
+            varchar:255,
+            comment:"邮箱",
+        },
+        isAdmin:{
+            int:true,
             not_null:true,
             comment:"是否为超级管理员",
-            default:1,
+            default:0,
+        },
+        enable:{
+            int:true,
+            not_null:true,
+            default:0,
+            comment:"是否启用",
         },
         del:{
-            varchar:255,
+            int:true,
             not_null:true,
-            default:1,
+            default:0,
             comment:"是否删除",
         },
     },
