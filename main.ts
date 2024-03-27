@@ -6,3 +6,4 @@ createApp({
     websocket
 })
 .listen().then();
+console.log(process.env)
