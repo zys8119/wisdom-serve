@@ -9,7 +9,7 @@ export default <Partial<AppServeOptions>>{
         connectionLimit : 100,
         host: 'localhost',
         user: 'root',
-        password: 'rootroot',
+        password: 'Zj21947..',
         port: 3306,
         database:"basicPermissions",
         prefix:""

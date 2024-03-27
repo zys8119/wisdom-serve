@@ -61,6 +61,12 @@ export default createRoute({
                     controller:async ()=> import("./application/role")
                 },
                 {
+                    path:'role/delete',
+                    funName:"deleteRole",
+                    method:"post",
+                    controller:async ()=> import("./application/role")
+                },
+                {
                     path:'user/create',
                     funName:"createUser",
                     method:"post",

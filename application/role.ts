@@ -11,6 +11,10 @@ export const getRoleList:Controller = async function () {
                     where: {
                         name: {
                             like: `%${ this.$Serialize.get(this.$query, 'search', '') }%`
+                        },
+                        del:{
+                            value:0,
+                            and:true,
                         }
                     }
                 })
@@ -46,7 +50,7 @@ export const createRole:Controller = async function () {
  * 编辑角色列表
  */
 export const updateRole:Controller = async function () {
-    const { name, code, status, createTime, updateTime, id } = this.$body
+    const { name, code, status, id } = this.$body
     if(!name) return this.$error("用户名称不能为空")
     if(!code) return this.$error("用户CODE不能为空")
     await this.$DBModel.tables.role.update({
@@ -56,6 +60,17 @@ export const updateRole:Controller = async function () {
         where:{
             id:{value: id},
         }
+    })
+    this.$success()
+}
+/**
+ * 删除角色列表
+ */
+export const deleteRole:Controller = async function () {
+    await this.$DBModel.tables.role.update({
+        del: 1,
+    },{
+        where:{ id:{ in: this.$body.ids} }
     })
     this.$success()
 }
