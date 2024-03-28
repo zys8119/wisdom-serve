@@ -8,6 +8,7 @@ export default <DBModel>{
             int:true,
             auto_increment:true,
             primary_key:true,
+            default:0,
             comment:"id"
         },
         user_id:{
@@ -29,11 +30,5 @@ export default <DBModel>{
             datetime:true,
             comment:"更新时间"
         },
-        del:{
-            int:true,
-            not_null:true,
-            default:0,
-            comment:"是否删除",
-        }
     },
 }

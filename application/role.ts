@@ -89,7 +89,6 @@ export const getRoleUsers:Controller = async function () {
             ],
             where:{
                 role_id:{value: role_id},
-                "role_user.del":{value: 0, and:true},
             },
             left_join:"user",
             on:"user.id = role_user.user_id",
@@ -98,4 +97,34 @@ export const getRoleUsers:Controller = async function () {
         defMap:{
         }
     }))
+}
+
+
+/**
+ * 更新角色用户
+ */
+export const updateRoleUsers:Controller = async function () {
+    const {roleId, userIds} = this.$body
+    if(await this.$DBModel.tables.role_user.get({
+        where:{
+            role_id:{value: roleId}
+        }
+    }, true)){
+        await this.$DBModel.tables.role_user.update({
+            user_id:JSON.stringify(userIds),
+            updateTime :dayjs().format(),
+        },{
+            where:{
+                role_id:{value: roleId}
+            }
+        })
+    }else {
+        await this.$DBModel.tables.role_user.post({
+            user_id:JSON.stringify(userIds),
+            role_id:roleId,
+            createTime :dayjs().format(),
+            updateTime :dayjs().format(),
+        })
+    }
+    this.$success()
 }
