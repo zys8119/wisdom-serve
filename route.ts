@@ -4,6 +4,10 @@ import {resolve} from "path";
 export default createRoute({
     routes:[
         {
+            path:"/youdaoTranslate",
+            controller:async ()=> import("./youdaoTranslate"),
+        },
+        {
             path:"/",
             controller:async function (){
                 this.$send(readFileSync(resolve(__dirname, './views/welcome.html')))
