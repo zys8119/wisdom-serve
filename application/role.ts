@@ -74,3 +74,28 @@ export const deleteRole:Controller = async function () {
     })
     this.$success()
 }
+
+/**
+ * 获取角色绑定人员
+ */
+export const getRoleUsers:Controller = async function () {
+    const role_id = this.$params.role_id
+    this.$success(this.$Serialize.getPage([
+        await this.$DBModel.tables.role_user.get({
+            select:[
+                "username",
+                "nickname",
+                "user.id",
+            ],
+            where:{
+                role_id:{value: role_id},
+                "role_user.del":{value: 0, and:true},
+            },
+            left_join:"user",
+            on:"user.id = role_user.user_id",
+        })
+    ],{
+        defMap:{
+        }
+    }))
+}

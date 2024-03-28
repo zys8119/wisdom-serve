@@ -87,6 +87,12 @@ export default createRoute({
                     funName:"updateUser",
                     method:"post",
                     controller:async ()=> import("./application/user")
+                },
+                {
+                    path:'role/users/:role_id',
+                    funName:"getRoleUsers",
+                    method:"get",
+                    controller:async ()=> import("./application/role")
                 }
             ]
         }

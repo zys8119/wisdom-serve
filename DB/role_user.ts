@@ -4,6 +4,12 @@ export default <DBModel>{
     charset:"utf8",
     commit:"角色人员表",
     columns:{
+        id:{
+            int:true,
+            auto_increment:true,
+            primary_key:true,
+            comment:"id"
+        },
         user_id:{
             varchar:255,
             not_null:true,
