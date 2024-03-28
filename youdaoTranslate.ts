@@ -6,7 +6,6 @@ import {launch} from "puppeteer"
 export default (async function (){
     try {
         const url =`https://fanyi.baidu.com/#${this.$body.source_lang.toLowerCase()}/${this.$body.target_lang.toLowerCase()}/${encodeURIComponent(this.$body.text)}`
-        console.log(url)
         const browser = await launch({})
         const page = await browser.newPage()
         await page.goto(url)
