@@ -13,17 +13,6 @@ export const get_menus_by_user:Controller = async function () {
  * 获取用户列表
  */
 export const getUserList:Controller = async function () {
-    console.log(await this.$DBModel.tables.user.get({
-        where:{
-            username:{
-                like:`%${this.$Serialize.get(this.$query,'search','')}%`
-            },
-            del:{
-                value:0,
-                and:true,
-            }
-        }
-    }))
     this.$success(await this.$Serialize.getPage(
         [
             {
@@ -34,6 +23,10 @@ export const getUserList:Controller = async function () {
                         },
                         del:{
                             value:0,
+                            and:true,
+                        },
+                        enable:{
+                            value:1,
                             and:true,
                         }
                     }

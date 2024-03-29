@@ -30,5 +30,11 @@ export default <DBModel>{
             datetime:true,
             comment:"更新时间"
         },
+        del:{
+            int:true,
+            not_null:true,
+            comment:"是否删除",
+            default:0
+        },
     },
 }

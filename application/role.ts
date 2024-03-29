@@ -1,5 +1,6 @@
 import {Controller} from "@wisdom-serve/serve"
 import * as dayjs from "dayjs";
+import {difference} from "lodash";
 /**
  * 获取角色列表
  */
@@ -89,6 +90,7 @@ export const getRoleUsers:Controller = async function () {
             ],
             where:{
                 role_id:{value: role_id},
+                'role_user.del':{value: 0, and:true},
             },
             left_join:"user",
             on:"user.id = role_user.user_id",
@@ -105,26 +107,38 @@ export const getRoleUsers:Controller = async function () {
  */
 export const updateRoleUsers:Controller = async function () {
     const {roleId, userIds} = this.$body
-    if(await this.$DBModel.tables.role_user.get({
+    const res = await this.$DBModel.tables.role_user.get({
         where:{
-            role_id:{value: roleId}
+            role_id:{value: roleId},
         }
-    }, true)){
-        await this.$DBModel.tables.role_user.update({
-            user_id:JSON.stringify(userIds),
-            updateTime :dayjs().format(),
-        },{
-            where:{
-                role_id:{value: roleId}
-            }
-        })
-    }else {
+    })
+    const resIds = res.map(e=>e.user_id)
+    const old = userIds.filter(e=>resIds.find(ee=> ee === e))
+    await this.$DBModel.tables.role_user.update({
+        updateTime:dayjs().format(),
+        del:0,
+    },{
+        where:{
+            role_id:{value: roleId},
+            user_id:{ in: old, and:true},
+        }
+    })
+    await this.$DBModel.tables.role_user.update({
+        updateTime:dayjs().format(),
+        del:1,
+    },{
+        where:{
+            role_id:{value: roleId},
+            user_id:{ in: difference(resIds, userIds), and:true},
+        }
+    })
+    await Promise.all(difference(userIds, old).map(async e=>{
         await this.$DBModel.tables.role_user.post({
-            user_id:JSON.stringify(userIds),
+            user_id:e,
             role_id:roleId,
             createTime :dayjs().format(),
             updateTime :dayjs().format(),
         })
-    }
+    }))
     this.$success()
 }
