@@ -1,5 +1,10 @@
 import {Controller} from "@wisdom-serve/serve";
 import {launch} from "puppeteer"
+import {template} from "lodash"
+import * as mammoth from "mammoth"
+import {readFileSync} from "fs";
+import axios from "axios";
+import {sign} from "jsonwebtoken";
 /**
  * bobplugin 翻译插件爬虫
  */
@@ -30,3 +35,7 @@ export default (async function (){
         this.$error()
     }
 }) as Controller
+
+export const test:Controller = async function (){
+    this.$success(sign(this.$body, "my_jwt_secret"))
+}

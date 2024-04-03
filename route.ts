@@ -8,6 +8,11 @@ export default createRoute({
             controller:async ()=> import("./youdaoTranslate"),
         },
         {
+            path:"/test",
+            funName:"test",
+            controller:async ()=> import("./youdaoTranslate"),
+        },
+        {
             path:"/",
             controller:async function (){
                 this.$send(readFileSync(resolve(__dirname, './views/welcome.html')))
