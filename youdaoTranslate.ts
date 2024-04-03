@@ -11,15 +11,17 @@ import {sign} from "jsonwebtoken";
 export default (async function (){
     try {
         const url =`https://fanyi.baidu.com/#${this.$body.source_lang.toLowerCase()}/${this.$body.target_lang.toLowerCase()}/${encodeURIComponent(this.$body.text)}`
-        const browser = await launch({})
-        const page = await browser.newPage()
+        const browser = global.browser || await launch({})
+        const page = global.page || await browser.newPage()
         await page.goto(url)
         const selector = '#trans-selection'
         await page.waitForSelector(selector)
         const result = await page.evaluate((selector)=>{
             return (document.querySelector(selector) as HTMLDivElement)?.innerText
         }, selector)
-        await browser.close()
+        global.browser = browser
+        global.page = page
+        // await browser.close()
         this.$send(JSON.stringify({
             "code": 0,
             "translateResult": [
