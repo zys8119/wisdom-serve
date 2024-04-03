@@ -1,16 +1,22 @@
 import {Controller} from "@wisdom-serve/serve"
 import * as dayjs from "dayjs";
-export const group_type:Controller = async function (){
+export const group:Controller = async function (){
     this.$success(this.$Serialize.getPage([
-        await this.$DBModel.tables.user_group_type.get({
+        await this.$DBModel.tables.user_group.get({
+            select:"a.*, b.name as groupTypeName",
             where:{
-                del:{value:0},
-                name:{like:`%${this.$Serialize.get(this.$query,'search','')}%`, and:true},
-            }
+                "a.del":{value:0},
+                "a.name":{like:`%${this.$Serialize.get(this.$query,'search','')}%`, and:true},
+            },
+            gather_alias:"as a",
+            left_join:"user_group_type as b ",
+            on:"a.type = b.id",
         })
     ],{
         defMap:{
-            status:[v=>v.enable === 1]
+            status:[v=>v.enable === 1],
+            groupTypeId:[v=>v.type],
+            asd:[console.log]
         },
         pageNo:this.$Serialize.get(this.$query,'page',1),
         pageSize:this.$Serialize.get(this.$query,'pageSize',10),
@@ -18,9 +24,10 @@ export const group_type:Controller = async function (){
     }))
 }
 export const create:Controller = async function (){
-    await this.$DBModel.tables.user_group_type.post({
+    await this.$DBModel.tables.user_group.post({
         name:this.$body.name,
         code:this.$body.code,
+        type:this.$body.groupTypeId,
         enable:this.$body.status === true ? 1 : 0,
         createTime:dayjs().format(),
         updateTime:dayjs().format(),
@@ -28,7 +35,7 @@ export const create:Controller = async function (){
     this.$success()
 }
 export const update:Controller = async function (){
-    await this.$DBModel.tables.user_group_type.update({
+    await this.$DBModel.tables.user_group.update({
         name:this.$body.name,
         code:this.$body.code,
         enable:this.$body.status === true ? 1 : 0,
@@ -40,8 +47,8 @@ export const update:Controller = async function (){
     })
     this.$success()
 }
-export const deleteGrouptype:Controller = async function (){
-    await this.$DBModel.tables.user_group_type.update({
+export const deleteGroup:Controller = async function (){
+    await this.$DBModel.tables.user_group.update({
         del:1
     },{
         where:{
@@ -50,5 +57,5 @@ export const deleteGrouptype:Controller = async function (){
     })
     this.$success()
 }
-export default group_type
+export default group
 
