@@ -1,0 +1,40 @@
+import { DBModel} from "@wisdom-serve/core-plug/mysql";
+export default <DBModel>{
+    collate: "utf8_unicode_ci",
+    charset:"utf8",
+    commit:"用户组人员绑定表",
+    columns:{
+        id:{
+            int:true,
+            auto_increment:true,
+            primary_key:true,
+            default:0,
+            comment:"id"
+        },
+        user_id:{
+            varchar:255,
+            not_null:true,
+            comment:"人员id"
+        },
+        group_id:{
+            varchar:255,
+            not_null:true,
+            comment:"用户组id"
+        },
+        createTime:{
+            datetime:true,
+            not_null:true,
+            comment:"创建时间"
+        },
+        updateTime:{
+            datetime:true,
+            comment:"更新时间"
+        },
+        del:{
+            int:true,
+            not_null:true,
+            comment:"是否删除",
+            default:0
+        },
+    },
+}
