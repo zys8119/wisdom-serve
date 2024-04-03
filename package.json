@@ -5,7 +5,7 @@
   "main": "src/serve/index.ts",
   "scripts": {
     "start": "npm run dev",
-    "dev": "ts-node main.ts",
+    "dev": "dotenvx run -- ts-node main.ts ",
     "build": "ts-node build/build.ts --trace-warnings"
   },
   "author": "",
@@ -15,6 +15,7 @@
   ],
   "types": "./global.d.ts",
   "dependencies": {
+    "@dotenvx/dotenvx": "^0.27.2",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/lodash": "^4.14.181",
     "@types/mysql": "^2.15.21",

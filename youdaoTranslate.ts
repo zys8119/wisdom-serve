@@ -39,3 +39,7 @@ export default (async function (){
 export const test:Controller = async function (){
     this.$success(sign(this.$body, "my_jwt_secret"))
 }
+
+export const test2:Controller = async function (){
+    this.$success()
+}
