@@ -292,7 +292,7 @@ const HttpHeaderConfig =  [
 
 export const MethodArr = [
     'get' , 'GET',
-    'delete' , 'DELETE',
+    'deleteGrouptypedelete' , 'DELETE',
     'head' , 'HEAD',
     'options' , 'OPTIONS',
     'post' , 'POST',

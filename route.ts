@@ -87,6 +87,25 @@ export default createRoute({
                     controller:async ()=> import("./application/user")
                 },
                 {
+                    path:'group_type/list',
+                    controller:async ()=> import("./application/group_type")
+                },
+                {
+                    path:'group_type/create',
+                    funName:'create',
+                    controller:async ()=> import("./application/group_type")
+                },
+                {
+                    path:'group_type/update',
+                    funName:'update',
+                    controller:async ()=> import("./application/group_type")
+                },
+                {
+                    path:'group_type/delete',
+                    funName:'deleteGrouptype',
+                    controller:async ()=> import("./application/group_type")
+                },
+                {
                     path:'user/delete',
                     funName:"deleteUser",
                     method:"post",
