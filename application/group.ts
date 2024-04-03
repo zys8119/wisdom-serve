@@ -59,7 +59,6 @@ export const deleteGroup:Controller = async function (){
     this.$success()
 }
 export const getGroupUsers:Controller = async function (){
-    console.log(this.$params.id)
     this.$success(this.$Serialize.getPage([
         await this.$DBModel.tables.group_bind_user.get({
             where:{
