@@ -41,7 +41,7 @@ export const zentao = async function (){
                 "msgtype":"markdown",
                 "markdown":{
                     title:"asdas",
-                    text:`${this.$body.text || '消息测试，请忽略 '}@18768527014 @1830677362`
+                    text:`${this.$body.text || '消息测试，请忽略 '}`
                 },
                 at:{
                     atMobiles:[],
@@ -168,8 +168,8 @@ export const zentaoLogin = async function () {
             text:$(e).find('td').text().split("\n").filter(e=>e.trim()).join('')
         }))
         const baseInfoAssign:any = [...baseInfo].find((e:any)=> e.label === '当前指派') || {}
-        baseInfoAssign.user = (baseInfoAssign.text || '').replace(/(郭猛猛)(\s*于.*)/,'$1')
-        baseInfoAssign.time = (baseInfoAssign.text || '').replace(/(郭猛猛)(\s*于.*)/,'$2')
+        baseInfoAssign.user = (baseInfoAssign.text || '').replace(/([^\s].*)(\s*于.*)/,'$1')
+        baseInfoAssign.time = (baseInfoAssign.text || '').replace(/([^\s].*)(\s*于.*)/,'$2')
         const results = {
             detail:$(".detail-content.article-content").text(),
             bug:$(".page-title .label-id").text(),
