@@ -168,8 +168,8 @@ export const zentaoLogin = async function () {
             text:$(e).find('td').text().split("\n").filter(e=>e.trim()).join('')
         }))
         const baseInfoAssign:any = [...baseInfo].find((e:any)=> e.label === '当前指派') || {}
-        baseInfoAssign.user = (baseInfoAssign.text || '').replace(/([^\s].*)(\s*于.*)/,'$1')
-        baseInfoAssign.time = (baseInfoAssign.text || '').replace(/([^\s].*)(\s*于.*)/,'$2')
+        baseInfoAssign.user = (baseInfoAssign.text || '').replace(/([^\s]*)?(\s*于.*)/,'$1').trim()
+        baseInfoAssign.time = (baseInfoAssign.text || '').replace(/([^\s]*)?(\s*于.*)/,'$2').replace(/于\s*/,'')
         const results = {
             detail:$(".detail-content.article-content").text(),
             bug:$(".page-title .label-id").text(),
