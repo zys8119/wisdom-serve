@@ -47,7 +47,7 @@ export default (async function() {
         }))).reduce((a:any[],b:any[])=>a.concat(b),[])
         console.log("歌曲列表获取成功,开始下载列表歌曲")
         let k = 0
-        while(k < result.length){
+        while(k < result.slice(0,2).length){
             try{
                 const element = result[k]
                 const {data:{url}} = await axios({
@@ -65,7 +65,7 @@ export default (async function() {
                 const {data} = await axios({
                     url,
                     method:"get",
-                    responseType:"blob"
+                    responseType:"arraybuffer"
                 })
                 const cwd = resolve(__dirname,'music')
                 mkdirSync(cwd,{
