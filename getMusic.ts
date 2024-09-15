@@ -47,7 +47,7 @@ export default (async function() {
         }))).reduce((a:any[],b:any[])=>a.concat(b),[])
         console.log("歌曲列表获取成功,开始下载列表歌曲")
         let k = 0
-        while(k < result.slice(0,2).length){
+        while(k < result.length){
             try{
                 const element = result[k]
                 const {data:{url}} = await axios({
