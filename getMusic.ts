@@ -7,17 +7,23 @@ export default (async function() {
     try{
         const browser =await launch()
         const page =await browser.newPage()
-        await page.goto('http://www.22a5.com/list/djwuqu.html')
-        const category = await page.evaluate(async()=>{
-            return [...document.querySelectorAll<HTMLAnchorElement>('.ilingku_fl li a')].map(e=>{
-                return {
-                    title:e.innerText,
-                    url:e.href
-                }
+        let url = null
+        if(typeof this.$query.get('so') === 'string'){
+            url = `http://www.22a5.com/so/${encodeURIComponent(this.$query.get('so'))}.html`
+        }else{
+            await page.goto('http://www.22a5.com/list/djwuqu.html')
+            const category = await page.evaluate(async()=>{
+                return [...document.querySelectorAll<HTMLAnchorElement>('.ilingku_fl li a')].map(e=>{
+                    return {
+                        title:e.innerText,
+                        url:e.href
+                    }
+                })
             })
-        })
-        console.log("类别获取成功")
-        const url = category.find(e=>e.title === this.$query.get('category')) ?? category?.[0].url
+            console.log("类别获取成功")
+            url = category.find(e=>e.title === this.$query.get('category'))?.url ?? category?.[0].url
+        }
+        console.log(url)
         await page.goto(url as any)
         const pages = await page.evaluate(async(url:string)=>{
             return [...document.querySelectorAll<HTMLAnchorElement>('.page a')].map(e=>{
@@ -32,7 +38,7 @@ export default (async function() {
             const page =await browser.newPage()
             await page.goto(e.url)
             const data = await page.evaluate(async()=>{
-                return [...document.querySelectorAll<HTMLAnchorElement>('.play_list ul li a')].map(e=>{
+                return [...document.querySelectorAll<HTMLAnchorElement>('.play_list ul li .name a')].map(e=>{
                     const url = e.href
                     const id = url.replace(/(.*\/)(.*)(\.html$)/,'$2')
                     return {
@@ -67,7 +73,7 @@ export default (async function() {
                     method:"get",
                     responseType:"arraybuffer"
                 })
-                const cwd = resolve(__dirname,'music')
+                const cwd = resolve(__dirname,typeof this.$query.get('so') === 'string' ? decodeURIComponent(this.$query.get('so')) : (this.$query.get('category') || 'music'))
                 mkdirSync(cwd,{
                     recursive:true
                 })
