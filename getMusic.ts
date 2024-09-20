@@ -7,9 +7,10 @@ export default (async function() {
     try{
         const browser =await launch()
         const page =await browser.newPage()
+        const so = this.$query.get('so')
         let url = null
-        if(typeof this.$query.get('so') === 'string'){
-            url = `http://www.22a5.com/so/${encodeURIComponent(this.$query.get('so'))}.html`
+        if(typeof so === 'string'){
+            url = /^http/.test(so) ? so : `http://www.22a5.com/so/${encodeURIComponent(this.$query.get('so'))}.html`
         }else{
             await page.goto('http://www.22a5.com/list/djwuqu.html')
             const category = await page.evaluate(async()=>{
@@ -35,18 +36,20 @@ export default (async function() {
         },url)
         console.log('分类页面url获取成功')
         const result = (await Promise.all(pages.map(async e=>{
-            const page =await browser.newPage()
+            const page = await browser.newPage()
             await page.goto(e.url)
+            await page.waitForSelector('.play_list ul li .name a')
             const data = await page.evaluate(async()=>{
                 return [...document.querySelectorAll<HTMLAnchorElement>('.play_list ul li .name a')].map(e=>{
                     const url = e.href
                     const id = url.replace(/(.*\/)(.*)(\.html$)/,'$2')
+                    console.log(id)
                     return {
                         title:e.innerText,
                         url,
                         id,
                     }
-                }).filter(e=>/\w/.test(e.title))
+                })
             })
             await page.close()
             return data
@@ -67,13 +70,18 @@ export default (async function() {
                         id:element.id,
                         type:'music',
                     },
+                    proxy:{
+                        host:"127.0.0.1",
+                        port:7890,
+                        protocol:"http"
+                    }
                 })
                 const {data} = await axios({
                     url,
                     method:"get",
                     responseType:"arraybuffer"
                 })
-                const cwd = resolve(__dirname,typeof this.$query.get('so') === 'string' ? decodeURIComponent(this.$query.get('so')) : (this.$query.get('category') || 'music'))
+                const cwd = resolve(__dirname,this.$query.get('dirname') || typeof so === 'string' ? decodeURIComponent(so) : (this.$query.get('category') || 'music'))
                 mkdirSync(cwd,{
                     recursive:true
                 })
