@@ -69,18 +69,14 @@ export default (async function() {
                         id:element.id,
                         type:'music',
                     },
-                    proxy:{
-                        host:"127.0.0.1",
-                        port:7890,
-                        protocol:"http"
-                    }
                 })
                 const {data} = await axios({
                     url,
                     method:"get",
                     responseType:"arraybuffer"
                 })
-                const cwd = resolve(__dirname,this.$query.get('dirname') || typeof so === 'string' ? decodeURIComponent(so) : (this.$query.get('category') || 'music'))
+                const cwd = resolve(__dirname,this.$query.get('dirname') || (typeof so === 'string' ? decodeURIComponent(so) : (this.$query.get('category') || 'music')))
+                console.log("下载目录", cwd)
                 mkdirSync(cwd,{
                     recursive:true
                 })
