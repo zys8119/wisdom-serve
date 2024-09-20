@@ -69,21 +69,22 @@ export default (async function() {
         while(k < result.length){
             try{
                 const element = result[k]
-                const {data:{url}} = await axios({
-                    url:"http://www.22a5.com/js/play.php",
-                    method:"post",
-                    headers: {
-                        referer: element.url,
-                        "Content-Type":"application/x-www-form-urlencoded; charset=UTF-8"
-                    },
-                    data:{
-                        id:element.id,
-                        type:'music',
-                    },
-                })
                 console.log(url)
                 const filePath = resolve(cwd, `${element.title}.mp3`)
+                console.log(filePath, existsSync(filePath))
                 if(!existsSync(filePath)){
+                    const {data:{url}} = await axios({
+                        url:"http://www.22a5.com/js/play.php",
+                        method:"post",
+                        headers: {
+                            referer: element.url,
+                            "Content-Type":"application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        data:{
+                            id:element.id,
+                            type:'music',
+                        },
+                    })
                     const {data} = await axios({
                         url,
                         method:"get",
