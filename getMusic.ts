@@ -1,8 +1,9 @@
 import {Controller} from "@wisdom-serve/serve"
 import {launch} from "puppeteer"
 import axios from "axios"
-import {writeFileSync, mkdirSync} from "fs-extra"
+import {writeFileSync, mkdirSync, existsSync} from "fs-extra"
 import {resolve} from "path"
+const caches:Record<any,any> = {}
 export default (async function() {
     try{
         const browser =await launch()
@@ -25,8 +26,11 @@ export default (async function() {
             url = category.find(e=>e.title === this.$query.get('category'))?.url ?? category?.[0].url
         }
         console.log(url)
-        await page.goto(url as any)
-        const pages = await page.evaluate(async(url:string)=>{
+        if(!caches[url]){
+            await page.goto(url as any)
+            caches[url] = {}
+        }
+        const pages = caches[url].pages || await page.evaluate(async(url:string)=>{
             return [...document.querySelectorAll<HTMLAnchorElement>('.page a')].map(e=>{
                 return {
                     title:e.innerText,
@@ -34,8 +38,9 @@ export default (async function() {
                 }
             }).filter(e=>/\w/.test(e.title))
         },url)
+        caches[url].pages = pages
         console.log('分类页面url获取成功')
-        const result = (await Promise.all(pages.map(async e=>{
+        const result = caches[url].result || (await Promise.all(pages.map(async e=>{
             const page = await browser.newPage()
             await page.goto(e.url)
             const data = await page.evaluate(async()=>{
@@ -53,7 +58,13 @@ export default (async function() {
             await page.close()
             return data
         }))).reduce((a:any[],b:any[])=>a.concat(b),[])
+        caches[url].result = result
         console.log("歌曲列表获取成功,开始下载列表歌曲")
+        const cwd = resolve(__dirname,this.$query.get('dirname') || (typeof so === 'string' ? decodeURIComponent(so) : (this.$query.get('category') || 'music')))
+        mkdirSync(cwd,{
+            recursive:true
+        })
+        console.log("下载目录", cwd)
         let k = 0
         while(k < result.length){
             try{
@@ -70,17 +81,21 @@ export default (async function() {
                         type:'music',
                     },
                 })
-                const {data} = await axios({
-                    url,
-                    method:"get",
-                    responseType:"arraybuffer"
-                })
-                const cwd = resolve(__dirname,this.$query.get('dirname') || (typeof so === 'string' ? decodeURIComponent(so) : (this.$query.get('category') || 'music')))
-                console.log("下载目录", cwd)
-                mkdirSync(cwd,{
-                    recursive:true
-                })
-                writeFileSync(resolve(cwd, `${element.title}.mp3`), data)
+                console.log(url)
+                const filePath = resolve(cwd, `${element.title}.mp3`)
+                if(!existsSync(filePath)){
+                    const {data} = await axios({
+                        url,
+                        method:"get",
+                        responseType:"arraybuffer",
+                        proxy:{
+                            host:"127.0.0.1",
+                            port:7890,
+                            protocol:"http"
+                        }
+                    })
+                    writeFileSync(filePath, data)
+                }
                 console.log(`当前进度(${(k/result.length*100).toFixed(2)})：${k}/${result.length}==>${element.title}`)
                 k+=1
             }catch(e){
