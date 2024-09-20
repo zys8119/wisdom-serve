@@ -38,7 +38,6 @@ export default (async function() {
         const result = (await Promise.all(pages.map(async e=>{
             const page = await browser.newPage()
             await page.goto(e.url)
-            await page.waitForSelector('.play_list ul li .name a')
             const data = await page.evaluate(async()=>{
                 return [...document.querySelectorAll<HTMLAnchorElement>('.play_list ul li .name a')].map(e=>{
                     const url = e.href
