@@ -6,6 +6,20 @@ export default createRoute({
             controller:async function (){
                 this.$success('Welcome to RAG')
             },
+        },{
+            path:"/api",
+            children:[
+                {
+                    path:'v1',
+                    children:[
+                        {
+                            path:"chat",
+                            funName:"chat",
+                            controller:()=> import("./chat")
+                        }
+                    ]
+                }
+            ]
         }
     ]
 });
