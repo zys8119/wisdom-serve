@@ -9,7 +9,7 @@ export const chat = (async function (){
         password: 'Ul6WI12AuZomj76Kvl700-',
         port: 3306,
     })
-    const res = await db.query(`SELECT * FROM conference.conf_main `)
-    console.log(res)
+    const res = await db.query(`SELECT * FROM conference.conf_main `,'')
+    console.log(res[0])
     this.$success('asdas')
 }) as Controller
