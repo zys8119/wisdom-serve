@@ -12,4 +12,5 @@ export default <Partial<AppServeOptions>>{
         port: 3306,
         prefix:""
     },
+    cors:true
 }
