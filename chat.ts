@@ -36,7 +36,5 @@ export const chat = (async function () {
             { role: 'user', content: this.$body.modelValue || '' },
         ],
       })
-    console.log(response.message.content)
-    
-    this.$success() 
+    this.$success(response.message.content) 
 }) as Controller
