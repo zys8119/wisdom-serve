@@ -12,7 +12,6 @@ export const chat = (async function () {
     } catch (e) {
         //
     }
-    console.log(body)
     const info: any = {
         userMessage: []
     }
@@ -42,9 +41,13 @@ export const chat = (async function () {
         model: 'llama3.1',
         messages: [
             { role: 'assistant', content: '你是会议助手，擅长处理会议相关问题及整理相关信息' },
-            { role: 'system', content: JSON.stringify(info.conference_info) },
+            { role: 'assistant', content: '你是代码助手，擅长处理代码相关的问题' },
+            { role: 'system', content: '请严谨回答每个问题，尽可能的真实有效，同时请直接返回结果，不要过多的描述，可以给出代码的直接给出代码，不要给出解释' },
+            { role: 'system', content: '接下来我将给出我所有的问题，请先展示不要作出任何回答，等我说“可以回答了”你再回答' },
+            ...(info.conference_info ? [{ role: 'system', content: JSON.stringify(info.conference_info) }] :[]),
             ...info.userMessage,
             { role: 'user', content: body.modelValue || '' },
+            { role: 'user', content: '可以回答了' },
         ],
     })
     this.response.writeHead(200, {
