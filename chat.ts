@@ -46,8 +46,8 @@ export const chat = (async function () {
             { role: 'system', content: '接下来我将给出我所有的问题，请先展示不要作出任何回答，等我说“可以回答了”你再回答' },
             ...(info.conference_info ? [{ role: 'system', content: JSON.stringify(info.conference_info) }] :[]),
             ...info.userMessage,
-            { role: 'user', content: body.modelValue || '' },
             { role: 'user', content: '可以回答了' },
+            { role: 'user', content: body.modelValue || '' },
         ],
     })
     this.response.writeHead(200, {
