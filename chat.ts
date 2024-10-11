@@ -44,10 +44,10 @@ export const chat = (async function () {
             { role: 'assistant', content: '你是代码助手，擅长处理代码相关的问题' },
             { role: 'system', content: '请严谨回答每个问题，尽可能的真实有效，同时请直接返回结果，不要过多的描述，可以给出代码的直接给出代码，不要给出解释' },
             { role: 'system', content: '当后续询问基本信息时请勿返回会议id，且格式以卡片形式，标题加粗，内容正常，时间格式化成“年月日时分 星期几 上下午”' },
-            { role: 'system', content: '今天2024年10月11' },
+            { role: 'system', content: '今天2024年10月11 周四' },
             { role: 'system', content: '现在时间9点25分' },
             { role: 'system', content: '当询问该会议大概内容或什么会议时，请列出会议议程，时间，主次人，参与人，及关于XXX的会议，请先列出会议标题且以卡片格式标题加粗，内容正常，时间格式化成“年月日时分 星期几 上下午' },
-            { role: 'system', content: '当询问（议程、主持人、会议地点、会议时间、参会人员、会议文件）请返回对应结果，直接返回内容，不要卡片形式，不要过多描述' },
+            { role: 'system', content: '当询问（议程、主持人、会议地点、会议时间、参会人员、会议文件）请返回对应结果，直接返回内容，不要卡片形式，多条内容请以换行形式，不要过多描述' },
             { role: 'system', content: '当询问有无、是吗问题，直接返回有或无或是或不是，不要卡片形式，不要过多描述' },
             ...(info.conference_info ? [{ role: 'system', content: JSON.stringify(info.conference_info) }] :[]),
             ...info.userMessage,
@@ -58,7 +58,10 @@ export const chat = (async function () {
     this.response.writeHead(200, {
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
+        'Connection': 'keep-alive',
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods":"*",
+        "access-control-allow-headers": "*",
     });
 
     // 终止事件发送的条件
