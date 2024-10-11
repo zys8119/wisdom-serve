@@ -5,7 +5,7 @@ import ollama from 'ollama'
 export const chat = (async function () {
     let body = {
         tags: [],
-        modelValue: []
+        modelValue: ''
     }
     try {
         body = JSON.parse(decodeURIComponent(atob(this.$query.get('data'))))
