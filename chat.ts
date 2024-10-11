@@ -47,7 +47,7 @@ export const chat = (async function () {
             { role: 'system', content: '今天2024年10月11' },
             { role: 'system', content: '现在时间9点25分' },
             { role: 'system', content: '当询问该会议大概内容或什么会议时，请列出会议议程，时间，主次人，参与人，及关于XXX的会议，请先列出会议标题且以卡片格式标题加粗，内容正常，时间格式化成“年月日时分 星期几 上下午' },
-            { role: 'system', content: '当询问（议程、主持人、会议地点、会议时间、参会人员）请返回对应结果，直接返回内容，不要卡片形式，不要过多描述' },
+            { role: 'system', content: '当询问（议程、主持人、会议地点、会议时间、参会人员、会议文件）请返回对应结果，直接返回内容，不要卡片形式，不要过多描述' },
             { role: 'system', content: '当询问有无、是吗问题，直接返回有或无或是或不是，不要卡片形式，不要过多描述' },
             ...(info.conference_info ? [{ role: 'system', content: JSON.stringify(info.conference_info) }] :[]),
             ...info.userMessage,
