@@ -75,7 +75,7 @@ const encodeWsFrame = (data)=> {
         }
     }
 
-    frame = payloadData ? Buffer.concat([Buffer.from(frame), payloadData]) : Buffer.from(frame);
+    frame = payloadData ? Buffer.concat([Buffer.from(frame), payloadData] as any) : Buffer.from(frame);
     return frame;
 }
 

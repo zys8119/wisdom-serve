@@ -1,6 +1,6 @@
 const bufferSplit = (buff:Buffer, splitter:any)=>{
     const buffTter = Buffer.from(splitter);
-    const index = buff.indexOf(buffTter);
+    const index = buff.indexOf(buffTter as any);
     let resUlt = [];
     if(index > -1){
         resUlt = resUlt.concat(buff.slice(0,index));

@@ -3,6 +3,9 @@
         "module": "commonjs",
         "target": "esnext",
         "sourceMap": true,
+        "types": [
+            "pdf-lib/index"
+        ]
     },
     "exclude": [
         "node_modules"

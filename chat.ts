@@ -2,6 +2,10 @@ import { Controller } from "@wisdom-serve/serve"
 import { DBSql } from "@wisdom-serve/core-plug/mysql"
 import sql from "./sql-commit-function"
 import ollama from 'ollama'
+import { readFileSync } from 'fs'
+import * as pdf from 'pdf-parse'
+import { launch, Page } from 'puppeteer'
+
 export const chat = (async function () {
     let body = {
         tags: [],
@@ -49,7 +53,7 @@ export const chat = (async function () {
             { role: 'system', content: '当询问该会议大概内容或什么会议时，请列出会议议程，时间，主次人，参与人，及关于XXX的会议，请先列出会议标题且以卡片格式标题加粗，内容正常，时间格式化成“年月日时分 星期几 上下午' },
             { role: 'system', content: '当询问（议程、主持人、会议地点、会议时间、参会人员、会议文件）请返回对应结果，直接返回内容，不要卡片形式，多条内容请以换行形式，不要过多描述' },
             { role: 'system', content: '当询问有无、是吗问题，直接返回有或无或是或不是，不要卡片形式，不要过多描述' },
-            ...(info.conference_info ? [{ role: 'system', content: JSON.stringify(info.conference_info) }] :[]),
+            ...(info.conference_info ? [{ role: 'system', content: JSON.stringify(info.conference_info) }] : []),
             ...info.userMessage,
             { role: 'user', content: '可以回答了' },
             { role: 'user', content: body.modelValue || '' },
@@ -60,7 +64,7 @@ export const chat = (async function () {
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
         "access-control-allow-origin": "*",
-        "access-control-allow-methods":"*",
+        "access-control-allow-methods": "*",
         "access-control-allow-headers": "*",
     });
 
@@ -69,10 +73,41 @@ export const chat = (async function () {
         this.response.end(); // 关闭响应
     });
     for await (const part of response) {
-        if(part.done){
+        if (part.done) {
             this.response.end(); // 关闭响应
-        }else{
+        } else {
             this.response.write(`data: ${JSON.stringify(part)}\n\n`)
         }
+    }
+}) as Controller
+
+export const pdfParse = (async function () {
+    try {
+        const browser = await launch({
+            // headless:false,
+            devtools:true,
+            defaultViewport:{
+                width:0,
+                height:0,
+            }
+        })
+        let page = await browser.newPage()
+        const waitForSelector = async (selector: string) => {
+            return await page.evaluate(async function name(selector) {
+                if (!document.querySelector(selector)) {
+                    return await new Promise(r => {
+                        requestAnimationFrame(async () => {
+                            await name(selector)
+                            r(true)
+                        })
+                    })
+                }
+            },selector)
+        }
+        // await browser.close()
+        this.$success('pdfParse')
+    } catch (err) {
+        console.error(err)
+        this.$error(err.message)
     }
 }) as Controller

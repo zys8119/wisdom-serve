@@ -1,5 +1,5 @@
 import {createApp} from "@wisdom-serve/serve"
-import "./global.ts"
+import "./global"
 import websocket from "./websocket"
 createApp({
     route:()=> import("./route"),
