@@ -21,6 +21,11 @@ export default createRoute({
                             path:"pdf-parse",
                             funName:"pdfParse",
                             controller:()=> import("./chat")
+                        },
+                        {
+                            path:"history",
+                            funName:"history",
+                            controller:()=> import("./chat")
                         }
                     ]
                 }

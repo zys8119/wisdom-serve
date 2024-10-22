@@ -18,7 +18,7 @@ export const chat = (async function () {
     const info: any = {
         userMessage: []
     }
-    const sqls = sql("./sql.sql")
+    const sqls = sql("./sql.sql");
     const db = new DBSql(this, this.request, this.response, '242', {
         connectionLimit: 100,
         host: '192.168.110.242',
@@ -82,10 +82,20 @@ export const chat = (async function () {
 
 export const pdfParse = (async function () {
     try {
-        const sqls = sql("./sql.sql")
-        this.$success((await this.$DB.query(sqls.query_file_path_by_doc_id,['27869125914656'])).results)
+        const sqls = sql("./sql.sql");
+        this.$success((await this.$DB.query(sqls.query_file_path_by_doc_id,['27869125914656'])).results);
     } catch (err) {
         console.error(err)
         this.$error(err.err || err.message)
     }
 }) as Controller
+
+export const history = (async function () {
+    try {
+        const sqls = sql("./chat.sql");
+        this.$success((await this.$DB.query(sqls.query_history)).results);
+    } catch (err) {
+        console.error(err)
+        this.$error(err.err || err.message)
+    }
+})
