@@ -43,9 +43,8 @@ export const chatAuthInterceptor = (async function () {
 export const chat = (async function (req, res, {userInfo:info}) {
     // 查询历史聊天记录
     const chatSqls = sql("./chat.sql");
-    const chatHistoryId = createUuid()
     await this.$DB_$chat.query(chatSqls.update_chat_token_status, [info.token])
-    await this.$DB_$chat.query(chatSqls.createChatHistory, [chatHistoryId, info.chat_id, info.message, 'user'])
+    await this.$DB_$chat.query(chatSqls.createChatHistory, [createUuid(), info.chat_id, info.message, 'user'])
     const {results} = await this.$DB_$chat.query(chatSqls.query_chat_history_by_chat_id, [info.chat_id])
     const messages:any[] = []
     let rowChatInfoIndex = 0
@@ -115,16 +114,21 @@ export const chat = (async function (req, res, {userInfo:info}) {
         "access-control-allow-methods": "*",
         "access-control-allow-headers": "*",
     });
-
+    let systemMessages = ''
+    const close = async ()=>{
+        await this.$DB_$chat.query(chatSqls.createChatHistory, [createUuid(), info.chat_id, systemMessages, 'assistant'])
+    }
     // 终止事件发送的条件
-    this.response.on('close', () => {
+    this.response.on('close', async () => {
+        await close()
         this.response.end(); // 关闭响应
     });
     for await (const part of response) {
         if (part.done) {
+            await close()
             this.response.end(); // 关闭响应
         } else {
-            console.log(part)
+            systemMessages += part?.message?.content
             this.response.write(`data: ${JSON.stringify(part)}\n\n`)
         }
     }
