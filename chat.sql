@@ -28,9 +28,9 @@ select * FROM chat_history WHERE chat_id = ? and status = 1;
 创建聊天历史记录
 @createChatHistory
 */
-INSERT INTO chat_history (id, chat_id, create_time,message, status) VALUES (?, ?, NOW(), ?, 1);
+INSERT INTO chat_history (id, chat_id, create_time,message, role, status) VALUES (?, ?, NOW(), ?,?, 1);
 /**
 更新聊天token状态
 @update_chat_token_status
 */
-UPDATE chat_token (status) VALUES (0) WHERE token = ?;
+UPDATE chat_token set status = 0  WHERE token = ?;
