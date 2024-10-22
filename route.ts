@@ -21,6 +21,11 @@ export default createRoute({
                             controller:()=> import("./chat")
                         },
                         {
+                            path:"getChatToken",
+                            funName:"getChatToken",
+                            controller:()=> import("./chat")
+                        },
+                        {
                             path:"pdf-parse",
                             funName:"pdfParse",
                             controller:()=> import("./chat")
