@@ -62,9 +62,25 @@ FROM (
     ) as a
     left JOIN conf_agenda as b on b.conference_id = a.会议id
 GROUP BY
-    a.会议id
+    a.会议id;
 /**
 会议文件路径查询
 @query_file_path
 */
-SELECT * FROM conf_dir_doc_rel WHERE conference_id = ? and name = ?
+SELECT a.*, CONCAT(
+        'http://192.168.110.242/file/resource/public', b.path
+    ) as url
+FROM conf_dir_doc_rel as a
+    LEFT JOIN phoenix.fms_file as b on b.id = a.document_id
+WHERE
+    a.conference_id = ?
+    and a.name = ?;
+/**
+根据文库的文件id查询文件对应路径
+@query_file_path_by_doc_id
+*/
+SELECT a.*,CONCAT('http://192.168.110.242/file/resource/public',b.path) as url
+FROM doc_library as a
+    left JOIN phoenix.fms_file as b on b.id = a.file_id
+WHERE
+    a.id = ?;
