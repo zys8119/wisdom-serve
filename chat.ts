@@ -78,7 +78,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
                 infoMessages.push({ role: 'assistant', content: prompt },)
             }
         }
-        if(rowChatInfo.type === 'user'){
+        if(rowChatInfo.role === 'user'){
             // 先助理
             await Promise.all(body.tags.filter(e=>['assistant'].includes(e.type)).map(async (item: any) => {
                 return typeMap[item.type] && await typeMap[item.type]?.(item)
@@ -93,9 +93,9 @@ export const chat = (async function (req, res, {userInfo:info}) {
             }))
             infoMessages.push({role: 'user', content: body.modelValue || ''})
             messages.push(...infoMessages)
-        }else if(rowChatInfo.type === 'system'){
+        }else if(rowChatInfo.role === 'system'){
             messages.push({role:'system', content:rowChatInfo.message})
-        }else if(rowChatInfo.type === 'assistant'){
+        }else if(rowChatInfo.role === 'assistant'){
             messages.push({role:'assistant', content:rowChatInfo.message})
         }
         rowChatInfoIndex += 1
