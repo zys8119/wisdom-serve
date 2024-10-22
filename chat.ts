@@ -82,9 +82,10 @@ export const chat = (async function () {
 
 export const pdfParse = (async function () {
     try {
-        this.$success((await pdf(readFileSync('/Users/zhangyunshan/Desktop/test2.pdf'))).text)
+        const sqls = sql("./sql.sql")
+        this.$success((await this.$DB.query(sqls.conf_base_info,'531122828150337266')).results)
     } catch (err) {
         console.error(err)
-        this.$error(err.message)
+        this.$error(err.err || err.message)
     }
 }) as Controller

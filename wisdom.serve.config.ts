@@ -10,7 +10,8 @@ export default <Partial<AppServeOptions>>{
         user: 'root',
         password: 'Ul6WI12AuZomj76Kvl700-',
         port: 3306,
-        prefix:""
+        prefix:"",
+        database:"conference"
     },
     cors:true
 }
