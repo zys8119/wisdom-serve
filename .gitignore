@@ -5,3 +5,8 @@ node_modules
 /halo2
 mysqlBackup
 mysql
+trainingData/
+pdf-build/
+logs/
+extraConfigs/
+dockerWork/
