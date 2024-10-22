@@ -228,6 +228,7 @@ class requestListener implements AppServe{
                 //todo 控制器执行
                 const controllerArrs = Parents.concat([route]);
                 const resultMap = {}
+                let controllerResult = null
                 const fn = async (p_route)=>{
                     //todo 判断请求方式
                     const method:any = Object.prototype.toString.call(p_route.method) === '[object String]' ? [p_route.method] :
@@ -258,6 +259,7 @@ class requestListener implements AppServe{
                                     defaultController = (await result)?.[controllerName]
                                 }
                                 const awaitResult = await defaultController.call(this, this.request, this.response, resultMap)
+                                controllerResult =  awaitResult;
                                 if(awaitResult){
                                     result = awaitResult;
                                 }
@@ -285,7 +287,9 @@ class requestListener implements AppServe{
                             errorEmit(this, 500, e.message)
                         }
                     }else {
-                        this.response.end()
+                        if(controllerResult !== false){
+                            this.response.end()
+                        }
                     }
                 }
                 init( 0)

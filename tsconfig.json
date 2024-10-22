@@ -1,8 +1,9 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "CommonJS",
         "target": "esnext",
         "sourceMap": true,
+        "allowSyntheticDefaultImports": true,
         "types": [
             "pdf-lib/index"
         ]

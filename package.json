@@ -39,6 +39,7 @@
     "ollama": "^0.5.9",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.7.76",
     "puppeteer": "^23.6.0",
     "ts-node": "^10.7.0",
     "ts-node-build": "^0.1.2",

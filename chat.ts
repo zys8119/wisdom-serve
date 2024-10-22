@@ -4,7 +4,6 @@ import sql from "./sql-commit-function"
 import ollama from 'ollama'
 import { readFileSync } from 'fs'
 import * as pdf from 'pdf-parse'
-import { launch, Page } from 'puppeteer'
 
 export const chat = (async function () {
     let body = {
@@ -83,29 +82,7 @@ export const chat = (async function () {
 
 export const pdfParse = (async function () {
     try {
-        const browser = await launch({
-            // headless:false,
-            devtools:true,
-            defaultViewport:{
-                width:0,
-                height:0,
-            }
-        })
-        let page = await browser.newPage()
-        const waitForSelector = async (selector: string) => {
-            return await page.evaluate(async function name(selector) {
-                if (!document.querySelector(selector)) {
-                    return await new Promise(r => {
-                        requestAnimationFrame(async () => {
-                            await name(selector)
-                            r(true)
-                        })
-                    })
-                }
-            },selector)
-        }
-        // await browser.close()
-        this.$success('pdfParse')
+        this.$success((await pdf(readFileSync('/Users/zhangyunshan/Desktop/test2.pdf'))).text)
     } catch (err) {
         console.error(err)
         this.$error(err.message)
