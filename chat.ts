@@ -50,7 +50,6 @@ export const chat = (async function (req, res, {userInfo:info}) {
     let rowChatInfoIndex = 0
     while(rowChatInfoIndex < results.length){
         const rowChatInfo = results[rowChatInfoIndex]
-        console.log(rowChatInfo)
         const infoMessages:any[] = []
         let body = {
             tags: [],
