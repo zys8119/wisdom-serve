@@ -79,8 +79,22 @@ WHERE
 根据文库的文件id查询文件对应路径
 @query_file_path_by_doc_id
 */
-SELECT a.*,CONCAT('http://192.168.110.242/file/resource/public',b.path) as url
+SELECT a.*, CONCAT(
+        'http://192.168.110.242/file/resource/public', b.path
+    ) as url
 FROM doc_library as a
     left JOIN phoenix.fms_file as b on b.id = a.file_id
 WHERE
     a.id = ?;
+
+/**
+查询用户信息
+@query_user_info_by_token
+*/
+SELECT b.*, a.uid,a.tenant_id as tid
+FROM phoenix.saas_token as a
+left JOIN phoenix.saas_user as b on a.uid = b.id
+WHERE
+    a.token = ?
+    and a.expired_at > NOW()
+    and a.status = 1;

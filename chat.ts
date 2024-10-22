@@ -4,7 +4,32 @@ import sql from "./sql-commit-function"
 import ollama from 'ollama'
 import { readFileSync } from 'fs'
 import * as pdf from 'pdf-parse'
-
+export const chatAuthInterceptor = (async function () {
+    try {
+        const sqls = sql("./sql.sql");
+        const {
+            headers: {
+                authorization
+            }
+        } = this.request
+        
+        if (!authorization) {
+            this.$error('Unauthorized')
+            return Promise.reject("Unauthorized")
+        }
+        const userInfo = (await this.$DB.query(sqls.query_user_info_by_token, [authorization])).results?.[0]
+        if (!userInfo) {
+            this.$error('Unauthorized')
+            return Promise.reject("Unauthorized")
+        }
+        return Promise.resolve(userInfo)
+    } catch (err) {
+        console.error(err)
+        this.$error(err.err || err.message)
+    }
+    
+    
+}) as Controller
 export const chat = (async function () {
     let body = {
         tags: [],
@@ -93,9 +118,19 @@ export const pdfParse = (async function () {
 export const history = (async function () {
     try {
         const sqls = sql("./chat.sql");
-        this.$success((await this.$DB.query(sqls.query_history)).results);
+        this.$success((await this.$DB_$chat.query(sqls.query_history)).results);
     } catch (err) {
         console.error(err)
         this.$error(err.err || err.message)
     }
-})
+}) as Controller
+
+export const createHistory = (async function (req,res,{userInfo:{uid,tid}}) {
+    try {
+        const sqls = sql("./chat.sql");
+        this.$success((await this.$DB_$chat.query(sqls.createHistory,[uid,tid, this.$Serialize.get(true, this.$body,'title')])).results);
+    } catch (err) {
+        console.error(err)
+        this.$error(err.err || err.message)
+    }
+}) as Controller

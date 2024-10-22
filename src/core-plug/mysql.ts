@@ -848,6 +848,7 @@ declare module "@wisdom-serve/serve" {
     };
     interface AppServeInterface extends ext$DB, ext$DBModel{
         $DB:DBSql
+        $DB_$chat:DBSql
         $DBModel:$DBModel
         $Serialize:$Serialize
     }

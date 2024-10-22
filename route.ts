@@ -8,6 +8,9 @@ export default createRoute({
             },
         },{
             path:"/api",
+            funName:'chatAuthInterceptor',
+            name:"userInfo",
+            controller:()=> import("./chat"),
             children:[
                 {
                     path:'v1',
@@ -25,6 +28,11 @@ export default createRoute({
                         {
                             path:"history",
                             funName:"history",
+                            controller:()=> import("./chat")
+                        },
+                        {
+                            path:"createHistory",
+                            funName:"createHistory",
                             controller:()=> import("./chat")
                         }
                     ]
