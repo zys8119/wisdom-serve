@@ -41,40 +41,67 @@ export const chatAuthInterceptor = (async function () {
     
 }) as Controller
 export const chat = (async function (req, res, {userInfo:info}) {
-    let body = {
-        tags: [],
-        modelValue: ''
-    }
-    try {
-        body = JSON.parse(info.message)
-    } catch (e) {
-        //
-    }
     // 查询历史聊天记录
     const chatSqls = sql("./chat.sql");
     const chatHistoryId = createUuid()
     await this.$DB_$chat.query(chatSqls.update_chat_token_status, [info.token])
     await this.$DB_$chat.query(chatSqls.createChatHistory, [chatHistoryId, info.chat_id, info.message, 'user'])
     const {results} = await this.$DB_$chat.query(chatSqls.query_chat_history_by_chat_id, [info.chat_id])
-    const messages = results
+    const messages:any[] = []
+    let rowChatInfoIndex = 0
+    while(rowChatInfoIndex < results.length){
+        const rowChatInfo = results[rowChatInfoIndex]
+        console.log(rowChatInfo)
+        const infoMessages:any[] = []
+        let body = {
+            tags: [],
+            modelValue: ''
+        }
+        try {
+            body = JSON.parse(rowChatInfo.message)
+        } catch (e) {
+            //
+        }
+        const sqls = sql("./sql.sql");
+        const typeMap = {
+            // 获取会议信息
+            async m_id({ value: conference_id }: any) {
+                const { results } = await this.$DB.query(sqls.conf_base_info, [conference_id])
+                infoMessages.push({role: 'system', content:results[0] || {}})
+            },
+            // 快捷指令
+            async quick({ prompt }: any) {
+                infoMessages.push({ role: 'user', content: prompt },)
+            },
+            // 助理提示词
+            async assistant({ prompt }: any) {
+                infoMessages.push({ role: 'assistant', content: prompt },)
+            }
+        }
+        if(rowChatInfo.type === 'user'){
+            // 先助理
+            await Promise.all(body.tags.filter(e=>['assistant'].includes(e.type)).map(async (item: any) => {
+                return typeMap[item.type] && await typeMap[item.type]?.(item)
+            }))
+            // 后系统
+            await Promise.all(body.tags.filter(e=>!['assistant','user'].includes(e.type)).map(async (item: any) => {
+                return typeMap[item.type] && await typeMap[item.type]?.(item)
+            }))
+            // 用户
+            await Promise.all(body.tags.filter(e=>['user'].includes(e.type)).map(async (item: any) => {
+                return typeMap[item.type] && await typeMap[item.type]?.(item)
+            }))
+            infoMessages.push({role: 'user', content: body.modelValue || ''})
+            messages.push(...infoMessages)
+        }else if(rowChatInfo.type === 'system'){
+            messages.push({role:'system', content:rowChatInfo.message})
+        }else if(rowChatInfo.type === 'assistant'){
+            messages.push({role:'assistant', content:rowChatInfo.message})
+        }
+        rowChatInfoIndex += 1
+    }
     console.log(messages)
-    // const info: any = {
-    //     userMessage: []
-    // }
-    // const sqls = sql("./sql.sql");
-    // const typeMap = {
-    //     // 获取会议信息
-    //     async m_id({ value: conference_id }: any) {
-    //         const { results } = await this.$DB.query(sqls.conf_base_info, [conference_id])
-    //         info.conference_info = results[0] || {}
-    //     },
-    //     async quick({ prompt }: any) {
-    //         info.userMessage.push({ role: 'user', content: prompt },)
-    //     }
-    // }
-    // await Promise.all(body.tags.map(async (item: any) => {
-    //     return typeMap[item.type] && await typeMap[item.type]?.(item)
-    // }))
+    
     const response: any = await ollama.chat({
         stream: true,
         model: 'llama3.1',
@@ -97,6 +124,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
         if (part.done) {
             this.response.end(); // 关闭响应
         } else {
+            console.log(part)
             this.response.write(`data: ${JSON.stringify(part)}\n\n`)
         }
     }
