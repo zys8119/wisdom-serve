@@ -3,7 +3,7 @@
 @query_history
 */
 
-SELECT * FROM history;
+SELECT title, id, create_time FROM history WHERE creator_id = ? and tenant_id = ? and status = 1;
 /**
 创建历史记录
 @createHistory

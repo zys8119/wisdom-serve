@@ -115,10 +115,10 @@ export const pdfParse = (async function () {
     }
 }) as Controller
 
-export const history = (async function () {
+export const history = (async function (req,res,{userInfo:{uid,tid}}) {
     try {
         const sqls = sql("./chat.sql");
-        this.$success((await this.$DB_$chat.query(sqls.query_history)).results);
+        this.$success((await this.$DB_$chat.query(sqls.query_history,[uid,tid])).results);
     } catch (err) {
         console.error(err)
         this.$error(err.err || err.message)
