@@ -83,7 +83,7 @@ export const chat = (async function () {
 export const pdfParse = (async function () {
     try {
         const sqls = sql("./sql.sql")
-        this.$success((await this.$DB.query(sqls.conf_base_info,'531122828150337266')).results)
+        this.$success((await this.$DB.query(sqls.query_file_path,['524058084880969458','（2020）浙0213行初7号.pdf'])).results)
     } catch (err) {
         console.error(err)
         this.$error(err.err || err.message)

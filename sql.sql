@@ -2,12 +2,8 @@
 获取会议基本信息
 @conf_base_info
 */
-select JSON_ARRAYAGG(
-        JSON_OBJECT(
-            '议程名称', b.title, 'aid', b.id, '父级', b.parent_id
-        )
-    ) as 会议议程, a.*
-from (
+select group_concat(b.title) as 会议议程, a.*
+FROM (
         select group_concat(b.name) as 会议文件, a.*
         from (
                 select group_concat(c.name) as 会议通知文件, a.*
@@ -52,7 +48,7 @@ from (
                             a.会议id
                     ) as a
                     left join conference.conf_doc_ntc_rel as b on a.会议id = b.conference_id
-                     left join conference.conf_dir_doc_rel as c on c.id = b.conf_dir_doc_rel_id
+                    left join conference.conf_dir_doc_rel as c on c.id = b.conf_dir_doc_rel_id
                     and b.status = 1
                 group by
                     a.会议id
@@ -64,7 +60,11 @@ from (
         group by
             a.会议id
     ) as a
-    left join conference.conf_agenda as b on a.会议id = b.conference_id
-    and b.status = 1
-group by
-    a.会议id;
+    left JOIN conf_agenda as b on b.conference_id = a.会议id
+GROUP BY
+    a.会议id
+/**
+会议文件路径查询
+@query_file_path
+*/
+SELECT * FROM conf_dir_doc_rel WHERE conference_id = ? and name = ?
