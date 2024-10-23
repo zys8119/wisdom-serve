@@ -144,12 +144,14 @@ export const chat = (async function (req, res, {userInfo:info}) {
                 const filePath = resolve(__dirname,'static/upload',Date.now()+'_'+ label)
                 mkdirSync(resolve(filePath,'..'),{recursive:true})
                 const buff = Buffer.from(value.replace(/^data:.*;base64,/,'') as any,'base64') as any
-                const text = await pdf(buff,{}).then(res=>res.text)
-                if(text){
-                    infoMessages.push({ role: 'assistant', content: `你是文件分析大师，请根据用户提问分析文件内容，并给出分析结果。` })
-                    infoMessages.push({ role: 'system', content: `文件标题：【${label}】` })
-                    infoMessages.push({ role: 'system', content: `${label}文件内容如下：` })
-                    infoMessages.push({ role: 'system', content: text })
+                if(/\.pdf$/.test(label)){
+                    const text = await pdf(buff,{}).then(res=>res.text)
+                    if(text){
+                        infoMessages.push({ role: 'assistant', content: `你是文件分析大师，请根据用户提问分析文件内容，并给出分析结果。` })
+                        infoMessages.push({ role: 'system', content: `文件标题：【${label}】` })
+                        infoMessages.push({ role: 'system', content: `${label}文件内容如下：` })
+                        infoMessages.push({ role: 'system', content: text })
+                    }
                 }
                 writeFileSync(filePath, buff)
             }
