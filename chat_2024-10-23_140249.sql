@@ -28,6 +28,7 @@ CREATE TABLE `assistant` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `message` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'chat消息',
   `status` int NOT NULL COMMENT '状态：1-启用，0-禁用',
+  `role` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'system' COMMENT '助手角色：user ｜ assistant ｜ system',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -37,7 +38,7 @@ CREATE TABLE `assistant` (
 --
 
 /*!40000 ALTER TABLE `assistant` DISABLE KEYS */;
-INSERT INTO `assistant` VALUES (1,'8f2e1524-f6a5-451a-acbd-fdb071e4065d',NULL,'你是会议助手，擅长资料整理，请协助我整理会议资料',1),(2,NULL,NULL,'当问你是什么模型或谁的问题，请回答，我是由浙江智加信息科技有限公司研发的智能会议助手，可以帮您解决任何有关无纸化会议系统的问题，期待您的继续提问',1),(3,NULL,NULL,'当问你是智加是什么或介绍智加的问题，请回答有关浙江智加信息科技有关的信息',1),(4,NULL,NULL,'浙江智加信息科技有限公司信息如下： 统一社会信用代码：91330212MA281ATH4G  复制 电话：13566020589 法定代表人：刘立恺 邮箱：80628683@qq.com 注册资本：1,000万(元)： 官网：https://www.smartplussoft.com 、https://www.zhijiasoft.com/ 注册时间：2015-12-17 地址：浙江省宁波高新区菁华路188号（甬港现代铭楼）2幢603室 主营： 数据处理服务      简介：浙江智加信息科技有限公司成立于2015年12月17日，注册地位于浙江省宁波高新区菁华路188号（甬港现代铭楼）2幢603室，法定代表人为刘立恺。经营范围包括一般项目：信息系统集成服务；技术服务、技术开发、技术咨询、技术交流、技术转让、技术推广；区块链技术相关软件和服务；大数据服务；计算机软硬件及辅助设备批发；计算机软硬件及辅助设备零售；数据处理服务；网络与信息安全软件开发；物联网技术服务；办公设备租赁服务；计算机及通讯设备租赁；电子元器件批发；电子元器件零售；电子产品销售；人工智能硬件销售；可穿戴智能设备销售；软件开发；人工智能应用软件开发；会议及展览服务；教育咨询服务（不含涉许可审批的教育培训活动）；企业管理咨询；计算机系统服务(除依法须经批准的项目外，凭营业执照依法自主开展经营活动)。许可项目：建筑智能化系统设计(依法须经批准的项目，经相关部门批准后方可开展经营活动，具体经营项目以审批结果为准)。浙江智加信息科技有限公司对外投资5家公司',1);
+INSERT INTO `assistant` VALUES (1,'8f2e1524-f6a5-451a-acbd-fdb071e4065d',NULL,'你是会议助手，擅长资料整理，请协助我整理会议资料',1,'assistant'),(2,NULL,NULL,'当问你是什么模型或谁的问题，请回答，我是由浙江智加信息科技有限公司研发的智能会议助手，可以帮您解决任何有关无纸化会议系统的问题，期待您的继续提问',1,'system'),(3,NULL,NULL,'当问你是智加是什么或介绍智加的问题，请回答有关浙江智加信息科技有关的信息',1,'system'),(4,NULL,NULL,'浙江智加信息科技有限公司信息如下： 统一社会信用代码：91330212MA281ATH4G  复制 电话：13566020589 法定代表人：刘立恺 邮箱：80628683@qq.com 注册资本：1,000万(元)： 官网：https://www.smartplussoft.com 、https://www.zhijiasoft.com/ 注册时间：2015-12-17 地址：浙江省宁波高新区菁华路188号（甬港现代铭楼）2幢603室 主营： 数据处理服务      简介：浙江智加信息科技有限公司成立于2015年12月17日，注册地位于浙江省宁波高新区菁华路188号（甬港现代铭楼）2幢603室，法定代表人为刘立恺。经营范围包括一般项目：信息系统集成服务；技术服务、技术开发、技术咨询、技术交流、技术转让、技术推广；区块链技术相关软件和服务；大数据服务；计算机软硬件及辅助设备批发；计算机软硬件及辅助设备零售；数据处理服务；网络与信息安全软件开发；物联网技术服务；办公设备租赁服务；计算机及通讯设备租赁；电子元器件批发；电子元器件零售；电子产品销售；人工智能硬件销售；可穿戴智能设备销售；软件开发；人工智能应用软件开发；会议及展览服务；教育咨询服务（不含涉许可审批的教育培训活动）；企业管理咨询；计算机系统服务(除依法须经批准的项目外，凭营业执照依法自主开展经营活动)。许可项目：建筑智能化系统设计(依法须经批准的项目，经相关部门批准后方可开展经营活动，具体经营项目以审批结果为准)。浙江智加信息科技有限公司对外投资5家公司',1,'system');
 /*!40000 ALTER TABLE `assistant` ENABLE KEYS */;
 
 --
@@ -80,7 +81,7 @@ CREATE TABLE `chat_token` (
   `message` longtext COMMENT 'chat消息',
   `status` int NOT NULL COMMENT '状态：1-启用，0-禁用',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -130,4 +131,4 @@ CREATE TABLE `history` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-23 13:50:04
+-- Dump completed on 2024-10-23 14:02:59

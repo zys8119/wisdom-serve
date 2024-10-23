@@ -55,7 +55,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
     // 获取内置assistant 信息
     const {results:assistantResults} = await this.$DB_$chat.query(chatSqls.query_system_assistant, [info.chat_id])
     assistantResults.forEach(element => {
-        messages.push({role:'system', content:element.message || 0})
+        messages.push({role:element.role || 'system', content:element.message || 0})
     });
     const {results} = await this.$DB_$chat.query(chatSqls.query_chat_history_by_chat_id, [info.chat_id])
     let rowChatInfoIndex = 0
