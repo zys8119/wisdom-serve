@@ -26,6 +26,7 @@
     "@wisdom-serve/core-plug": "workspaces:*",
     "@wisdom-serve/serve": "workspaces:*",
     "@wisdom-serve/utils": "workspaces:*",
+    "axios": "^1.7.7",
     "eslint": "^8.13.0",
     "eslint-plugin-react": "^7.29.4",
     "fast-glob": "^3.2.11",

@@ -3,6 +3,41 @@ import { DBSql } from "@wisdom-serve/core-plug/mysql"
 import sql from "./sql-commit-function"
 import ollama from 'ollama'
 import { v4 as createUuid } from 'uuid'
+import { createHmac } from "crypto";
+import axios from "axios";
+export const send_dingding = async function (data:any){
+    const timestamp = Date.now();
+    const access_token = "";
+    const secret = '';
+    const sign = createHmac('sha256', secret)
+        .update(`${timestamp}\n${secret}`, "utf8")
+        .digest('base64');
+    try {
+        const res = await axios({
+            url:"https://oapi.dingtalk.com/robot/send",
+            method:"post",
+            params:{
+                access_token,
+                timestamp,
+                sign:encodeURIComponent(sign),
+            },
+            data:{
+                "msgtype":"markdown",
+                "markdown":data,
+                at:{
+                    atMobiles:[],
+                }
+            }
+        })
+        if(res.data && typeof res.data.errcode === "number" && res.data.errcode === 0){
+            console.log("【钉钉消息】发送成功")
+        }else {
+            console.error("【钉钉消息】发送成功",res.data)
+        }
+    }catch(err){
+        console.error("【钉钉消息】发送失败",err.message)
+    }
+} as Controller
 export const chatAuthInterceptor = (async function () {
     try {
         if(this.$url === '/api/v1/chat'){
@@ -97,7 +132,10 @@ export const chat = (async function (req, res, {userInfo:info}) {
                     infoMessages.push({ role: 'user', content: prompt })
                 }
                 taskQueue.push(async (data:any)=>{
-                    console.log(data)
+                    await send_dingding({
+                        title:"会议助手",
+                        text:data.systemMessages
+                    },)
                 })
             }
         }
