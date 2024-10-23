@@ -23,7 +23,7 @@ select * FROM chat_token WHERE token = ? and status = 1;
 根据回话id查询历史会话信息
 @query_chat_history_by_chat_id
 */
-select * FROM chat_history WHERE chat_id = ? and status = 1;
+select * FROM chat_history WHERE chat_id = ? and status = 1 ORDER BY create_time;
 /**
 创建聊天历史记录
 @createChatHistory
