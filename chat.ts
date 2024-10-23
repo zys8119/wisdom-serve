@@ -126,7 +126,8 @@ export const chat = (async function (req, res, {userInfo:info}) {
                     stream: true,
                     model: 'llama3.1',
                     messages:messages.concat([
-                        { role: 'user', content: "以上对话请总结出一个标题" }
+                        { role: 'assistant', content: systemMessages },
+                        { role: 'user', content: "以上对话请总结出一个标题" },
                     ]),
                 })
                 for await (const part of response) {
@@ -136,18 +137,23 @@ export const chat = (async function (req, res, {userInfo:info}) {
                         newTitle += part?.message?.content
                     }
                 }
+                return true
             }
         }
         isAdd = true
     }
     // 终止事件发送的条件
     this.response.on('close', async () => {
-        await close()
+        const isNeedUpdateTitle = await close()
+        this.response.write(`data: ${JSON.stringify({isNeedUpdateTitle:true})}\n\n`)
         this.response.end(); // 关闭响应
     });
     for await (const part of response) {
         if (part.done) {
-            await close()
+            const isNeedUpdateTitle =  await close()
+            if(isNeedUpdateTitle){
+                this.response.write(`data: ${JSON.stringify({isNeedUpdateTitle:true})}\n\n`)
+            }
             this.response.end(); // 关闭响应
         } else {
             systemMessages += part?.message?.content
