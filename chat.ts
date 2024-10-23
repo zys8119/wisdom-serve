@@ -43,6 +43,10 @@ export const chatAuthInterceptor = (async function () {
 export const chat = (async function (req, res, {userInfo:info}) {
     // 查询历史聊天记录
     const chatSqls = sql("./chat.sql");
+    const {results:[chatSession]} = await this.$DB_$chat.query(chatSqls.query_chat_history_need_update, [info.chat_id])
+    if(!chatSession){
+        return this.$error("该会话不存在！")
+    }
     await this.$DB_$chat.query(chatSqls.update_chat_token_status, [info.token])
     await this.$DB_$chat.query(chatSqls.createChatHistory, [createUuid(), info.chat_id, info.message, 'user'])
     const {results} = await this.$DB_$chat.query(chatSqls.query_chat_history_by_chat_id, [info.chat_id])
@@ -178,8 +182,13 @@ export const getChatToken = (async function (req,res,{userInfo:{uid,tid}}) {
     try {
         const sqls = sql("./chat.sql");
         const uuid = createUuid()
+        const aiAssistantChatId = this.$Serialize.get(true, this.$body,'aiAssistantChatId')
+        const {results:[chatSession]} = await this.$DB_$chat.query(sqls.query_chat_history_need_update, [aiAssistantChatId])
+        if(!chatSession){
+            return this.$error("该会话不存在！")
+        }
         await this.$DB_$chat.query(sqls.getChatToken,[
-            this.$Serialize.get(true, this.$body,'aiAssistantChatId'),
+            aiAssistantChatId,
             uuid,
             JSON.stringify(this.$Serialize.get(true, this.$body,'data')),
         ])
