@@ -120,7 +120,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
             await this.$DB_$chat.query(chatSqls.createChatHistory, [createUuid(), info.chat_id, systemMessages, 'assistant'])
             // 更新历史标题
             const {results} = await this.$DB_$chat.query(chatSqls.query_chat_history_need_update, [info.chat_id])
-            if(!results?.[0]){
+            if(results?.[0]){
                 let newTitle = ''
                 const response: any = await ollama.chat({
                     stream: true,
