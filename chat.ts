@@ -114,8 +114,13 @@ export const chat = (async function (req, res, {userInfo:info}) {
         "access-control-allow-headers": "*",
     });
     let systemMessages = ''
+    let isAdd = false
     const close = async ()=>{
-        await this.$DB_$chat.query(chatSqls.createChatHistory, [createUuid(), info.chat_id, systemMessages, 'assistant'])
+        if(!isAdd){
+            // 防止重复添加回答消息
+            await this.$DB_$chat.query(chatSqls.createChatHistory, [createUuid(), info.chat_id, systemMessages, 'assistant'])
+        }
+        isAdd = true
     }
     // 终止事件发送的条件
     this.response.on('close', async () => {
