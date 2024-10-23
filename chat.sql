@@ -2,8 +2,12 @@
 查询历史记录
 @query_history
 */
-
 SELECT title, id, create_time, update_time, display_name FROM history WHERE creator_id = ? and tenant_id = ? and status = 1;
+/**
+查询会话详情
+@query_history_details
+*/
+SELECT title, id, create_time, update_time, display_name FROM history WHERE id = ? and status = 1;
 /**
 创建历史记录
 @createHistory
@@ -38,7 +42,7 @@ UPDATE chat_token set status = 0  WHERE token = ?;
 查询聊天记录是否需要更新
 @query_chat_history_need_update
 */
-SELECT * FROM history WHERE id = ? and update_time is NULL
+SELECT * FROM history WHERE id = ? and update_time is NULL AND status = 1;
 /**
 更新聊天对话标题
 @update_chat_history_title
