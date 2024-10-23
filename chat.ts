@@ -127,7 +127,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
                     model: 'llama3.1',
                     messages:messages.concat([
                         { role: 'assistant', content: systemMessages },
-                        { role: 'user', content: "以上对话请总结出一个标题" },
+                        { role: 'user', content: "以上对话请总结出一个标题，请纯文字的形式返回一句话，且不要输出markdown格式，尽可能的简洁明了，语句通顺" },
                     ]),
                 })
                 for await (const part of response) {
