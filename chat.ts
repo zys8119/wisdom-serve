@@ -185,3 +185,14 @@ export const createHistory = (async function (req,res,{userInfo:{uid,tid}}) {
         this.$error(err.err || err.message)
     }
 }) as Controller
+
+export const getChatHistory = (async function () {
+    try {
+        const sqls = sql("./chat.sql");
+        const {results} = await this.$DB_$chat.query(sqls.query_chat_history_by_chat_id,[this.$Serialize.get(true, this.$query,'chat_id')])
+        this.$success(results);
+    } catch (err) {
+        console.error(err)
+        this.$error(err.err || err.message)
+    }
+}) as Controller
