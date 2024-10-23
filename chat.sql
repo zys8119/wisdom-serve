@@ -47,4 +47,9 @@ SELECT * FROM history WHERE id = ? and update_time is NULL AND status = 1;
 更新聊天对话标题
 @update_chat_history_title
 */
-UPDATE history set display_name = ?, update_time = NOW() WHERE id = ?
+UPDATE history set display_name = ?, update_time = NOW() WHERE id = ?;
+/**
+获取内置assistant 信息
+@query_system_assistant
+*/
+SELECT * FROM assistant WHERE chat_id = ? AND status = 1 OR chat_id is NULL and status = 1;
