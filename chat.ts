@@ -52,6 +52,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
     await this.$DB_$chat.query(chatSqls.update_chat_token_status, [info.token])
     await this.$DB_$chat.query(chatSqls.createChatHistory, [createUuid(), info.chat_id, info.message, 'user'])
     const messages:any[] = []
+    const taskQueue = []
     // 获取内置assistant 信息
     const {results:assistantResults} = await this.$DB_$chat.query(chatSqls.query_system_assistant, [info.chat_id])
     assistantResults.forEach(element => {
@@ -80,11 +81,24 @@ export const chat = (async function (req, res, {userInfo:info}) {
             },
             // 快捷指令
             quick:async ({ prompt }: any)=> {
-                infoMessages.push({ role: 'user', content: prompt },)
+                if(prompt){
+                    infoMessages.push({ role: 'user', content: prompt })
+                }
             },
             // 助理提示词
             assistant:async({ prompt }: any)=> {
-                infoMessages.push({ role: 'assistant', content: prompt },)
+                if(prompt){
+                    infoMessages.push({ role: 'assistant', content: prompt })
+                }
+            },
+            // 发送钉钉消息
+            send_dingding:async({prompt}:any)=>{
+                if(prompt){
+                    infoMessages.push({ role: 'user', content: prompt })
+                }
+                taskQueue.push(async (data:any)=>{
+                    console.log(data)
+                })
             }
         }
         if(rowChatInfo.role === 'user'){
@@ -150,6 +164,13 @@ export const chat = (async function (req, res, {userInfo:info}) {
                 }
                 return true
             }
+            await Promise.allSettled(taskQueue.map(async task=>{
+                await task({
+                    messages,
+                    systemMessages,
+                    info,
+                })
+            }))
         }
         isAdd = true
     }
