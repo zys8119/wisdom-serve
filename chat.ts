@@ -147,9 +147,9 @@ export const chat = (async function (req, res, {userInfo:info}) {
                 const text = await pdf(buff,{}).then(res=>res.text)
                 if(text){
                     infoMessages.push({ role: 'assistant', content: `你是文件分析大师，请根据用户提问分析文件内容，并给出分析结果。` })
-                    infoMessages.push({ role: 'assistant', content: `文件标题：【${label}】` })
-                    infoMessages.push({ role: 'assistant', content: `${label}文件内容如下：` })
-                    infoMessages.push({ role: 'assistant', content: text })
+                    infoMessages.push({ role: 'system', content: `文件标题：【${label}】` })
+                    infoMessages.push({ role: 'system', content: `${label}文件内容如下：` })
+                    infoMessages.push({ role: 'system', content: text })
                 }
                 writeFileSync(filePath, buff)
             }
@@ -176,7 +176,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
         }
         rowChatInfoIndex += 1
     }
-    
+    console.log(messages)
     const response: any = await ollama.chat({
         stream: true,
         model: 'llama3.1',
