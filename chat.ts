@@ -63,16 +63,16 @@ export const chat = (async function (req, res, {userInfo:info}) {
         const sqls = sql("./sql.sql");
         const typeMap = {
             // 获取会议信息
-            async m_id({ value: conference_id }: any) {
+            m_id:async ({ value: conference_id }: any) => {
                 const { results } = await this.$DB.query(sqls.conf_base_info, [conference_id])
-                infoMessages.push({role: 'system', content:results[0] || {}})
+                infoMessages.push({role: 'system', content:JSON.stringify(results[0] || {})})
             },
             // 快捷指令
-            async quick({ prompt }: any) {
+            quick:async ({ prompt }: any)=> {
                 infoMessages.push({ role: 'user', content: prompt },)
             },
             // 助理提示词
-            async assistant({ prompt }: any) {
+            assistant:async({ prompt }: any)=> {
                 infoMessages.push({ role: 'assistant', content: prompt },)
             }
         }
