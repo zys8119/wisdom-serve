@@ -1,5 +1,4 @@
 import { Controller } from "@wisdom-serve/serve"
-import { DBSql } from "@wisdom-serve/core-plug/mysql"
 import sql from "./sql-commit-function"
 import ollama from 'ollama'
 import { v4 as createUuid } from 'uuid'
