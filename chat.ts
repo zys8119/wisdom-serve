@@ -6,8 +6,8 @@ import { createHmac } from "crypto";
 import axios from "axios";
 export const send_dingding = async function (data:any){
     const timestamp = Date.now();
-    const access_token = "";
-    const secret = '';
+    const access_token = process.env.access_token;
+    const secret = process.env.secret;
     const sign = createHmac('sha256', secret)
         .update(`${timestamp}\n${secret}`, "utf8")
         .digest('base64');
