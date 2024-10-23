@@ -3,7 +3,10 @@ import sql from "./sql-commit-function"
 import ollama from 'ollama'
 import { v4 as createUuid } from 'uuid'
 import { createHmac } from "crypto";
+import {resolve} from "path";
 import axios from "axios";
+import {writeFileSync, mkdirSync} from "fs-extra";
+import * as pdf from "pdf-parse";
 export const send_dingding = async function (data:any){
     const timestamp = Date.now();
     const access_token = process.env.access_token;
@@ -55,7 +58,6 @@ export const chatAuthInterceptor = (async function () {
                     authorization
                 }
             } = this.request
-            
             if (!authorization) {
                 this.$error('Unauthorized')
                 return Promise.reject("Unauthorized")
@@ -136,6 +138,20 @@ export const chat = (async function (req, res, {userInfo:info}) {
                         text:data.systemMessages
                     },)
                 })
+            },
+            // 手动上传文件
+            file:async ({label, value}:any)=>{
+                const filePath = resolve(__dirname,'static/upload',Date.now()+'_'+ label)
+                mkdirSync(resolve(filePath,'..'),{recursive:true})
+                const buff = Buffer.from(value.replace(/^data:.*;base64,/,'') as any,'base64') as any
+                const text = await pdf(buff,{}).then(res=>res.text)
+                if(text){
+                    infoMessages.push({ role: 'assistant', content: `你是文件分析大师，请根据用户提问分析文件内容，并给出分析结果。` })
+                    infoMessages.push({ role: 'assistant', content: `文件标题：【${label}】` })
+                    infoMessages.push({ role: 'assistant', content: `${label}文件内容如下：` })
+                    infoMessages.push({ role: 'assistant', content: text })
+                }
+                writeFileSync(filePath, buff)
             }
         }
         if(rowChatInfo.role === 'user'){

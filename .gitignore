@@ -11,3 +11,4 @@ pdf-build/
 logs/
 extraConfigs/
 dockerWork/
+/static/upload/
