@@ -145,7 +145,9 @@ export const chat = (async function (req, res, {userInfo:info}) {
     // 终止事件发送的条件
     this.response.on('close', async () => {
         const isNeedUpdateTitle = await close()
-        this.response.write(`data: ${JSON.stringify({isNeedUpdateTitle:true})}\n\n`)
+        if(isNeedUpdateTitle){
+            this.response.write(`data: ${JSON.stringify({isNeedUpdateTitle:true})}\n\n`)
+        }
         this.response.end(); // 关闭响应
     });
     for await (const part of response) {
