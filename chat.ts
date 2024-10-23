@@ -36,7 +36,7 @@ export const send_dingding = async function (data:any){
     }catch(err){
         console.error("【钉钉消息】发送失败",err.message)
     }
-} as Controller
+}
 export const chatAuthInterceptor = (async function () {
     try {
         if(this.$url === '/api/v1/chat'){
