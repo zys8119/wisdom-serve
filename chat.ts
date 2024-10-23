@@ -98,7 +98,6 @@ export const chat = (async function (req, res, {userInfo:info}) {
         }
         rowChatInfoIndex += 1
     }
-    console.log(messages)
     
     const response: any = await ollama.chat({
         stream: true,
@@ -119,6 +118,25 @@ export const chat = (async function (req, res, {userInfo:info}) {
         if(!isAdd){
             // 防止重复添加回答消息
             await this.$DB_$chat.query(chatSqls.createChatHistory, [createUuid(), info.chat_id, systemMessages, 'assistant'])
+            // 更新历史标题
+            const {results} = await this.$DB_$chat.query(chatSqls.query_chat_history_need_update, [info.chat_id])
+            if(!results?.[0]){
+                let newTitle = ''
+                const response: any = await ollama.chat({
+                    stream: true,
+                    model: 'llama3.1',
+                    messages:messages.concat([
+                        { role: 'user', content: "以上对话请总结出一个标题" }
+                    ]),
+                })
+                for await (const part of response) {
+                    if (part.done) {
+                        await this.$DB_$chat.query(chatSqls.update_chat_history_title, [newTitle, info.chat_id])
+                    } else {
+                        newTitle += part?.message?.content
+                    }
+                }
+            }
         }
         isAdd = true
     }
@@ -178,7 +196,8 @@ export const createHistory = (async function (req,res,{userInfo:{uid,tid}}) {
     try {
         const uuid = createUuid()
         const sqls = sql("./chat.sql");
-        await this.$DB_$chat.query(sqls.createHistory,[uuid, uid,tid, this.$Serialize.get(true, this.$body,'title')])
+        const title = this.$Serialize.get(true, this.$body,'title')
+        await this.$DB_$chat.query(sqls.createHistory,[uuid, uid,tid, title, title])
         this.$success(uuid);
     } catch (err) {
         console.error(err)

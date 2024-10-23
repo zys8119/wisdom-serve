@@ -8,7 +8,7 @@ SELECT title, id, create_time FROM history WHERE creator_id = ? and tenant_id = 
 创建历史记录
 @createHistory
 */
-INSERT INTO history (id, create_time, creator_id, tenant_id, title, status) VALUES (?, NOW(), ?, ?, ?, 1);
+INSERT INTO history (id, create_time, creator_id, tenant_id, title, status, display_name) VALUES (?, NOW(), ?, ?, ?, 1,?);
 /**
 创建会话token
 @getChatToken
@@ -34,3 +34,13 @@ INSERT INTO chat_history (id, chat_id, create_time,message, role, status) VALUES
 @update_chat_token_status
 */
 UPDATE chat_token set status = 0  WHERE token = ?;
+/**
+查询聊天记录是否需要更新
+@query_chat_history_need_update
+*/
+SELECT * FROM history WHERE id = ? and update_time is NULL
+/**
+更新聊天对话标题
+@update_chat_history_title
+*/
+UPDATE history set display_name = ?, update_time = NOW() WHERE id = ?
