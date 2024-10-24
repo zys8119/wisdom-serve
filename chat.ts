@@ -178,7 +178,6 @@ export const chat = (async function (req, res, {userInfo:info}) {
         }
         rowChatInfoIndex += 1
     }
-    console.log(messages)
     const response: any = await ollama.chat({
         stream: true,
         model: 'llama3.1',
