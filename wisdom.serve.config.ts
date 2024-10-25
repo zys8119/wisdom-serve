@@ -16,9 +16,9 @@ export default <Partial<AppServeOptions>>{
     extMysqlConfig:{
         chat:{
             connectionLimit : 100,
-            host: '127.0.0.1',
+            host: '192.168.110.242',
             user: 'root',
-            password: 'rootroot',
+            password: 'Ul6WI12AuZomj76Kvl700-',
             port: 3306,
             prefix:"",
             database:"chat"
