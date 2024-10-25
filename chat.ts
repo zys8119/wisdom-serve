@@ -1,16 +1,20 @@
 import { Controller } from "@wisdom-serve/serve"
 import sql from "./sql-commit-function"
-import ollama from 'ollama'
+import {Ollama} from 'ollama'
 import { v4 as createUuid } from 'uuid'
 import { createHmac } from "crypto";
 import {resolve} from "path";
 import axios from "axios";
 import {writeFileSync, mkdirSync} from "fs-extra";
 import * as pdf from "pdf-parse";
+const ollamaChatModel = process.env.model || "llama3.1:8b"
+const ollama = new Ollama({
+    host: "http://192.168.110.46:11434",
+});
 export const send_dingding = async function (data:any){
     const timestamp = Date.now();
-    const access_token = process.env.access_token;
-    const secret = process.env.secret;
+    const access_token = process.env.dingtalk_access_token;
+    const secret = process.env.dingtalk_secret;
     const sign = createHmac('sha256', secret)
         .update(`${timestamp}\n${secret}`, "utf8")
         .digest('base64');
@@ -180,7 +184,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
     }
     const response: any = await ollama.chat({
         stream: true,
-        model: 'llama3.1',
+        model: ollamaChatModel,
         messages,
     })
     this.response.writeHead(200, {
@@ -203,7 +207,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
                 let newTitle = ''
                 const response: any = await ollama.chat({
                     stream: true,
-                    model: 'llama3.1',
+                    model: ollamaChatModel,
                     messages:messages.concat([
                         { role: 'assistant', content: systemMessages },
                         { role: 'user', content: "以上对话请总结出一个标题，请纯文字的形式返回一句话，且不要输出markdown格式，尽可能的简洁明了，语句通顺" },
