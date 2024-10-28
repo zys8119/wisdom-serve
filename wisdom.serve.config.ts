@@ -4,6 +4,9 @@ export default <Partial<AppServeOptions>>{
     mysqlAuto:false,
     debug:true,
     query_params:true,
+    serve:{
+        port:82
+    },
     mysqlConfig:{
         connectionLimit : 100,
         host: '192.168.110.242',
