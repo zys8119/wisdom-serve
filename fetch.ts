@@ -14,7 +14,7 @@ globalThis.fetch = async function (url: any, config: Record<any, any>) {
     url,
     ...config,
     data: config.body,
-    responseType: body.responseType || body.stream as any || null,
+    responseType: config.responseType || (body.stream ? 'stream' : null) as any || null,
   });
   const getBody = ()=>{
     if(body.stream){

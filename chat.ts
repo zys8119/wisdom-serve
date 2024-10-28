@@ -323,7 +323,7 @@ export const getChatHistory = (async function () {
 export const chat_test = (async function () {
     try {
         const res:any = await ollama.chat({
-            // stream: true,
+            stream: true,
             model:ollamaChatModel,
             messages:[
                 {
@@ -332,6 +332,7 @@ export const chat_test = (async function () {
                 }
             ]
         })
+        console.log(res)
         let data = ''
         for await(const part of res){
             if(!part.done){
