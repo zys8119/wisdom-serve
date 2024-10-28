@@ -332,7 +332,6 @@ export const chat_test = (async function () {
                 }
             ]
         })
-        console.log(res)
         let data = ''
         for await(const part of res){
             if(!part.done){
