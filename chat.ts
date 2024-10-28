@@ -320,3 +320,28 @@ export const getChatHistory = (async function () {
         this.$error(err.err || err.message)
     }
 }) as Controller
+export const chat_test = (async function () {
+    try {
+        const res:any = await ollama.chat({
+            // stream: true,
+            model:ollamaChatModel,
+            messages:[
+                {
+                    role:'user',
+                    content:"你好"
+                }
+            ]
+        })
+        let data = ''
+        for await(const part of res){
+            if(!part.done){
+                data += part.message.content
+            }
+        }
+        console.log(data)
+        this.$success(data);
+    } catch (err) {
+        console.error(err)
+        this.$error(err.err || err.message)
+    }
+}) as Controller

@@ -6,6 +6,7 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "ts-node main.ts",
+    "dev-17": "n exec 17 tsnd main.ts",
     "build": "ts-node build/build.ts --trace-warnings"
   },
   "author": "",

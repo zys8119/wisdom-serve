@@ -6,6 +6,11 @@ export default createRoute({
             controller:async function (){
                 this.$success('Welcome to RAG')
             },
+        },
+        {
+            path:"/chat_test",
+            funName:"chat_test",
+            controller:()=> import("./chat"),
         },{
             path:"/api",
             funName:'chatAuthInterceptor',
