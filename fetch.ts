@@ -40,18 +40,18 @@ globalThis.fetch = async function (url: any, config: Record<any, any>) {
                 }
             }
         }
-    }else{
-        return {
-            json(){
-                return res.data
-            }
-        }
     }
   }
   return Promise.resolve({
     ...res,
     ok:true,
     headers: res.headers,
-    body:getBody() as any
+    body:getBody() as any,
+    async json(){
+        return res.data
+    },
+    async text(){
+        return res.data
+    }
   } as unknown as Response);
 };
