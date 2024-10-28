@@ -145,8 +145,8 @@ export const chat = (async function (req, res, {userInfo:info}) {
             },
             // 手动上传文件
             file:async ({label, value}:any)=>{
-                const filePath = resolve(__dirname,'static/upload',Date.now()+'_'+ label)
-                mkdirSync(resolve(filePath,'..'),{recursive:true})
+                // const filePath = resolve(__dirname,'static/upload',Date.now()+'_'+ label)
+                // mkdirSync(resolve(filePath,'..'),{recursive:true})
                 const buff = Buffer.from(value.replace(/^data:.*;base64,/,'') as any,'base64') as any
                 if(/\.pdf$/.test(label)){
                     const text = await pdf(buff,{}).then(res=>res.text)
@@ -157,7 +157,7 @@ export const chat = (async function (req, res, {userInfo:info}) {
                         infoMessages.push({ role: 'system', content: text })
                     }
                 }
-                writeFileSync(filePath, buff)
+                // writeFileSync(filePath, buff)
             }
         }
         if(rowChatInfo.role === 'user'){
