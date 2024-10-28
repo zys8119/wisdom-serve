@@ -9,7 +9,7 @@ import {writeFileSync, mkdirSync} from "fs-extra";
 import * as pdf from "pdf-parse";
 const ollamaChatModel = process.env.model || "llama3.1:8b"
 const ollama = new Ollama({
-    host: "http://192.168.110.46:11434",
+    host: process.env.api_host || "http://192.168.110.46:11434",
 });
 export const send_dingding = async function (data:any){
     const timestamp = Date.now();
