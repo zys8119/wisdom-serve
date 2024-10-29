@@ -36,7 +36,7 @@ export const zentao = async function (){
             data:{
                 "msgtype":"markdown",
                 "markdown":{
-                    title:"asdas",
+                    title:"发现新bug",
                     text:`#### [${bugRes.data.data.title}](${bugRes.data.data.bugUrl})\n\n> 描述：${bugRes.data.data.lastInfo.comment}\n\n 时间：${bugRes.data.data.lastInfo.time}\n\n 操作：${bugRes.data.data.lastInfo.atMessage}`
                 },
                 at:{
