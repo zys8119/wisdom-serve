@@ -1,4 +1,5 @@
 import {createRoute} from "@wisdom-serve/serve"
+import {createRoute} from "puppeteer"
 export default createRoute({
     routes:[
         {
@@ -63,6 +64,11 @@ export default createRoute({
             path:"/zentao-login",
             funName:'zentaoLogin',
             controller:()=> import("./zentao")
+        },
+        {
+            path:"/puppeteer",
+            funName:'puppeteer',
+            controller:()=> import("./puppeteer")
         },
     ]
 });
