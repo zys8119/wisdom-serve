@@ -1,5 +1,4 @@
 import {createRoute} from "@wisdom-serve/serve"
-import {createRoute} from "puppeteer"
 export default createRoute({
     routes:[
         {
