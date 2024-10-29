@@ -53,6 +53,16 @@ export default createRoute({
                     ]
                 }
             ]
-        }
+        },
+        {
+            path:"/zentao",
+            funName:'zentao',
+            controller:()=> import("./zentao")
+        },
+        {
+            path:"/zentao-login",
+            funName:'zentaoLogin',
+            controller:()=> import("./zentao")
+        },
     ]
 });
