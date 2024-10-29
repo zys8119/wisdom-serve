@@ -38,6 +38,7 @@
     "eslint": "^8.13.0",
     "eslint-plugin-react": "^7.29.4",
     "fast-glob": "^3.2.11",
+    "form-data": "^4.0.1",
     "fs-extra": "^11.2.0",
     "hummus": "^1.0.117",
     "javascript-obfuscator": "^4.0.0",
