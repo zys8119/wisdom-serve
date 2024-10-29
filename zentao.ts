@@ -16,7 +16,7 @@ export const zentao = async function (){
         .digest('base64');
     try {
         const bugRes = await axios({
-            url:'http://127.0.0.1:82/zentao-login',
+            url:'http://223.94.45.209:36582/zentao-login',
             method:"get",
             params:{
                 account:"admin",
