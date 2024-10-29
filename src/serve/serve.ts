@@ -105,15 +105,15 @@ export class createAppServe implements AppServe{
 
     async listen(port?: number): Promise<Server> {
         // 文件监听，实现热更新
-        watch(process.cwd(),{
-            recursive:true
-        }, (t,f)=>{
-            const file_path = resolve(process.cwd(),f);
-            if(require.cache[file_path] && existsSync(file_path)){
-                delete require.cache[file_path];
-            }
-            this.hotConfig(file_path)
-        })
+        // watch(process.cwd(),{
+        //     recursive:true
+        // }, (t,f)=>{
+        //     const file_path = resolve(process.cwd(),f);
+        //     if(require.cache[file_path] && existsSync(file_path)){
+        //         delete require.cache[file_path];
+        //     }
+        //     this.hotConfig(file_path)
+        // })
         const listenPort = typeof port === "number" ? port : this.options.serve.port;
         this.options.serve.port = listenPort;
         if(this.options.serve.LogServeInfo){
