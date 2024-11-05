@@ -85,68 +85,95 @@ export const chatAuthInterceptor = async function () {
     this.$error(err.err || err.message);
   }
 } as Controller;
-const ragHost = 'http://223.94.45.209:36580'
+const ragHost = "http://223.94.45.209:36580";
 export const chat = async function (req, res, { userInfo: info }) {
-    try{
-        const {data:{data:{token}}} = await axios({
-            baseURL:ragHost,
-            url: '/api/support/user/account/loginByPassword',
-            method: 'post',
-            data: {
-                "username": "root",
-                "password": createHash("sha256").update('1234').digest("hex")
-            }
-        })
-        const completionsRes = await axios({
-            baseURL:ragHost,
-            url: '/api/v1/chat/completions',
-            method: 'post',
-            responseType:"stream",
-            headers: {
-                "cookie": `fastgpt_token=${token}`
-            },
-            data: {
-                "messages": [
-                    {
-                        "dataId": "hLSkfX6IgO6SYKnnUqYxr84o",
-                        "role": "user",
-                        "content": "你好"
-                    },
-                    {
-                        "dataId": "qemahjs9zykDDmgUIHAXHqog",
-                        "role": "assistant",
-                        "content": ""
-                    }
-                ],
-                "variables": {
-                    "cTime": "2024-11-05 10:59:00 Tuesday"
-                },
-                "appId": "67297119008e9638a2540ada",
-                "chatId": "lMwzbFd6kZqn",
-                "detail": true,
-                "stream": true
-            }
-        })
-        
-        this.response.writeHead(200, {
-        "Content-Type": "text/event-stream; charset=utf-8",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-        "access-control-allow-origin": "*",
-        "access-control-allow-methods": "*",
-        "access-control-allow-headers": "*",
-        });
-        completionsRes.data.on('data', e=>{
-            this.response.write(e)
-        })
-        completionsRes.data.on('end',()=>{
-            this.response.end()
-        })
-        return false
-    }catch(err){
-      console.error(err);
-      this.$error(err.err || err.message);
+  try {
+    // 查询历史聊天记录
+    const chatSqls = sql("./chat.sql");
+    const {
+      results: [chatSession],
+    } = await this.$DB_$chat.query(chatSqls.query_history_details, [
+      info.chat_id,
+    ]);
+    if (!chatSession) {
+      return this.$error("该会话不存在！", {
+        message: "no session",
+      });
     }
+    await this.$DB_$chat.query(chatSqls.update_chat_token_status, [info.token]);
+    await this.$DB_$chat.query(chatSqls.createChatHistory, [
+      createUuid(),
+      info.chat_id,
+      info.message,
+      "user",
+    ]);
+    const {
+      data: {
+        data: { token },
+      },
+    } = await axios({
+      baseURL: ragHost,
+      url: "/api/support/user/account/loginByPassword",
+      method: "post",
+      data: {
+        username: "root",
+        password: createHash("sha256").update("1234").digest("hex"),
+      },
+    });
+    let body = {
+      tags: [],
+      modelValue: "",
+    };
+    try {
+      body = JSON.parse(info.message);
+    } catch (e) {
+      //
+    }
+    const completionsRes = await axios({
+      baseURL: ragHost,
+      url: "/api/v1/chat/completions",
+      method: "post",
+      responseType: "stream",
+      headers: {
+        cookie: `fastgpt_token=${token}`,
+      },
+      data: {
+        messages: [
+          {
+            dataId: "hLSkfX6IgO6SYKnnUqYxr84o",
+            role: "user",
+            content: body.modelValue,
+          },
+        ],
+        variables: {
+          cTime: "2024-11-05 10:59:00 Tuesday",
+        },
+        appId: "67297119008e9638a2540ada",
+        chatId: "lMwzbFd6kZqn",
+        detail: true,
+        stream: true,
+      },
+    });
+
+    this.response.writeHead(200, {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "*",
+      "access-control-allow-headers": "*",
+    });
+    completionsRes.data.on("data", (e) => {
+      this.response.write(e);
+    });
+    completionsRes.data.on("end", () => {
+      this.response.end();
+    });
+    return false;
+  } catch (err) {
+    console.error(err);
+    this.$error(err.err || err.message);
+  }
 } as Controller;
 export const chatOld = async function (req, res, { userInfo: info }) {
   try {
