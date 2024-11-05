@@ -1,11 +1,12 @@
 import { Controller } from "@wisdom-serve/serve";
+import { bufferSplit } from "@wisdom-serve/utils";
 import sql from "./sql-commit-function";
 import { Ollama } from "ollama";
 import { v4 as createUuid } from "uuid";
-import { createHmac } from "crypto";
+import { createHmac, createHash } from "crypto";
 import axios from "axios";
 import * as pdf from "pdf-parse";
-const ollamaChatModel = process.env.model || "llama3.1:8b";
+const ollamaChatModel = process.env.model || "llama3.1";
 const ollama = new Ollama({
   host: process.env.api_host || "http://127.0.0.1:11434",
 });
@@ -84,7 +85,71 @@ export const chatAuthInterceptor = async function () {
     this.$error(err.err || err.message);
   }
 } as Controller;
+const ragHost = 'http://223.94.45.209:36580'
 export const chat = async function (req, res, { userInfo: info }) {
+    try{
+        const {data:{data:{token}}} = await axios({
+            baseURL:ragHost,
+            url: '/api/support/user/account/loginByPassword',
+            method: 'post',
+            data: {
+                "username": "root",
+                "password": createHash("sha256").update('1234').digest("hex")
+            }
+        })
+        const completionsRes = await axios({
+            baseURL:ragHost,
+            url: '/api/v1/chat/completions',
+            method: 'post',
+            responseType:"stream",
+            headers: {
+                "cookie": `fastgpt_token=${token}`
+            },
+            data: {
+                "messages": [
+                    {
+                        "dataId": "hLSkfX6IgO6SYKnnUqYxr84o",
+                        "role": "user",
+                        "content": "你好"
+                    },
+                    {
+                        "dataId": "qemahjs9zykDDmgUIHAXHqog",
+                        "role": "assistant",
+                        "content": ""
+                    }
+                ],
+                "variables": {
+                    "cTime": "2024-11-05 10:59:00 Tuesday"
+                },
+                "appId": "67297119008e9638a2540ada",
+                "chatId": "lMwzbFd6kZqn",
+                "detail": true,
+                "stream": true
+            }
+        })
+        
+        this.response.writeHead(200, {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "*",
+        "access-control-allow-headers": "*",
+        });
+        completionsRes.data.on('data', e=>{
+            console.log(e.toString())
+            console.log("=====================")
+            // this.response.write(e.toString())
+        })
+        completionsRes.data.on('end',()=>{
+            this.response.end()
+        })
+    }catch(err){
+      console.error(err);
+      this.$error(err.err || err.message);
+    }
+} as Controller;
+export const chatOld = async function (req, res, { userInfo: info }) {
   try {
     // 查询历史聊天记录
     const chatSqls = sql("./chat.sql");
