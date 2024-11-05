@@ -137,13 +137,12 @@ export const chat = async function (req, res, { userInfo: info }) {
         "access-control-allow-headers": "*",
         });
         completionsRes.data.on('data', e=>{
-            console.log(e.toString())
-            console.log("=====================")
-            // this.response.write(e.toString())
+            this.response.write(e)
         })
         completionsRes.data.on('end',()=>{
             this.response.end()
         })
+        return false
     }catch(err){
       console.error(err);
       this.$error(err.err || err.message);
