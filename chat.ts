@@ -12,6 +12,8 @@ const ollama = new Ollama({
 });
 const ragHost = "http://223.94.45.209:36580";
 const appId = "67297119008e9638a2540ada";
+const token = "fastgpt-fHgK4Dbe1ijgh6gbE7rPKiupNVII98vpW9sXQbdx5HoLkgEcPlAbfOxejs3P6T";
+const Authorization = `Bearer ${token}`;
 export const send_dingding = async function (data: any) {
   const timestamp = Date.now();
   const access_token = process.env.dingtalk_access_token;
@@ -144,18 +146,14 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
           const text = await pdf(buff, {}).then((res) => res.text);
           if (text) {
             infoMessages.push({
-              role: "assistant",
-              content: `你是文件分析大师，请根据用户提问分析文件内容，并给出分析结果。`,
+              role: "system",
+              content: ` <Data>文件标题：【${label}】 </Data>`,
             });
             infoMessages.push({
               role: "system",
-              content: `文件标题：【${label}】`,
+              content: `<Data>${label}文件内容如下： </Data>`,
             });
-            infoMessages.push({
-              role: "system",
-              content: `${label}文件内容如下：`,
-            });
-            infoMessages.push({ role: "system", content: text });
+            infoMessages.push({ role: "system", content: `<Data>${text}</Data>` });
           }
         }
       },
@@ -192,6 +190,7 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       infoMessages.push({ role: "user", content: body.modelValue || "" });
     }
     messages.push(...infoMessages);
+    console.log(messages);
     const completionsRes = await axios({
       baseURL: ragHost,
       url: "/api/v1/chat/completions",
@@ -295,17 +294,20 @@ export const getChatToken = async function () {
 
 export const history = async function (req, res, { userInfo: fastgpt_token }) {
   try {
-    const { data } = await axios({
+    const { data, request } = await axios({
       baseURL: ragHost,
       url: "/api/core/chat/getHistories",
       method: "post",
       headers: {
         cookie: `fastgpt_token=${fastgpt_token}`,
+        // Authorization
       },
       data: {
         appId,
       },
     });
+    console.log(request._header)
+    console.log(data);
     this.$success(data.data);
   } catch (err) {
     console.error(err);
