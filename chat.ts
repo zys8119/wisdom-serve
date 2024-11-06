@@ -343,16 +343,18 @@ export const getChatHistory = async function (
     });
     const sqls = sql("./chat.sql");
     this.$success(await Promise.all(data.data.history.map(async (e:any)=>{
-      if(e.obj === 'System'){
+      if(e.obj === 'System' || e.obj === 'Human'){
         const {
           results: [info],
         } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [
           e.dataId,
         ]);
-        return {
-          ...e,
-          id:e.dataId,
-          message:info.message
+        if(info){
+          return {
+            ...e,
+            id:e.dataId,
+            message:info.message
+          }
         }
       }
       return e;
