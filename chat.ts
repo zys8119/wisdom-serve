@@ -202,14 +202,21 @@ export const createHistory = async function () {
   }
 } as Controller;
 
-export const getChatHistory = async function () {
+export const getChatHistory = async function (req, res, { userInfo: fastgpt_token }) {
   try {
-    const sqls = sql("./chat.sql");
-    const { results } = await this.$DB_$chat.query(
-      sqls.query_chat_history_by_chat_id,
-      [this.$Serialize.get(true, this.$query, "chat_id")]
-    );
-    this.$success(results);
+    const {data} =await axios({
+      baseURL: ragHost,
+      url: "/api/core/chat/init",
+      method: "get",
+      headers: {
+        cookie: `fastgpt_token=${fastgpt_token}`,
+      },
+      params:{
+        appId,
+        chatId: this.$query.get("chat_id"),
+      }
+    })
+    this.$success(data.data.history);
   } catch (err) {
     console.error(err);
     this.$error(err.err || err.message);
