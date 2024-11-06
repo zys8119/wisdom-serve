@@ -4,6 +4,8 @@ import { Ollama } from "ollama";
 import { v4 as createUuid } from "uuid";
 import { createHmac, createHash } from "crypto";
 import axios from "axios";
+import * as pdf from "pdf-parse";
+import {get} from "lodash";
 const ollamaChatModel = process.env.model || "llama3.1";
 const ollama = new Ollama({
   host: process.env.api_host || "http://127.0.0.1:11434",
@@ -75,10 +77,12 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       modelValue: "",
     };
     const chatToken = this.$Serialize.get(true, this.$query, "t");
-    const sqls = sql("./chat.sql");
+    const sqlsInfo = sql("./chat.sql");
     const {
       results: [info],
-    } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [chatToken]);
+    } = await this.$DB_$chat.query(sqlsInfo.query_chat_info_by_token, [
+      chatToken,
+    ]);
     if (!info) {
       return this.$error("该会话不存在！", {
         message: "no session",
@@ -89,6 +93,105 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
     } catch (err) {
       console.error(err);
     }
+    const messages: any[] = [];
+    const infoMessages: any[] = [];
+    const taskQueue = [];
+    const sqls = sql("./sql.sql");
+    const typeMap = {
+      // 获取会议信息
+      m_id: async ({ value: conference_id }: any) => {
+        const { results } = await this.$DB.query(sqls.conf_base_info, [
+          conference_id,
+        ]);
+        infoMessages.push({
+          role: "system",
+          content: JSON.stringify(results[0] || {}),
+        });
+      },
+      // 快捷指令
+      quick: async ({ prompt }: any) => {
+        if (prompt) {
+          infoMessages.push({ role: "user", content: prompt });
+        }
+      },
+      // 助理提示词
+      assistant: async ({ prompt }: any) => {
+        if (prompt) {
+          infoMessages.push({ role: "assistant", content: prompt });
+        }
+      },
+      // 发送钉钉消息
+      send_dingding: async ({ prompt }: any) => {
+        if (prompt) {
+          infoMessages.push({ role: "user", content: prompt });
+        }
+        taskQueue.push(async (data: any) => {
+          await send_dingding({
+            title: "无纸化会议AI助手",
+            text: data.systemMessages,
+          });
+        });
+      },
+      // 手动上传文件
+      file: async ({ label, value }: any) => {
+        // const filePath = resolve(__dirname,'static/upload',Date.now()+'_'+ label)
+        // mkdirSync(resolve(filePath,'..'),{recursive:true})
+        const buff = Buffer.from(
+          value.replace(/^data:.*;base64,/, "") as any,
+          "base64"
+        ) as any;
+        if (/\.pdf$/.test(label)) {
+          const text = await pdf(buff, {}).then((res) => res.text);
+          if (text) {
+            infoMessages.push({
+              role: "assistant",
+              content: `你是文件分析大师，请根据用户提问分析文件内容，并给出分析结果。`,
+            });
+            infoMessages.push({
+              role: "system",
+              content: `文件标题：【${label}】`,
+            });
+            infoMessages.push({
+              role: "system",
+              content: `${label}文件内容如下：`,
+            });
+            infoMessages.push({ role: "system", content: text });
+          }
+        }
+      },
+    };
+    // 先助理
+    await Promise.all(
+      body.tags
+        .filter((e) => ["assistant"].includes(e.type))
+        .map(async (item: any) => {
+          return typeMap[item.type] && (await typeMap[item.type]?.(item));
+        })
+    );
+    // 后系统
+    await Promise.all(
+      body.tags
+        .filter((e) => !["assistant", "user"].includes(e.type))
+        .map(async (item: any) => {
+          return typeMap[item.type] && (await typeMap[item.type]?.(item));
+        })
+    );
+    // 用户
+    await Promise.all(
+      body.tags
+        .filter((e) => ["user"].includes(e.type))
+        .map(async (item: any) => {
+          return typeMap[item.type] && (await typeMap[item.type]?.(item));
+        })
+    );
+    if (
+      typeof body.modelValue === "string" &&
+      body.modelValue.trim() &&
+      body.modelValue.trim().length > 0
+    ) {
+      infoMessages.push({ role: "user", content: body.modelValue || "" });
+    }
+    messages.push(...infoMessages);
     const completionsRes = await axios({
       baseURL: ragHost,
       url: "/api/v1/chat/completions",
@@ -98,15 +201,12 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
         cookie: `fastgpt_token=${fastgpt_token}`,
       },
       data: {
-        messages: [
-          {
-            dataId: "hLSkfX6IgO6SYKnnUqYxr84o",
-            role: "user",
-            content: body.modelValue,
-          },
-        ],
+        messages: messages.map((e) => ({
+          ...e,
+          dataId: chatToken,
+        })),
         variables: {
-          cTime: "2024-11-05 10:59:00 Tuesday",
+          cTime: Date.now(),
         },
         appId,
         chatId: info.chat_id,
@@ -123,11 +223,34 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       "access-control-allow-methods": "*",
       "access-control-allow-headers": "*",
     });
+    let systemMessages = ''
+    let isAnswerData = false
     completionsRes.data.on("data", (e) => {
+      const data = e.toString().trim();
+      if(/event: answer/.test(data)){
+        isAnswerData = true
+        // systemMessages = data.replace(/event: answer\n/,'').replace(/data: /,'')
+      }else{
+        if(isAnswerData){
+          try{
+            systemMessages += get(JSON.parse(data.replace(/^\s*data:\s*/,'')),'choices[0].delta.content','')
+          }catch(err){
+            //err
+          }
+        }
+        isAnswerData = false
+      }
       this.response.write(e);
     });
-    completionsRes.data.on("end", () => {
+    completionsRes.data.on("end", async () => {
       this.response.end();
+      await Promise.allSettled(taskQueue.map(async task=>{
+          await task({
+              messages,
+              systemMessages,
+              info,
+          })
+      }))
     });
     return false;
   } catch (err) {
@@ -218,7 +341,22 @@ export const getChatHistory = async function (
         chatId: this.$query.get("chat_id"),
       },
     });
-    this.$success(data.data.history);
+    const sqls = sql("./chat.sql");
+    this.$success(await Promise.all(data.data.history.map(async (e:any)=>{
+      if(e.obj === 'System'){
+        const {
+          results: [info],
+        } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [
+          e.dataId,
+        ]);
+        return {
+          ...e,
+          id:e.dataId,
+          message:info.message
+        }
+      }
+      return e;
+    })));
   } catch (err) {
     console.error(err);
     this.$error(err.err || err.message);
