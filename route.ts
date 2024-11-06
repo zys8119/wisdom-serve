@@ -49,6 +49,11 @@ export default createRoute({
                             path:"getChatHistory",
                             funName:"getChatHistory",
                             controller:()=> import("./chat")
+                        },
+                        {
+                            path:"collectionId",
+                            funName:"collectionId",
+                            controller:()=> import("./chat")
                         }
                     ]
                 }

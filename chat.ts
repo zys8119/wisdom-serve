@@ -77,10 +77,8 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
     const chatToken = this.$Serialize.get(true, this.$query, "t");
     const sqls = sql("./chat.sql");
     const {
-        results: [info],
-      } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [
-        chatToken,
-      ]);
+      results: [info],
+    } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [chatToken]);
     if (!info) {
       return this.$error("该会话不存在！", {
         message: "no session",
@@ -161,10 +159,10 @@ export const getChatToken = async function () {
       "aiAssistantChatId"
     );
     await this.$DB_$chat.query(sqls.getChatToken, [
-        aiAssistantChatId,
-        uuid,
-        JSON.stringify(this.$Serialize.get(true, this.$body, "data")),
-      ]);
+      aiAssistantChatId,
+      uuid,
+      JSON.stringify(this.$Serialize.get(true, this.$body, "data")),
+    ]);
     this.$success(uuid);
   } catch (err) {
     console.error(err);
@@ -174,16 +172,16 @@ export const getChatToken = async function () {
 
 export const history = async function (req, res, { userInfo: fastgpt_token }) {
   try {
-    const {data} = await axios({
+    const { data } = await axios({
       baseURL: ragHost,
       url: "/api/core/chat/getHistories",
       method: "post",
       headers: {
         cookie: `fastgpt_token=${fastgpt_token}`,
       },
-      data:{
-        appId
-      }
+      data: {
+        appId,
+      },
     });
     this.$success(data.data);
   } catch (err) {
@@ -202,20 +200,24 @@ export const createHistory = async function () {
   }
 } as Controller;
 
-export const getChatHistory = async function (req, res, { userInfo: fastgpt_token }) {
+export const getChatHistory = async function (
+  req,
+  res,
+  { userInfo: fastgpt_token }
+) {
   try {
-    const {data} =await axios({
+    const { data } = await axios({
       baseURL: ragHost,
       url: "/api/core/chat/init",
       method: "get",
       headers: {
         cookie: `fastgpt_token=${fastgpt_token}`,
       },
-      params:{
+      params: {
         appId,
         chatId: this.$query.get("chat_id"),
-      }
-    })
+      },
+    });
     this.$success(data.data.history);
   } catch (err) {
     console.error(err);
@@ -246,4 +248,45 @@ export const chat_test = async function () {
     console.error(err);
     this.$error(err.err || err.message);
   }
+} as Controller;
+
+export const collectionId = async function (
+  req,
+  res,
+  { userInfo: fastgpt_token }
+) {
+  const collectionId = this.$Serialize.get(true, this.$query, "collectionId");
+  const { data } = await axios({
+    baseURL: ragHost,
+    url: "/api/core/dataset/collection/read",
+    method: "get",
+    headers: {
+      cookie: `fastgpt_token=${fastgpt_token}`,
+    },
+    params: {
+      appId,
+      collectionId,
+    },
+  });
+  const { data: buff, headers } = await axios({
+    baseURL: ragHost,
+    url: data.data.value,
+    method: "get",
+    responseType: "arraybuffer",
+    headers: {
+      cookie: `fastgpt_token=${fastgpt_token}`,
+    },
+    params: {
+      appId,
+      collectionId,
+    },
+  });
+  this.$send(buff, {
+    headers: {
+      ...headers,
+      "access-control-allow-origin": this.request.headers.origin || "*",
+      "access-control-allow-methods": "*",
+      "access-control-allow-headers": this.options.corsHeaders || "*",
+    },
+  } as any);
 } as Controller;
