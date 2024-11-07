@@ -5,14 +5,18 @@ import { v4 as createUuid } from "uuid";
 import { createHmac, createHash } from "crypto";
 import axios from "axios";
 import * as pdf from "pdf-parse";
-import {get} from "lodash";
+import { get } from "lodash";
 const ollamaChatModel = process.env.model || "llama3.1";
 const ollama = new Ollama({
   host: process.env.api_host || "http://127.0.0.1:11434",
 });
 const ragHost = "http://223.94.45.209:36580";
+// 应用id
 const appId = "67297119008e9638a2540ada";
-const token = "fastgpt-fHgK4Dbe1ijgh6gbE7rPKiupNVII98vpW9sXQbdx5HoLkgEcPlAbfOxejs3P6T";
+// 知识库id
+const datasetId = "67296f0a008e9638a254068c";
+const token =
+  "fastgpt-fHgK4Dbe1ijgh6gbE7rPKiupNVII98vpW9sXQbdx5HoLkgEcPlAbfOxejs3P6T";
 const Authorization = `Bearer ${token}`;
 export const send_dingding = async function (data: any) {
   const timestamp = Date.now();
@@ -144,17 +148,20 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
         ) as any;
         if (/\.pdf$/.test(label)) {
           const text = await pdf(buff, {}).then((res) => res.text);
-          if (text) {
-            infoMessages.push({
-              role: "system",
-              content: ` <Data>文件标题：【${label}】 </Data>`,
-            });
-            infoMessages.push({
-              role: "system",
-              content: `<Data>${label}文件内容如下： </Data>`,
-            });
-            infoMessages.push({ role: "system", content: `<Data>${text}</Data>` });
-          }
+          const a = await axios({
+            baseURL: ragHost,
+            url: "/api/core/dataset/collection/create/text",
+            method: "post",
+            headers: {
+              cookie: `fastgpt_token=${fastgpt_token}`,
+            },
+            data: {
+              datasetId,
+              name: label,
+              text:text
+            },
+          });
+          console.log(a.data)
         }
       },
     };
@@ -190,7 +197,6 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       infoMessages.push({ role: "user", content: body.modelValue || "" });
     }
     messages.push(...infoMessages);
-    console.log(messages);
     const completionsRes = await axios({
       baseURL: ragHost,
       url: "/api/v1/chat/completions",
@@ -222,34 +228,40 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       "access-control-allow-methods": "*",
       "access-control-allow-headers": "*",
     });
-    let systemMessages = ''
-    let isAnswerData = false
+    let systemMessages = "";
+    let isAnswerData = false;
     completionsRes.data.on("data", (e) => {
       const data = e.toString().trim();
-      if(/event: answer/.test(data)){
-        isAnswerData = true
+      if (/event: answer/.test(data)) {
+        isAnswerData = true;
         // systemMessages = data.replace(/event: answer\n/,'').replace(/data: /,'')
-      }else{
-        if(isAnswerData){
-          try{
-            systemMessages += get(JSON.parse(data.replace(/^\s*data:\s*/,'')),'choices[0].delta.content','')
-          }catch(err){
+      } else {
+        if (isAnswerData) {
+          try {
+            systemMessages += get(
+              JSON.parse(data.replace(/^\s*data:\s*/, "")),
+              "choices[0].delta.content",
+              ""
+            );
+          } catch (err) {
             //err
           }
         }
-        isAnswerData = false
+        isAnswerData = false;
       }
       this.response.write(e);
     });
     completionsRes.data.on("end", async () => {
       this.response.end();
-      await Promise.allSettled(taskQueue.map(async task=>{
+      await Promise.allSettled(
+        taskQueue.map(async (task) => {
           await task({
-              messages,
-              systemMessages,
-              info,
-          })
-      }))
+            messages,
+            systemMessages,
+            info,
+          });
+        })
+      );
     });
     return false;
   } catch (err) {
@@ -294,13 +306,12 @@ export const getChatToken = async function () {
 
 export const history = async function (req, res, { userInfo: fastgpt_token }) {
   try {
-    const { data, request } = await axios({
+    const { data } = await axios({
       baseURL: ragHost,
       url: "/api/core/chat/getHistories",
       method: "post",
       headers: {
         cookie: `fastgpt_token=${fastgpt_token}`,
-        // Authorization
       },
       data: {
         appId,
@@ -342,23 +353,27 @@ export const getChatHistory = async function (
       },
     });
     const sqls = sql("./chat.sql");
-    this.$success(await Promise.all(data.data.history.map(async (e:any)=>{
-      if(e.obj === 'System' || e.obj === 'Human'){
-        const {
-          results: [info],
-        } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [
-          e.dataId,
-        ]);
-        if(info){
-          return {
-            ...e,
-            id:e.dataId,
-            message:info.message
+    this.$success(
+      await Promise.all(
+        data.data.history.map(async (e: any) => {
+          if (e.obj === "System" || e.obj === "Human") {
+            const {
+              results: [info],
+            } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [
+              e.dataId,
+            ]);
+            if (info) {
+              return {
+                ...e,
+                id: e.dataId,
+                message: info.message,
+              };
+            }
           }
-        }
-      }
-      return e;
-    })));
+          return e;
+        })
+      )
+    );
   } catch (err) {
     console.error(err);
     this.$error(err.err || err.message);
