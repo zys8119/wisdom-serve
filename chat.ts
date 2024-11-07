@@ -6,6 +6,7 @@ import { createHmac, createHash } from "crypto";
 import axios from "axios";
 import * as pdf from "pdf-parse";
 import { get } from "lodash";
+import * as FormData from "form-data"
 const ollamaChatModel = process.env.model || "llama3.1";
 const ollama = new Ollama({
   host: process.env.api_host || "http://127.0.0.1:11434",
@@ -169,20 +170,44 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
           text = buff.toString();
         }
         if (text) {
-          const name = label + "___t___" + createUuid();
+          const name = createUuid() +  "___t___" + label;
+          // const collection = await axios({
+          //   baseURL: ragHost,
+          //   url: "/api/core/dataset/collection/create/text",
+          //   method: "post",
+          //   headers: {
+          //     cookie: `fastgpt_token=${fastgpt_token}`,
+          //   },
+          //   data: {
+          //     datasetId,
+          //     name,
+          //     text: text,
+          //   },
+          // });
+          const form = new FormData();
+          const data = {
+              file: buff,
+              data:JSON.stringify({
+                datasetId,
+                trainingType: "chunk",
+              })
+          }
+          for(const k in data){
+              form.append(k, data[k], k === 'file' ? {
+                filename: encodeURIComponent(name),
+              } :{})
+          }
           const collection = await axios({
             baseURL: ragHost,
-            url: "/api/core/dataset/collection/create/text",
+            url: "/api/core/dataset/collection/create/localFile",
             method: "post",
             headers: {
+              ...form.getHeaders(),
               cookie: `fastgpt_token=${fastgpt_token}`,
             },
-            data: {
-              datasetId,
-              name,
-              text: text,
-            },
+            data:form,
           });
+          const collectionId = collection.data.data.collectionId;
           const insertLen = collection.data.data.results.insertLen;
           let trainingAmount = 0;
           while (trainingAmount < insertLen) {
@@ -214,6 +239,19 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
               })}\n\n`
             );
           }
+          // 文件重命名
+          await axios({
+            baseURL: ragHost,
+            url: "/api/core/dataset/collection/update",
+            method: "post",
+            headers: {
+              cookie: `fastgpt_token=${fastgpt_token}`,
+            },
+            data: {
+              id:collectionId,
+              name:label,
+            },
+          });
         }
       },
     };
@@ -499,6 +537,7 @@ export const collectionId = async function (
       collectionId,
     },
   });
+  console.log(buff.toString())
   this.$send(buff, {
     headers: {
       ...headers,
