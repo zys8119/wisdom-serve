@@ -62,6 +62,7 @@ export const send_dingding = async function (data: any) {
 };
 export const chatAuthInterceptor = async function () {
   try {
+    let currUserInfo = {}
     if (this.$url === "/api/v1/chat") {
       const chatToken = this.$Serialize.get(true, this.$query, "t");
       const sqls = sql("./chat.sql");
@@ -74,7 +75,7 @@ export const chatAuthInterceptor = async function () {
         this.$error("Unauthorized");
         return Promise.reject("Unauthorized");
       }
-      return Promise.resolve(info);
+      currUserInfo = info
     } else {
       const sqls = sql("./sql.sql");
       const {
@@ -91,31 +92,32 @@ export const chatAuthInterceptor = async function () {
         this.$error("Unauthorized");
         return Promise.reject("Unauthorized");
       }
-      const {
-        data: {
-          data: { token },
-        },
-      } = await axios({
-        baseURL: ragHost,
-        url: "/api/support/user/account/loginByPassword",
-        method: "post",
-        data: {
-          username: "root",
-          password: createHash("sha256").update("1234").digest("hex"),
-        },
-      });
-      return Promise.resolve({
-        userInfo,
-        token
-      });
+      currUserInfo = userInfo
     }
+    const {
+      data: {
+        data: { token },
+      },
+    } = await axios({
+      baseURL: ragHost,
+      url: "/api/support/user/account/loginByPassword",
+      method: "post",
+      data: {
+        username: "root",
+        password: createHash("sha256").update("1234").digest("hex"),
+      },
+    });
+    return Promise.resolve({
+      userInfo:currUserInfo,
+      token,
+    });
   } catch (err) {
     console.error(err);
     this.$error(err.err || err.message);
   }
 } as Controller;
 
-export const chat = async function (req, res, { userInfo: {token:fastgpt_token} }) {
+export const chat = async function (req, res, { userInfo:{token:fastgpt_token} }) {
   let isSetChatResponseHead = false;
   const setChatResponseHead = () => {
     if (!isSetChatResponseHead) {
@@ -360,7 +362,7 @@ export const chat = async function (req, res, { userInfo: {token:fastgpt_token} 
         stream: true,
       },
     });
-
+    console.log(chatToken)
     let systemMessages = "";
     let isAnswerData = false;
     setChatResponseHead();
