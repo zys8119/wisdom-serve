@@ -306,8 +306,6 @@ export const history = async function (req, res, { userInfo: fastgpt_token }) {
         appId,
       },
     });
-    console.log(request._header)
-    console.log(data);
     this.$success(data.data);
   } catch (err) {
     console.error(err);
