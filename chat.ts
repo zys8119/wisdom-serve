@@ -76,7 +76,22 @@ export const chatAuthInterceptor = async function () {
     this.$error(err.err || err.message);
   }
 } as Controller;
+
 export const chat = async function (req, res, { userInfo: fastgpt_token }) {
+  let isSetChatResponseHead = false;
+  const setChatResponseHead = () => {
+    if (!isSetChatResponseHead) {
+      isSetChatResponseHead = true;
+      this.response.writeHead(200, {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "*",
+        "access-control-allow-headers": "*",
+      });
+    }
+  };
   try {
     let body = {
       tags: [],
@@ -146,15 +161,16 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
           value.replace(/^data:.*;base64,/, "") as any,
           "base64"
         ) as any;
-        let text = ''
+        let text = "";
         if (/\.pdf$/.test(label)) {
           text += await pdf(buff, {}).then((res) => res.text);
         }
         if (/\.txt$/.test(label)) {
-          text = buff.toString()
+          text = buff.toString();
         }
-        if(text){
-          await axios({
+        if (text) {
+          const name = label + "___t___" + createUuid();
+          const collection = await axios({
             baseURL: ragHost,
             url: "/api/core/dataset/collection/create/text",
             method: "post",
@@ -163,10 +179,41 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
             },
             data: {
               datasetId,
-              name: label,
-              text:text
+              name,
+              text: text,
             },
           });
+          const insertLen = collection.data.data.results.insertLen;
+          let trainingAmount = 0;
+          while (trainingAmount < insertLen) {
+            const collectionList = await axios({
+              baseURL: ragHost,
+              url: "/api/core/dataset/collection/list",
+              method: "post",
+              headers: {
+                cookie: `fastgpt_token=${fastgpt_token}`,
+              },
+              data: {
+                datasetId,
+                pageNum: 1,
+                pageSize: 1,
+                searchText: name,
+              },
+            });
+            trainingAmount =
+              insertLen - collectionList.data.data.data[0].trainingAmount;
+            setChatResponseHead();
+            this.response.write(`event: flowNodeStatus\n`);
+            this.response.write(
+              `data: ${JSON.stringify({
+                status: "running",
+                name: `训练中(进度：${(
+                  (trainingAmount / insertLen) *
+                  100
+                ).toFixed(2)}%、已训:${trainingAmount}、共:${insertLen}) `,
+              })}\n\n`
+            );
+          }
         }
       },
     };
@@ -202,6 +249,25 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       infoMessages.push({ role: "user", content: body.modelValue || "" });
     }
     messages.push(...infoMessages);
+    if (messages.length === 0) {
+      setChatResponseHead();
+      this.response.write("event: answer\n");
+      this.response.write(
+        `data: ${JSON.stringify({
+          choices: [
+            {
+              delta:{
+                content:"您还未输入任何提问，请输入问题后再提问！我将期待您的提问！",
+                role:"assistant"
+              },
+            },
+          ],
+        })}\n\n`
+      );
+      this.response.end();
+
+      return false;
+    }
     const completionsRes = await axios({
       baseURL: ragHost,
       url: "/api/v1/chat/completions",
@@ -225,16 +291,9 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       },
     });
 
-    this.response.writeHead(200, {
-      "Content-Type": "text/event-stream; charset=utf-8",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-      "access-control-allow-origin": "*",
-      "access-control-allow-methods": "*",
-      "access-control-allow-headers": "*",
-    });
     let systemMessages = "";
     let isAnswerData = false;
+    setChatResponseHead();
     completionsRes.data.on("data", (e) => {
       const data = e.toString().trim();
       if (/event: answer/.test(data)) {
@@ -402,7 +461,6 @@ export const chat_test = async function () {
         data += part.message.content;
       }
     }
-    console.log(data);
     this.$success(data);
   } catch (err) {
     console.error(err);
