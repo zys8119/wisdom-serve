@@ -4,14 +4,18 @@ import { Ollama } from "ollama";
 import { v4 as createUuid } from "uuid";
 import { createHmac, createHash } from "crypto";
 import axios from "axios";
-import * as pdf from "pdf-parse";
 import { get } from "lodash";
 import * as FormData from "form-data"
+import * as fs from "fs-extra"
+import * as path from "path"
 const ollamaChatModel = process.env.model || "llama3.1";
 const ollama = new Ollama({
   host: process.env.api_host || "http://127.0.0.1:11434",
 });
 const ragHost = "http://223.94.45.209:36580";
+// 本地文件目录
+const uploadDir = path.resolve(process.cwd(), "static/upload");
+fs.mkdirSync(uploadDir, { recursive: true });
 // 应用id
 const appId = "67297119008e9638a2540ada";
 // 知识库id
@@ -125,9 +129,24 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
         const { results } = await this.$DB.query(sqls.conf_base_info, [
           conference_id,
         ]);
-        infoMessages.push({
-          role: "system",
-          content: JSON.stringify(results[0] || {}),
+        await axios({
+          baseURL: ragHost,
+          url: "/api/core/dataset/collection/create/text",
+          method: "post",
+          headers: {
+            cookie: `fastgpt_token=${fastgpt_token}`,
+          },
+          data: {
+            datasetId,
+            name: `【${get(results,`[0]['会议名称']`,'')}】会议信息`,
+            text:((data:any)=>{
+              let text = ''
+              for (const key in data) {
+                text += `${key}: ${data[key]}\n`
+              }
+              return text
+            })(results[0] || {})
+          },
         });
       },
       // 快捷指令
@@ -156,34 +175,8 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       },
       // 手动上传文件
       file: async ({ label, value }: any) => {
-        // const filePath = resolve(__dirname,'static/upload',Date.now()+'_'+ label)
-        // mkdirSync(resolve(filePath,'..'),{recursive:true})
-        const buff = Buffer.from(
-          value.replace(/^data:.*;base64,/, "") as any,
-          "base64"
-        ) as any;
-        let text = "";
-        if (/\.pdf$/.test(label)) {
-          text += await pdf(buff, {}).then((res) => res.text);
-        }
-        if (/\.txt$/.test(label)) {
-          text = buff.toString();
-        }
-        if (text) {
-          const name = createUuid() +  "___t___" + label;
-          // const collection = await axios({
-          //   baseURL: ragHost,
-          //   url: "/api/core/dataset/collection/create/text",
-          //   method: "post",
-          //   headers: {
-          //     cookie: `fastgpt_token=${fastgpt_token}`,
-          //   },
-          //   data: {
-          //     datasetId,
-          //     name,
-          //     text: text,
-          //   },
-          // });
+        const buff = fs.readFileSync(path.resolve(uploadDir, value));
+        const name = createUuid() +  "___t___" + label;
           const form = new FormData();
           const data = {
               file: buff,
@@ -252,7 +245,6 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
               name:label,
             },
           });
-        }
       },
     };
     // 先助理
@@ -336,7 +328,6 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       const data = e.toString().trim();
       if (/event: answer/.test(data)) {
         isAnswerData = true;
-        // systemMessages = data.replace(/event: answer\n/,'').replace(/data: /,'')
       } else {
         if (isAnswerData) {
           try {
@@ -394,10 +385,23 @@ export const getChatToken = async function () {
       this.$body,
       "aiAssistantChatId"
     );
+    const data = this.$Serialize.get(true, this.$body, "data")
+    data.tags = data.tags.map((e:any)=>{
+      if(e.type === "file"){
+        const fileName = `${createUuid()}${path.parse(e.label).ext}`
+        const buff = Buffer.from(
+          e.value.replace(/^data:.*;base64,/, "") as any,
+          "base64"
+        ) as any;
+        fs.writeFileSync(path.resolve(uploadDir, `./${fileName}`), buff)
+        e.value = fileName
+      }
+      return e
+    });
     await this.$DB_$chat.query(sqls.getChatToken, [
       aiAssistantChatId,
       uuid,
-      JSON.stringify(this.$Serialize.get(true, this.$body, "data")),
+      JSON.stringify(data),
     ]);
     this.$success(uuid);
   } catch (err) {
@@ -537,7 +541,6 @@ export const collectionId = async function (
       collectionId,
     },
   });
-  console.log(buff.toString())
   this.$send(buff, {
     headers: {
       ...headers,
