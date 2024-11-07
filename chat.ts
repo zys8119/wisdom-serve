@@ -362,7 +362,6 @@ export const chat = async function (req, res, { userInfo:{token:fastgpt_token} }
         stream: true,
       },
     });
-    console.log(chatToken)
     let systemMessages = "";
     let isAnswerData = false;
     setChatResponseHead();
@@ -454,7 +453,7 @@ export const getChatToken = async function (req, res, { userInfo: {userInfo} }) 
   }
 } as Controller;
 
-export const history = async function (req, res, { userInfo: {token:fastgpt_token} }) {
+export const history = async function (req, res, { userInfo: {token:fastgpt_token, userInfo} }) {
   try {
     const { data } = await axios({
       baseURL: ragHost,
@@ -467,7 +466,16 @@ export const history = async function (req, res, { userInfo: {token:fastgpt_toke
         appId,
       },
     });
-    this.$success(data.data);
+    const sqls = sql("./chat.sql");
+    const {results} = await this.$DB_$chat.query(sqls.getHistoryByFastGPT, [
+      userInfo.id,
+      userInfo.default_tenant_id,
+    ]);
+    const chatIdMap = results.reduce((pre, cur) => {
+      pre[cur.chat_id] = cur;
+      return pre;
+    }, {});
+    this.$success(data.data.filter((e:any)=>chatIdMap[e.chatId]));
   } catch (err) {
     console.error(err);
     this.$error(err.err || err.message);

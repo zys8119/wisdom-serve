@@ -53,3 +53,8 @@ UPDATE history set display_name = ?, update_time = NOW() WHERE id = ?;
 @query_system_assistant
 */
 SELECT * FROM assistant WHERE chat_id = ? AND status = 1 OR chat_id is NULL and status = 1;
+/**
+获取当前用户下的FastGPT历史记录
+@getHistoryByFastGPT
+*/
+SELECT * FROM chat_token WHERE user_id = ? and tenant_id = ? and status = 1;
