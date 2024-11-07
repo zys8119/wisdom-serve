@@ -17,7 +17,7 @@ INSERT INTO history (id, create_time, creator_id, tenant_id, title, status, disp
 创建会话token
 @getChatToken
 */
-INSERT INTO chat_token (id, chat_id, create_time, token,message, status) VALUES (null,?, NOW(), ?, ?, 1);
+INSERT INTO chat_token (id, chat_id, create_time, token,message, status, user_id, tenant_id) VALUES (null,?, NOW(), ?, ?, 1,?,?);
 /**
 根据会话toke查询会话信息
 @query_chat_info_by_token

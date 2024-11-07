@@ -5,9 +5,9 @@ import { v4 as createUuid } from "uuid";
 import { createHmac, createHash } from "crypto";
 import axios from "axios";
 import { get } from "lodash";
-import * as FormData from "form-data"
-import * as fs from "fs-extra"
-import * as path from "path"
+import * as FormData from "form-data";
+import * as fs from "fs-extra";
+import * as path from "path";
 const ollamaChatModel = process.env.model || "llama3.1";
 const ollama = new Ollama({
   host: process.env.api_host || "http://127.0.0.1:11434",
@@ -62,27 +62,60 @@ export const send_dingding = async function (data: any) {
 };
 export const chatAuthInterceptor = async function () {
   try {
-    const {
-      data: {
-        data: { token },
-      },
-    } = await axios({
-      baseURL: ragHost,
-      url: "/api/support/user/account/loginByPassword",
-      method: "post",
-      data: {
-        username: "root",
-        password: createHash("sha256").update("1234").digest("hex"),
-      },
-    });
-    return Promise.resolve(token);
+    if (this.$url === "/api/v1/chat") {
+      const chatToken = this.$Serialize.get(true, this.$query, "t");
+      const sqls = sql("./chat.sql");
+      const {
+        results: [info],
+      } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [
+        chatToken,
+      ]);
+      if (!info) {
+        this.$error("Unauthorized");
+        return Promise.reject("Unauthorized");
+      }
+      return Promise.resolve(info);
+    } else {
+      const sqls = sql("./sql.sql");
+      const {
+        headers: { authorization },
+      } = this.request;
+      if (!authorization) {
+        this.$error("Unauthorized");
+        return Promise.reject("Unauthorized");
+      }
+      const userInfo = (
+        await this.$DB.query(sqls.query_user_info_by_token, [authorization])
+      ).results?.[0];
+      if (!userInfo) {
+        this.$error("Unauthorized");
+        return Promise.reject("Unauthorized");
+      }
+      const {
+        data: {
+          data: { token },
+        },
+      } = await axios({
+        baseURL: ragHost,
+        url: "/api/support/user/account/loginByPassword",
+        method: "post",
+        data: {
+          username: "root",
+          password: createHash("sha256").update("1234").digest("hex"),
+        },
+      });
+      return Promise.resolve({
+        userInfo,
+        token
+      });
+    }
   } catch (err) {
     console.error(err);
     this.$error(err.err || err.message);
   }
 } as Controller;
 
-export const chat = async function (req, res, { userInfo: fastgpt_token }) {
+export const chat = async function (req, res, { userInfo: {token:fastgpt_token} }) {
   let isSetChatResponseHead = false;
   const setChatResponseHead = () => {
     if (!isSetChatResponseHead) {
@@ -138,14 +171,14 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
           },
           data: {
             datasetId,
-            name: `【${get(results,`[0]['会议名称']`,'')}】会议信息`,
-            text:((data:any)=>{
-              let text = ''
+            name: `【${get(results, `[0]['会议名称']`, "")}】会议信息`,
+            text: ((data: any) => {
+              let text = "";
               for (const key in data) {
-                text += `${key}: ${data[key]}\n`
+                text += `${key}: ${data[key]}\n`;
               }
-              return text
-            })(results[0] || {})
+              return text;
+            })(results[0] || {}),
           },
         });
       },
@@ -176,75 +209,81 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
       // 手动上传文件
       file: async ({ label, value }: any) => {
         const buff = fs.readFileSync(path.resolve(uploadDir, value));
-        const name = createUuid() +  "___t___" + label;
-          const form = new FormData();
-          const data = {
-              file: buff,
-              data:JSON.stringify({
-                datasetId,
-                trainingType: "chunk",
-              })
-          }
-          for(const k in data){
-              form.append(k, data[k], k === 'file' ? {
-                filename: encodeURIComponent(name),
-              } :{})
-          }
-          const collection = await axios({
+        const name = createUuid() + "___t___" + label;
+        const form = new FormData();
+        const data = {
+          file: buff,
+          data: JSON.stringify({
+            datasetId,
+            trainingType: "chunk",
+          }),
+        };
+        for (const k in data) {
+          form.append(
+            k,
+            data[k],
+            k === "file"
+              ? {
+                  filename: encodeURIComponent(name),
+                }
+              : {}
+          );
+        }
+        const collection = await axios({
+          baseURL: ragHost,
+          url: "/api/core/dataset/collection/create/localFile",
+          method: "post",
+          headers: {
+            ...form.getHeaders(),
+            cookie: `fastgpt_token=${fastgpt_token}`,
+          },
+          data: form,
+        });
+        const collectionId = collection.data.data.collectionId;
+        const insertLen = collection.data.data.results.insertLen;
+        let trainingAmount = 0;
+        while (trainingAmount < insertLen) {
+          const collectionList = await axios({
             baseURL: ragHost,
-            url: "/api/core/dataset/collection/create/localFile",
-            method: "post",
-            headers: {
-              ...form.getHeaders(),
-              cookie: `fastgpt_token=${fastgpt_token}`,
-            },
-            data:form,
-          });
-          const collectionId = collection.data.data.collectionId;
-          const insertLen = collection.data.data.results.insertLen;
-          let trainingAmount = 0;
-          while (trainingAmount < insertLen) {
-            const collectionList = await axios({
-              baseURL: ragHost,
-              url: "/api/core/dataset/collection/list",
-              method: "post",
-              headers: {
-                cookie: `fastgpt_token=${fastgpt_token}`,
-              },
-              data: {
-                datasetId,
-                pageNum: 1,
-                pageSize: 1,
-                searchText: name,
-              },
-            });
-            trainingAmount =
-              insertLen - collectionList.data.data.data[0].trainingAmount;
-            setChatResponseHead();
-            this.response.write(`event: flowNodeStatus\n`);
-            this.response.write(
-              `data: ${JSON.stringify({
-                status: "running",
-                name: `训练中(进度：${(
-                  (trainingAmount / insertLen) *
-                  100
-                ).toFixed(2)}%、已训:${trainingAmount}、共:${insertLen}) `,
-              })}\n\n`
-            );
-          }
-          // 文件重命名
-          await axios({
-            baseURL: ragHost,
-            url: "/api/core/dataset/collection/update",
+            url: "/api/core/dataset/collection/list",
             method: "post",
             headers: {
               cookie: `fastgpt_token=${fastgpt_token}`,
             },
             data: {
-              id:collectionId,
-              name:label,
+              datasetId,
+              pageNum: 1,
+              pageSize: 1,
+              searchText: name,
             },
           });
+          trainingAmount =
+            insertLen - collectionList.data.data.data[0].trainingAmount;
+          setChatResponseHead();
+          this.response.write(`event: flowNodeStatus\n`);
+          this.response.write(
+            `data: ${JSON.stringify({
+              status: "running",
+              name: `训练中(进度：${(
+                (trainingAmount / insertLen) *
+                100
+              ).toFixed(2)}%、已训:${trainingAmount}、共:${insertLen}) `,
+            })}\n\n`
+          );
+        }
+        // 文件重命名
+        await axios({
+          baseURL: ragHost,
+          url: "/api/core/dataset/collection/update",
+          method: "post",
+          headers: {
+            cookie: `fastgpt_token=${fastgpt_token}`,
+          },
+          data: {
+            id: collectionId,
+            name: label,
+          },
+        });
       },
     };
     // 先助理
@@ -286,9 +325,10 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
         `data: ${JSON.stringify({
           choices: [
             {
-              delta:{
-                content:"您还未输入任何提问，请输入问题后再提问！我将期待您的提问！",
-                role:"assistant"
+              delta: {
+                content:
+                  "您还未输入任何提问，请输入问题后再提问！我将期待您的提问！",
+                role: "assistant",
               },
             },
           ],
@@ -376,7 +416,7 @@ export const pdfParse = async function () {
   }
 } as Controller;
 
-export const getChatToken = async function () {
+export const getChatToken = async function (req, res, { userInfo: {userInfo} }) {
   try {
     const sqls = sql("./chat.sql");
     const uuid = createUuid();
@@ -385,23 +425,25 @@ export const getChatToken = async function () {
       this.$body,
       "aiAssistantChatId"
     );
-    const data = this.$Serialize.get(true, this.$body, "data")
-    data.tags = data.tags.map((e:any)=>{
-      if(e.type === "file"){
-        const fileName = `${createUuid()}${path.parse(e.label).ext}`
+    const data = this.$Serialize.get(true, this.$body, "data");
+    data.tags = data.tags.map((e: any) => {
+      if (e.type === "file") {
+        const fileName = `${createUuid()}${path.parse(e.label).ext}`;
         const buff = Buffer.from(
           e.value.replace(/^data:.*;base64,/, "") as any,
           "base64"
         ) as any;
-        fs.writeFileSync(path.resolve(uploadDir, `./${fileName}`), buff)
-        e.value = fileName
+        fs.writeFileSync(path.resolve(uploadDir, `./${fileName}`), buff);
+        e.value = fileName;
       }
-      return e
+      return e;
     });
     await this.$DB_$chat.query(sqls.getChatToken, [
       aiAssistantChatId,
       uuid,
       JSON.stringify(data),
+      userInfo.id,
+      userInfo.default_tenant_id,
     ]);
     this.$success(uuid);
   } catch (err) {
@@ -410,7 +452,7 @@ export const getChatToken = async function () {
   }
 } as Controller;
 
-export const history = async function (req, res, { userInfo: fastgpt_token }) {
+export const history = async function (req, res, { userInfo: {token:fastgpt_token} }) {
   try {
     const { data } = await axios({
       baseURL: ragHost,
@@ -443,7 +485,7 @@ export const createHistory = async function () {
 export const getChatHistory = async function (
   req,
   res,
-  { userInfo: fastgpt_token }
+  { userInfo: {token:fastgpt_token} }
 ) {
   try {
     const { data } = await axios({
