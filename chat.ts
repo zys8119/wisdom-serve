@@ -146,9 +146,15 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
           value.replace(/^data:.*;base64,/, "") as any,
           "base64"
         ) as any;
+        let text = ''
         if (/\.pdf$/.test(label)) {
-          const text = await pdf(buff, {}).then((res) => res.text);
-          const a = await axios({
+          text += await pdf(buff, {}).then((res) => res.text);
+        }
+        if (/\.txt$/.test(label)) {
+          text = buff.toString()
+        }
+        if(text){
+          await axios({
             baseURL: ragHost,
             url: "/api/core/dataset/collection/create/text",
             method: "post",
@@ -161,7 +167,6 @@ export const chat = async function (req, res, { userInfo: fastgpt_token }) {
               text:text
             },
           });
-          console.log(a.data)
         }
       },
     };
