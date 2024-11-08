@@ -117,7 +117,8 @@ export const chatAuthInterceptor = async function () {
   }
 } as Controller;
 
-export const chat = async function (req, res, { userInfo:{token:fastgpt_token} }) {
+export const chat = async function (req, res, chatAuthInterceptorData, ...args:string[]) {
+  const { userInfo:{token:fastgpt_token} } = chatAuthInterceptorData
   let isSetChatResponseHead = false;
   const setChatResponseHead = () => {
     if (!isSetChatResponseHead) {
@@ -133,6 +134,7 @@ export const chat = async function (req, res, { userInfo:{token:fastgpt_token} }
     }
   };
   try {
+    let systemMessages = "";
     let body = {
       tags: [],
       modelValue: "",
@@ -204,7 +206,7 @@ export const chat = async function (req, res, { userInfo:{token:fastgpt_token} }
         taskQueue.push(async (data: any) => {
           await send_dingding({
             title: "无纸化会议AI助手",
-            text: data.systemMessages,
+            text: data.systemMessages || '暂无消息！',
           });
         });
       },
@@ -320,24 +322,65 @@ export const chat = async function (req, res, { userInfo:{token:fastgpt_token} }
       infoMessages.push({ role: "user", content: body.modelValue || "" });
     }
     messages.push(...infoMessages);
+    // 执行任务队列
+    const taskExec = async ()=>{
+      await Promise.allSettled(
+        taskQueue.map(async (task) => {
+          await task({
+            messages,
+            systemMessages,
+            info,
+          });
+        })
+      );
+    }
     if (messages.length === 0) {
       setChatResponseHead();
-      this.response.write("event: answer\n");
-      this.response.write(
-        `data: ${JSON.stringify({
-          choices: [
-            {
-              delta: {
-                content:
-                  "您还未输入任何提问，请输入问题后再提问！我将期待您的提问！",
-                role: "assistant",
+      if(taskQueue.length === 0){
+        this.response.write("event: answer\n");
+        this.response.write(
+          `data: ${JSON.stringify({
+            choices: [
+              {
+                delta: {
+                  content:
+                    "您还未输入任何提问，请输入问题后再提问！我将期待您的提问！",
+                  role: "assistant",
+                },
               },
-            },
-          ],
-        })}\n\n`
-      );
+            ],
+          })}\n\n`
+        );
+      }else{
+        this.response.write(`event: flowNodeStatus\n`);
+          this.response.write(
+          `data: ${JSON.stringify({
+            status: "running",
+            name: `执行指令中,请稍等...`,
+          })}\n\n`
+        );
+        this.$query.append("chat_id", info.chat_id)
+        systemMessages = get((await (getChatHistory as any).call(this, req, res, {
+          ...chatAuthInterceptorData,
+          isReturn:true
+        }, ...args)).filter(e=>e.obj === 'AI').at(-1) || {},'value[0].text.content', '')
+        await taskExec()
+        this.response.write("event: answer\n");
+        this.response.write(
+          `data: ${JSON.stringify({
+            choices: [
+              {
+                delta: {
+                  content:
+                    "指令执行成功",
+                  role: "assistant",
+                },
+              },
+            ],
+          })}\n\n`
+        );
+      }
       this.response.end();
-
       return false;
     }
     const completionsRes = await axios({
@@ -362,7 +405,6 @@ export const chat = async function (req, res, { userInfo:{token:fastgpt_token} }
         stream: true,
       },
     });
-    let systemMessages = "";
     let isAnswerData = false;
     setChatResponseHead();
     completionsRes.data.on("data", (e) => {
@@ -387,15 +429,8 @@ export const chat = async function (req, res, { userInfo:{token:fastgpt_token} }
     });
     completionsRes.data.on("end", async () => {
       this.response.end();
-      await Promise.allSettled(
-        taskQueue.map(async (task) => {
-          await task({
-            messages,
-            systemMessages,
-            info,
-          });
-        })
-      );
+      // 执行任务队列
+      await taskExec()
     });
     return false;
   } catch (err) {
@@ -495,7 +530,7 @@ export const createHistory = async function () {
 export const getChatHistory = async function (
   req,
   res,
-  { userInfo: {token:fastgpt_token} }
+  { userInfo: {token:fastgpt_token}, isReturn }
 ) {
   try {
     const { data } = await axios({
@@ -510,30 +545,36 @@ export const getChatHistory = async function (
         chatId: this.$query.get("chat_id"),
       },
     });
+
     const sqls = sql("./chat.sql");
-    this.$success(
-      await Promise.all(
-        data.data.history.map(async (e: any) => {
-          if (e.obj === "System" || e.obj === "Human") {
-            const {
-              results: [info],
-            } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [
-              e.dataId,
-            ]);
-            if (info) {
-              return {
-                ...e,
-                id: e.dataId,
-                message: info.message,
-              };
-            }
+    const results = await Promise.all(
+      data.data.history.map(async (e: any) => {
+        if (e.obj === "System" || e.obj === "Human") {
+          const {
+            results: [info],
+          } = await this.$DB_$chat.query(sqls.query_chat_info_by_token, [
+            e.dataId,
+          ]);
+          if (info) {
+            return {
+              ...e,
+              id: e.dataId,
+              message: info.message,
+            };
           }
-          return e;
-        })
-      )
-    );
+        }
+        return e;
+      })
+    )
+    if(isReturn){
+      return results
+    }
+    this.$success(results);
   } catch (err) {
     console.error(err);
+    if(isReturn){
+      return []
+    }
     this.$error(err.err || err.message);
   }
 } as Controller;
