@@ -606,7 +606,7 @@ export const chat_test = async function () {
 export const collectionId = async function (
   req,
   res,
-  { userInfo: fastgpt_token }
+  { userInfo: {token:fastgpt_token} }
 ) {
   const collectionId = this.$Serialize.get(true, this.$query, "collectionId");
   const { data } = await axios({
