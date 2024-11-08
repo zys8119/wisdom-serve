@@ -12,4 +12,3 @@ logs/
 extraConfigs/
 dockerWork/
 /static/upload/
-/cron.ts
