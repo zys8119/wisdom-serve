@@ -3,10 +3,7 @@
         "module": "CommonJS",
         "target": "esnext",
         "sourceMap": true,
-        "allowSyntheticDefaultImports": true,
-        "types": [
-            "pdf-lib/index"
-        ]
+        "allowSyntheticDefaultImports": true
     },
     "exclude": [
         "node_modules"
