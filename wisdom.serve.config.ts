@@ -26,14 +26,14 @@ export default <Partial<AppServeOptions>>{
             prefix:"",
             database:"chat"
         },
-        designFrom:{
+        designForm:{
             connectionLimit : 100,
             host: '127.0.0.1',
             user: 'root',
             password: 'rootroot',
             port: 3306,
             prefix:"",
-            database:"designFrom"
+            database:"design_form"
         }
     },
     cors:true
