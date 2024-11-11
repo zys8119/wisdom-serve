@@ -16,9 +16,14 @@ export const list = async function () {
         (page-1)*pageSize,
         pageSize,
     ]);
+    const {results:total} = await this.$DB_$designForm.query(sql.listTotal,[
+        `%${this.$Serialize.get(this.$query,'title','').replace(/'/g,'\\\'')}%`,
+        (page-1)*pageSize,
+        pageSize,
+    ]);
     this.$success({
         data:results,
-        total:results.length
+        total:total.length
     });
   } catch (e) {
     console.error(e);
