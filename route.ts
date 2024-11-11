@@ -74,5 +74,20 @@ export default createRoute({
             funName:'puppeteer',
             controller:()=> import("./puppeteer")
         },
+        {
+            path:"/design-from",
+            children:[
+                {
+                    path:"v1",
+                    children:[
+                        {
+                            path:"list",
+                            funName:'list',
+                            controller:()=> import("./design-from")
+                        }
+                    ]
+                }
+            ]
+        }
     ]
 });

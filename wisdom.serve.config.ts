@@ -25,6 +25,15 @@ export default <Partial<AppServeOptions>>{
             port: 3306,
             prefix:"",
             database:"chat"
+        },
+        designFrom:{
+            connectionLimit : 100,
+            host: '127.0.0.1',
+            user: 'root',
+            password: 'rootroot',
+            port: 3306,
+            prefix:"",
+            database:"designFrom"
         }
     },
     cors:true
