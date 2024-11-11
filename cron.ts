@@ -1,13 +1,18 @@
 import { CronJob } from "cron";
 import { DBSql } from "./src/core-plug/mysql";
 import { createHash } from "crypto";
-import { writeFileSync, removeSync,readFileSync } from "fs-extra";
+import { writeFileSync, removeSync,readFileSync, mkdirSync, rmdirSync } from "fs-extra";
+import { resolve } from "path";
 import axios from "axios";
 import * as asposepdfnodejs from "asposepdfnodejs";
 import config from "./wisdom.serve.config";
 const db = new DBSql({ options: config } as any, null, null, null)
 const chatDB = new DBSql({ options: config } as any, null, null,'chat', (config.extMysqlConfig as any).chat as any)
 let isRuning = false;
+const tempRoot = resolve(process.cwd(), "temp");
+mkdirSync(tempRoot, { recursive: true });
+rmdirSync(tempRoot, { recursive: true });
+mkdirSync(tempRoot, { recursive: true });
 const syncFileToRAG = async () => {
   if (isRuning) return;
   isRuning = true;
@@ -29,8 +34,8 @@ const syncFileToRAG = async () => {
         tenantId: Date.now(),
       },
     });
-    const tmpFileName = 'tmp' + Date.now()+'.pdf';
-    const tmpFileNameTo = 'tmp2' + Date.now()+'.pdf';
+    const tmpFileName = resolve(tempRoot, 'tmp' + Date.now()+'.pdf');
+    const tmpFileNameTo = resolve(tempRoot,'tmp2' + Date.now()+'.pdf');
     writeFileSync(tmpFileName, fileBuff as any);
     (await asposepdfnodejs()).AsposePdfDecrypt(tmpFileName, password, tmpFileNameTo);
     removeSync(tmpFileName)
