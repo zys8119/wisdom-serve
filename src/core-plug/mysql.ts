@@ -384,7 +384,7 @@ export class $DBModel {
         `, "更新表信息", tableName)
     }
 
-    async runSql(sql, message?:string|boolean, tableName?:string):Promise<{
+    async runSql(sql, message?:string|boolean, tableName?:string,...data:any[]):Promise<{
         results:any[],
         fields:any[]
     }>{
@@ -403,7 +403,7 @@ export class $DBModel {
                 });
             }
             // 查询
-            const res = await this.app[this.DBKeyName].query(sql)
+            const res = await this.app[this.DBKeyName].query(sql,data)
             if(this.app.options.debug){
                 ncol.color(function (){
                     let _this = this.success('【SQL】执行成功：');
