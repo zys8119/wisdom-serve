@@ -11,12 +11,11 @@ export const list = async function () {
   try {
     const pageSize = Number(this.$Serialize.get(this.$query,'pageSize')) || 10
     const page = Number(this.$Serialize.get(this.$query,'page')) || 1
-    const {results, err, fields} = await this.$DB.query(sql.list,[
+    const {results} = await this.$DB_$designForm.query(sql.list,[
         `%${this.$Serialize.get(this.$query,'title','').replace(/'/g,'\\\'')}%`,
         (page-1)*pageSize,
         pageSize,
     ]);
-    console.log(results);
     this.$success({
         data:results,
         total:results.length
