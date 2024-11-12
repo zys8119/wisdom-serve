@@ -5,6 +5,7 @@ import {sync} from "fast-glob";
 import * as ncol from "ncol"
 import {get, unionWith, isEqual, merge, cloneDeep} from "lodash"
 import {v1 as uuidV1} from "uuid"
+import * as dayjs from "dayjs";
 
 export class DBSql{
     private app:AppServe
@@ -640,6 +641,9 @@ export class $DBModel {
                 if(columns[k].is_uuid){
                     v = uuidV1()
                 }
+                if(columns[k].is_datetime){
+                    v = dayjs().format(v || 'YYYY-MM-DD HH:mm:ss' as any)
+                }
                 value.push(`${k} = ${typeof v === 'string' ? `'${v}'` : v}`)
             }
         }
@@ -858,6 +862,7 @@ export type DBModel_columns = {
 
 export type DBModel_columns_config = {
     is_uuid:boolean // 是否为uuid模式， 如果是则改字段写入数据将自动写入uuid格式
+    is_datetime:boolean | string// 是否为时间模式， 如果是则改字段写入数据将自动写入datetime格式
     not_null:boolean
     auto_increment:boolean
     unique:boolean

@@ -1,5 +1,5 @@
 import { Controller } from "@wisdom-serve/serve";
-import {v4 as createUuid} from "uuid";
+import * as dayjs from "dayjs";
 export const designFrom = async function () {
   this.$success("设计表单");
 } as Controller;
@@ -35,9 +35,26 @@ export const list = async function () {
 export const addForm = async function () {
   try {
     await this.$DBModel_$designForm.tables.design_form.post({
-      id:createUuid(),
       title:this.$Serialize.get(true,this.$body,'title'),
-      create_time:new Date().getTime(),
+    });
+    this.$success();
+  } catch (e) {
+    console.error(e);
+    this.$error(e);
+  }
+} as Controller;
+/**
+ * 更新表单
+ */
+export const updateForm = async function () {
+  try {
+    await this.$DBModel_$designForm.tables.design_form.update({
+      title:this.$Serialize.get(true,this.$body,'title'),
+      update_time:dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    },{
+        where:{
+            id:{value:this.$Serialize.get(true,this.$body,'id')}
+        }
     });
     this.$success();
   } catch (e) {

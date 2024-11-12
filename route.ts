@@ -37,6 +37,11 @@ export default createRoute({
                             path:"addForm",
                             funName:'addForm',
                             controller:()=> import("./design-from")
+                        },
+                        {
+                            path:"updateForm",
+                            funName:'updateForm',
+                            controller:()=> import("./design-from")
                         }
                     ]
                 }

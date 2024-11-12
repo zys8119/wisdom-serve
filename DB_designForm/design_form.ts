@@ -8,10 +8,21 @@ export default <DBModel>{
             primary_key:true,
             auto_increment:true,
             comment:"asdas",
+            is_uuid:true,
         },
         title:{
-            text:true,
+            varchar:255,
             comment:"表单标题"
+        },
+        create_time:{
+            datetime:true,
+            comment:"创建时间",
+            is_datetime:true,
+        },
+        update_time:{
+            datetime:true,
+            comment:"更新时间",
+            is_datetime:true,
         }
     },
     commit:"测试表阿萨",
