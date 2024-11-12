@@ -1,5 +1,5 @@
 import { Controller } from "@wisdom-serve/serve";
-import {c} from "uuid";
+import {v4 as createUuid} from "uuid";
 export const designFrom = async function () {
   this.$success("设计表单");
 } as Controller;
