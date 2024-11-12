@@ -10,17 +10,21 @@ export const list = async function () {
   try {
     const pageSize = Number(this.$Serialize.get(this.$query,'pageSize')) || 10
     const page = Number(this.$Serialize.get(this.$query,'page')) || 1
-    const title = Number(this.$Serialize.get(this.$query,'title',''))
-    console.log(this.$DBModel_$designForm.tables,1)
-    console.log(this.$DBModel_$designForm.tables.asdas,2)
-    console.log(this.$DBModel_$designForm.tables[0],2)
-    // this.$success(this.$Serialize.getPage([
-    //     await this.$DBModel_$designForm.tables.a()
-    // ],{
-    //     pageNo:page,
-    //     pageSize,
-    //     dataKeyField:'data',
-    // }));
+    const title = this.$Serialize.get(this.$query,'title','')
+    this.$success(this.$Serialize.getPage([
+        await this.$DBModel_$designForm.tables.design_form.get({
+            where:{
+                title:{
+                    value:"?",
+                    source:true
+                }
+            }
+        }, null,null,'\%asdas\%')
+    ],{
+        pageNo:page,
+        pageSize,
+        dataKeyField:'data',
+    }));
   } catch (e) {
     console.error(e);
     this.$error(e);

@@ -3,7 +3,7 @@ import {IncomingMessage, ServerResponse} from "http";
 import {createPool, FieldInfo, MysqlError, Pool, PoolConfig, QueryOptions} from "mysql";
 import {sync} from "fast-glob";
 import * as ncol from "ncol"
-import {get, unionWith, isEqual} from "lodash"
+import {get, unionWith, isEqual, merge, cloneDeep} from "lodash"
 import {v1 as uuidV1} from "uuid"
 
 export class DBSql{
@@ -203,13 +203,64 @@ export class $DBModel {
         this.response = response;
         this.DBKeyName = DBKeyName || '$DB'
         const dirName = this.DBKeyName.replace(/\$/img, "")
+        let info:$DBModelTablesItem = {
+            get:(outSql?:any, conditions:any = {}, isExists?:boolean, ...sqldata:any[])=>{
+                if(conditions === true){
+                    isExists = true
+                }
+                if(outSql !== true){
+                    conditions = outSql
+                }
+                this.outSql = outSql === true;
+                return this.get(info.name, conditions, isExists,...sqldata)
+            },
+            delete:(outSql?:any, conditions:Partial<Conditions> = {}, ...sqldata:any[])=>{
+                if(outSql !== true){
+                    conditions = outSql
+                }
+                this.outSql = outSql === true;
+                return this.delete(info.name, conditions,...sqldata)
+            },
+            post:(outSql?:any, data?:{[key:string]:any}, ...sqldata:any[])=>{
+                if(outSql !== true){
+                    data = outSql
+                }
+                this.outSql = outSql === true;
+                return this.post(info.name, data,...sqldata)
+            },
+            update:(outSql?:any, data:{[key:string]:any} = {}, conditions:Partial<Conditions> = {}, ...sqldata:any[])=>{
+                if(outSql !== true){
+                    conditions = data
+                    data = outSql
+                }
+                this.outSql = outSql === true;
+                return this.update(info.name, data, conditions,...sqldata)
+            },
+            createAPI:(outSql?:any, options: Partial<CreateAPI> = {})=>{
+                if(outSql !== true){
+                    options = outSql
+                }
+                this.outSql = outSql === true;
+                return this.createAPI(info.name,options)
+            },
+        } as any
         if(typeof Proxy === 'function'){
-            this.tables = new Proxy({}, {
+            this.tables = new Proxy({} as any, {
                 get:(target, p)=>{
                     // if(Object.prototype.toString.call(target[p]) === '[object Object]'){
                     //     return target[p]
                     // }
-                    // return target[p] || 111
+                    if(!target[p]){
+                        info = merge(cloneDeep(info),{
+                            ctx:null,
+                            path:'proxy',
+                            name:p,
+                        }) as any
+                        target[info.name] = info
+                        return target[p]
+                    }
+                    return target[p] || 111
+                    
                 },
                 set(target, p, value){
                     target[p] = value
@@ -236,50 +287,11 @@ export class $DBModel {
                     ctx[k].$$is__rewrite = true;
                 }
             }
-            const info:$DBModelTablesItem = {
+            info = merge(cloneDeep(info),{
                 ctx,
                 path:e,
                 name:((e.match(/([^/\\]*)\.ts$/) || [])[1] || ""),
-                get:(outSql?:any, conditions:any = {}, isExists?:boolean)=>{
-                    if(conditions === true){
-                        isExists = true
-                    }
-                    if(outSql !== true){
-                        conditions = outSql
-                    }
-                    this.outSql = outSql === true;
-                    return this.get(info.name, conditions, isExists)
-                },
-                delete:(outSql?:any, conditions:Partial<Conditions> = {})=>{
-                    if(outSql !== true){
-                        conditions = outSql
-                    }
-                    this.outSql = outSql === true;
-                    return this.delete(info.name, conditions)
-                },
-                post:(outSql?:any, data?:{[key:string]:any})=>{
-                    if(outSql !== true){
-                        data = outSql
-                    }
-                    this.outSql = outSql === true;
-                    return this.post(info.name, data)
-                },
-                update:(outSql?:any, data:{[key:string]:any} = {}, conditions:Partial<Conditions> = {})=>{
-                    if(outSql !== true){
-                        conditions = data
-                        data = outSql
-                    }
-                    this.outSql = outSql === true;
-                    return this.update(info.name, data, conditions)
-                },
-                createAPI:(outSql?:any, options: Partial<CreateAPI> = {})=>{
-                    if(outSql !== true){
-                        options = outSql
-                    }
-                    this.outSql = outSql === true;
-                    return this.createAPI(info.name,options)
-                },
-            }
+            }) as any
             // 自动同步model数据库配置
             let mysqlAuto:any = app.options.mysqlAuto
             if(Object.prototype.toString.call(mysqlAuto) === '[object Function]'){
@@ -588,12 +600,12 @@ export class $DBModel {
         `
     }
 
-    async delete(tableName, conditions:Partial<Conditions<whereConditionsItem>> = {}){
-        const {results} = await this.runSql(`DELETE from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName)
+    async delete(tableName, conditions:Partial<Conditions<whereConditionsItem>> = {}, ...sqldata:any[]){
+        const {results} = await this.runSql(`DELETE from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName, ...sqldata)
         return results
     }
 
-    async get(tableName, conditions:Partial<Conditions<whereConditionsItem>> = {}, isExists?:boolean){
+    async get(tableName, conditions:Partial<Conditions<whereConditionsItem>> = {}, isExists?:boolean, ...sqldata:any[]){
         const select = conditions.select === true ?
             '*' :
             Object.prototype.toString.call(conditions.select) === '[object Array]' ?
@@ -603,7 +615,7 @@ export class $DBModel {
         if(conditions.select){
             delete conditions.select
         }
-        const {results} = await this.runSql(`SELECT ${select} from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName)
+        const {results} = await this.runSql(`SELECT ${select} from ${tableName} `+await this.createSQL(conditions), "查询表数据", tableName, ...sqldata)
         if(isExists){
             return results.length > 0;
         }
@@ -639,13 +651,13 @@ export class $DBModel {
         `
     }
 
-    async post(tableName, data = {}, conditions:Partial<Conditions<whereConditionsItem>> = {}){
-        const {results} = await this.runSql(`INSERT INTO  ${tableName} ` + await this.getPostSql(tableName, data, false), "新增表数据", tableName)
+    async post(tableName, data = {}, conditions:Partial<Conditions<whereConditionsItem>> = {}, ...sqldata:any[]){
+        const {results} = await this.runSql(`INSERT INTO  ${tableName} ` + await this.getPostSql(tableName, data, false), "新增表数据", tableName, ...sqldata)
         return results
     }
 
-    async update(tableName, data = {}, conditions:Partial<Conditions<whereConditionsItem>> = {}){
-        const {results} = await this.runSql(`UPDATE  ${tableName} ` + await this.getPostSql(tableName, data, true) + await this.createSQL(conditions),  "新增表数据", tableName)
+    async update(tableName, data = {}, conditions:Partial<Conditions<whereConditionsItem>> = {}, ...sqldata:any[]){
+        const {results} = await this.runSql(`UPDATE  ${tableName} ` + await this.getPostSql(tableName, data, true) + await this.createSQL(conditions),  "新增表数据", tableName, ...sqldata)
         return results
     }
 
@@ -789,23 +801,39 @@ export interface $DBModelTablesItem {
     path:string
     ctx:$DBModelTablesCtx
     get?(conditions?:Partial<Conditions>, isExists?:boolean):Promise<any>
+    get?(conditions?:Partial<Conditions>, isExists?:boolean, ...sqldata:any[]):Promise<any>
     get?(conditions?:Partial<Conditions<whereConditionsItem>>, isExists?:boolean):Promise<any>
+    get?(conditions?:Partial<Conditions<whereConditionsItem>>, isExists?:boolean, ...sqldata:any[]):Promise<any>
     get?(conditions?:Partial<Conditions>):Promise<any>
+    get?(conditions?:Partial<Conditions>, ...sqldata:any[]):Promise<any>
     get?(conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
+    get?(conditions?:Partial<Conditions<whereConditionsItem>>, ...sqldata:any[]):Promise<any>
     get?(outSql?:boolean, conditions?:Partial<Conditions>):Promise<any>
+    get?(outSql?:boolean, conditions?:Partial<Conditions>, ...sqldata:any[]):Promise<any>
     get?(outSql?:boolean, conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
+    get?(outSql?:boolean, conditions?:Partial<Conditions<whereConditionsItem>>, ...sqldata:any[]):Promise<any>
     get?(outSql?:boolean, conditions?:Partial<Conditions>, isExists?:boolean):Promise<any>
     get?(outSql?:boolean, conditions?:Partial<Conditions<whereConditionsItem>>, isExists?:boolean):Promise<any>
+    get?(outSql?:boolean, conditions?:Partial<Conditions<whereConditionsItem>>, isExists?:boolean, ...sqldata:any[]):Promise<any>
     delete?(conditions?:Partial<Conditions>):Promise<any>
+    delete?(conditions?:Partial<Conditions>, ...sqldata:any[]):Promise<any>
     delete?(conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
+    delete?(conditions?:Partial<Conditions<whereConditionsItem>>, ...sqldata:any[]):Promise<any>
     delete?(outSql?:boolean, conditions?:Partial<Conditions>):Promise<any>
+    delete?(outSql?:boolean, conditions?:Partial<Conditions>, ...sqldata:any[]):Promise<any>
     delete?(outSql?:boolean, conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
+    delete?(outSql?:boolean, conditions?:Partial<Conditions<whereConditionsItem>>, ...sqldata:any[]):Promise<any>
     post?(data?:{[key:string]:any}):Promise<any>
+    post?(data?:{[key:string]:any}, ...sqldata:any[]):Promise<any>
     post?(outSql?:boolean, data?:{[key:string]:any}):Promise<any>
+    post?(outSql?:boolean, data?:{[key:string]:any}, ...sqldata:any[]):Promise<any>
     update?(data?:{[key:string]:any}, conditions?:Partial<Conditions>):Promise<any>
+    update?(data?:{[key:string]:any}, conditions?:Partial<Conditions>, ...sqldata:any[]):Promise<any>
     update?(data?:{[key:string]:any}, conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
+    update?(data?:{[key:string]:any}, conditions?:Partial<Conditions<whereConditionsItem>>, ...sqldata:any[]):Promise<any>
     update?(outSql?:boolean, data?:{[key:string]:any}, conditions?:Partial<Conditions>):Promise<any>
     update?(outSql?:boolean, data?:{[key:string]:any}, conditions?:Partial<Conditions<whereConditionsItem>>):Promise<any>
+    update?(outSql?:boolean, data?:{[key:string]:any}, conditions?:Partial<Conditions<whereConditionsItem>>, ...sqldata:any[]):Promise<any>
     createAPI?(options?: Partial<CreateAPI>):Promise<any>
     createAPI?(outSql?:boolean, options?: Partial<CreateAPI>):Promise<any>
 }
