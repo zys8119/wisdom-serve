@@ -113,7 +113,7 @@ export class $Serialize {
     /**
      * 获取分页格式数据
      */
-    getPage<T extends boolean | string | true | 'true' = false, DK extends string>(data:Array<Array<any> | {
+    getPage<T extends boolean | string | true | 'true' = false, DK extends string = 'list'>(data:Array<Array<any> | {
         results:any[];
         [key:string]:any
     } | any>, {
@@ -149,11 +149,11 @@ export class $Serialize {
         is_equal:boolean;
         dataKeyField:DK;
     }> = {}):(T extends true | 'true' ?  Array<any> : ({
-        [K in DK]: any[] | number
-    } & {
         total:number
         pageNo:number
         pageSize:number
+    } & {
+        [K in DK]: any[] | number
     })){
         let list = data.reduce<Array<any>>((a,b)=>{
             return a.concat(Object.prototype.toString.call(b) === '[object Object]' ? (b as any).results : b);

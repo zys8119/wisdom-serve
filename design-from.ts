@@ -25,7 +25,7 @@ export const list = async function () {
     //     data:results,
     //     total:total.length
     // });
-    const data = this.$Serialize.getPage([
+    this.$success(this.$Serialize.getPage([
         // await this.$DB_$designForm.query(sql.list,[
         await this.$DB.query(sql.list,[
             `%${this.$Serialize.get(this.$query,'title','').replace(/'/g,'\\\'')}%`,
@@ -34,9 +34,7 @@ export const list = async function () {
         pageNo:page,
         pageSize,
         dataKeyField:'data',
-        no_page:true,
-    })
-    this.$success(data);
+    }));
   } catch (e) {
     console.error(e);
     this.$error(e);
