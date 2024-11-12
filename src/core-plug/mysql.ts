@@ -203,6 +203,20 @@ export class $DBModel {
         this.response = response;
         this.DBKeyName = DBKeyName || '$DB'
         const dirName = this.DBKeyName.replace(/\$/img, "")
+        if(typeof Proxy === 'function'){
+            this.tables = new Proxy({}, {
+                get:(target, p)=>{
+                    // if(Object.prototype.toString.call(target[p]) === '[object Object]'){
+                    //     return target[p]
+                    // }
+                    // return target[p] || 111
+                },
+                set(target, p, value){
+                    target[p] = value
+                    return true
+                }
+            })
+        }
         sync(`${dirName}/*.ts`,{cwd:process.cwd(), absolute:true}).forEach(e=> {
             const ctx = require(e)
             for(const k in ctx){
@@ -440,6 +454,16 @@ export class $DBModel {
             for (const whereKeyName in whereConditions){
                 const where = whereConditions[whereKeyName]
                 if(Object.prototype.toString.call(where) === '[object Object]'){
+                    /**
+                     * sql 注入格式化
+                     * @param e 
+                     * @returns 
+                     */
+                    const sqlInjectionFormat = (e:string)=>{
+                        return e?.replace?.(/\\/img,'\\\\\\')
+                        ?.replace?.(/('|`|")/img,'\\\$1')
+                        ?.replace?.(/(\(|\))/img,'\\\\$1')
+                    }
                     const isValid = async (k:string, v:string, type?:number)=> {
                         const isArray = Object.prototype.toString.call(where[k]) === '[object Array]';
                         const isString = typeof where[k] === 'string';
@@ -451,7 +475,12 @@ export class $DBModel {
                                 str = index > 0 || showType1 ? (where[k] === true ? ` ${keyName} ` : '') : ''
                                 break
                             case 2:
-                                if(isString){ str = ` ${keyName} '${where[k]}' ` }
+                                if(isString){
+                                    if(keyName === 'REGEXP' && where[k]?.length === 0){
+                                        return str = ` ${keyName} '.' `
+                                    }
+                                    str = ` ${keyName} '${sqlInjectionFormat(where[k])}' ` 
+                                }
                                 break
                             case 3:
                                 if(isBoolean){ str = ` ${keyName} ` }
@@ -462,7 +491,7 @@ export class $DBModel {
                                 }
                                 break
                             case 5:
-                                if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") : where[k]}) ` }
+                                if(isString || (isArray && where[k].length > 0)){ str =  ` ${keyName} (${isArray ? where[k].map(e=>`'${sqlInjectionFormat(e)}'`).join(" , ") : `'${sqlInjectionFormat(where[k])}'`}) ` }
                                 break
                             case 6:
                                 if(where.collection && Object.prototype.toString.call(where.value) === '[object Array]'){
@@ -474,15 +503,15 @@ export class $DBModel {
                                     }).join("")
                                     str = ` ( ${str} ) `
                                 }else {
-                                    str = ` ${where.type || '='} ${where.source ? where.value : `'${where.value}'`} `
+                                    str = ` ${where.type || '='} ${where.source ? where.value : `'${sqlInjectionFormat(where.value)}'`} `
                                 }
                                 break
                             case 7:
-                                if(isString || (isArray && where[k].length > 0)){ str =  ` (${isArray ? where[k].map(e=>`'${e}'`).join(" , ") :  where[k]}) ` }
+                                if(isString || (isArray && where[k].length > 0)){ str =  ` (${isArray ? where[k].map(e=>`'${sqlInjectionFormat(e)}'`).join(" , ") :  `'${sqlInjectionFormat(where[k])}'`}) ` }
                                 break
                             case 8:
                                 if(isString || (isArray && where[k].length > 0)){
-                                    str =  `${keyName} ${isArray ? where[k].map(e=>`'${e}'`).join(" AND ") :  `'${where[k]}'`} `
+                                    str =  `${keyName} ${isArray ? where[k].map(e=>`'${sqlInjectionFormat(e)}'`).join(" AND ") :  `'${sqlInjectionFormat(where[k])}'`} `
                                 }
                                 break
                         }
@@ -858,6 +887,7 @@ declare module "@wisdom-serve/serve" {
         $DB_$chat:DBSql
         $DB_$designForm:DBSql
         $DBModel:$DBModel
+        $DBModel_$designForm:$DBModel
         $Serialize:$Serialize
     }
 }
