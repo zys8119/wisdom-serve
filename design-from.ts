@@ -157,10 +157,9 @@ export const getFormConfig = async function () {
         },
       }),
     });
-    if (data.length === 0) {
-      return this.$error("表单配置不存在!");
-    }
-    this.$success(data[0]);
+    this.$success(data[0] || {
+        config:"[]",
+    });
   } catch (e) {
     console.error(e);
     this.$error(e);
