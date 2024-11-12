@@ -15,11 +15,10 @@ export const list = async function () {
         await this.$DBModel_$designForm.tables.design_form.get({
             where:{
                 title:{
-                    value:"?",
-                    source:true
+                    like:`%${title}%`,
                 }
             }
-        }, null,null,'\%asdas\%')
+        })
     ],{
         pageNo:page,
         pageSize,
