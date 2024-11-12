@@ -471,7 +471,10 @@ export class $DBModel {
                      * @param e 
                      * @returns 
                      */
-                    const sqlInjectionFormat = (e:string)=>{
+                    const sqlInjectionFormat = (e:any)=>{
+                        if(typeof e !== 'string'){
+                            return e
+                        }
                         return e?.replace?.(/\\/img,'\\\\\\')
                         ?.replace?.(/('|`|")/img,'\\\$1')
                         ?.replace?.(/(\(|\))/img,'\\\\$1')
