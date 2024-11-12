@@ -23,6 +23,9 @@ export const list = async function () {
         pageNo:page,
         pageSize,
         dataKeyField:'data',
+        defMap:{
+            create_time:[d=>dayjs(d.create_time).format('YYYY-MM-DD HH:mm:ss')],
+        }
     }));
   } catch (e) {
     console.error(e);
