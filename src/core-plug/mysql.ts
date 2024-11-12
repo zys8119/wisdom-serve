@@ -247,9 +247,6 @@ export class $DBModel {
         if(typeof Proxy === 'function'){
             this.tables = new Proxy({} as any, {
                 get:(target, p)=>{
-                    // if(Object.prototype.toString.call(target[p]) === '[object Object]'){
-                    //     return target[p]
-                    // }
                     if(!target[p]){
                         info = merge(cloneDeep(info),{
                             ctx:null,
@@ -259,7 +256,8 @@ export class $DBModel {
                         target[info.name] = info
                         return target[p]
                     }
-                    return target[p] || 111
+                    console.log(target)
+                    return target[p]
                     
                 },
                 set(target, p, value){

@@ -34,6 +34,11 @@ export const list = async function () {
  */
 export const addForm = async function () {
   try {
+    await this.$DBModel_$designForm.tables.design_form.post({
+      id:createUuid(),
+      title:this.$Serialize.get(true,this.$body,'title'),
+      create_time:new Date().getTime(),
+    });
     this.$success();
   } catch (e) {
     console.error(e);
