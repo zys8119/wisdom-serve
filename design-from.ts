@@ -1,5 +1,5 @@
 import { Controller } from "@wisdom-serve/serve";
-import sqlCommit from "./sql-commit-function";
+import {c} from "uuid";
 export const designFrom = async function () {
   this.$success("设计表单");
 } as Controller;
@@ -24,6 +24,17 @@ export const list = async function () {
         pageSize,
         dataKeyField:'data',
     }));
+  } catch (e) {
+    console.error(e);
+    this.$error(e);
+  }
+} as Controller;
+/**
+ * 创建表单
+ */
+export const addForm = async function () {
+  try {
+    this.$success();
   } catch (e) {
     console.error(e);
     this.$error(e);
