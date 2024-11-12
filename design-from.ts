@@ -11,20 +11,32 @@ export const list = async function () {
   try {
     const pageSize = Number(this.$Serialize.get(this.$query,'pageSize')) || 10
     const page = Number(this.$Serialize.get(this.$query,'page')) || 1
-    const {results} = await this.$DB_$designForm.query(sql.list,[
-        `%${this.$Serialize.get(this.$query,'title','').replace(/'/g,'\\\'')}%`,
-        (page-1)*pageSize,
+    // const {results} = await this.$DB_$designForm.query(sql.list,[
+    //     `%${this.$Serialize.get(this.$query,'title','').replace(/'/g,'\\\'')}%`,
+    //     (page-1)*pageSize,
+    //     pageSize,
+    // ]);
+    // const {results:total} = await this.$DB_$designForm.query(sql.listTotal,[
+    //     `%${this.$Serialize.get(this.$query,'title','').replace(/'/g,'\\\'')}%`,
+    //     (page-1)*pageSize,
+    //     pageSize,
+    // ]);
+    // this.$success({
+    //     data:results,
+    //     total:total.length
+    // });
+    const data = this.$Serialize.getPage([
+        // await this.$DB_$designForm.query(sql.list,[
+        await this.$DB.query(sql.list,[
+            `%${this.$Serialize.get(this.$query,'title','').replace(/'/g,'\\\'')}%`,
+        ])
+    ],{
+        pageNo:page,
         pageSize,
-    ]);
-    const {results:total} = await this.$DB_$designForm.query(sql.listTotal,[
-        `%${this.$Serialize.get(this.$query,'title','').replace(/'/g,'\\\'')}%`,
-        (page-1)*pageSize,
-        pageSize,
-    ]);
-    this.$success({
-        data:results,
-        total:total.length
-    });
+        dataKeyField:'data',
+        no_page:true,
+    })
+    this.$success(data);
   } catch (e) {
     console.error(e);
     this.$error(e);
