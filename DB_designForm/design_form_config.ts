@@ -7,13 +7,18 @@ export default <DBModel>{
             int:255,
             primary_key:true,
             auto_increment:true,
-            comment:"表单id",
+            comment:"表单配置表id",
             is_uuid:true,
             not_null:true,
         },
-        title:{
+        df_id:{
             varchar:255,
-            comment:"表单标题",
+            comment:"关联的表单id",
+            not_null:true,
+        },
+        config:{
+            longtext:true,
+            comment:"表单配置",
             not_null:true,
         },
         create_time:{
@@ -34,5 +39,5 @@ export default <DBModel>{
             not_null:true,
         }
     },
-    commit:"表单表",
+    commit:"测试表配置表",
 }
