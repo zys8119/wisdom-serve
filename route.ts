@@ -52,6 +52,11 @@ export default createRoute({
                             path:"getFormConfig",
                             funName:'getFormConfig',
                             controller:()=> import("./design-from")
+                        },
+                        {
+                            path:"deleteForm",
+                            funName:'deleteForm',
+                            controller:()=> import("./design-from")
                         }
                     ]
                 }

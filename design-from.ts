@@ -165,3 +165,26 @@ export const getFormConfig = async function () {
     this.$error(e);
   }
 } as Controller;
+/**
+ * 删除表单
+ */
+export const deleteForm = async function () {
+  try {
+    const id = this.$Serialize.get(true, this.$body, "id");
+    await this.$DBModel_$designForm.tables.design_form.update(
+      {
+        status: 0,
+        update_time: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+      },
+      {
+        where: {
+          id: { value: id },
+        }
+      }
+    );
+    this.$success();
+  } catch (e) {
+    console.error(e);
+    this.$error(e);
+  }
+} as Controller;
