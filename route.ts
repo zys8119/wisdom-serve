@@ -47,6 +47,11 @@ export default createRoute({
                             path:"saveForm",
                             funName:'saveForm',
                             controller:()=> import("./design-from")
+                        },
+                        {
+                            path:"getFormConfig",
+                            funName:'getFormConfig',
+                            controller:()=> import("./design-from")
                         }
                     ]
                 }

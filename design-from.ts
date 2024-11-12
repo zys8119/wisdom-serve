@@ -19,6 +19,7 @@ export const list = async function () {
               title: {
                 like: `%${title}%`,
               },
+              status: { value: 1, and: true },
             },
           }),
         ],
@@ -128,15 +129,38 @@ export const saveForm = async function () {
         }
       );
     }
-    // await this.$DBModel_$designForm.tables.design_form.update({
-    //   title:this.$Serialize.get(true,this.$body,'title'),
-    //   update_time:dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    // },{
-    //     where:{
-    //         id:{value:this.$Serialize.get(true,this.$body,'id')}
-    //     }
-    // });
     this.$success();
+  } catch (e) {
+    console.error(e);
+    this.$error(e);
+  }
+} as Controller;
+/**
+ * 获取表单布局数据
+ */
+export const getFormConfig = async function () {
+  try {
+    const id = this.$Serialize.get(true, this.$query, "id");
+    const data = await this.$DBModel_$designForm.tables.design_form_config.get({
+      select: ["design_form_config.*","design_form.title"],
+      where: {
+        "design_form_config.df_id": { value: id },
+        "design_form_config.status": { value: 1, and: true },
+      },
+      left_join: await this.$DBModel.createSQL({
+        as: "design_form",
+        on: {
+          "design_form.id": {
+            value: "design_form_config.df_id ",
+            source: true,
+          },
+        },
+      }),
+    });
+    if (data.length === 0) {
+      return this.$error("表单配置不存在!");
+    }
+    this.$success(data[0]);
   } catch (e) {
     console.error(e);
     this.$error(e);
