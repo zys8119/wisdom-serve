@@ -642,7 +642,7 @@ export class $DBModel {
                     v = uuidV1()
                 }
                 if(columns[k].is_datetime){
-                    v = dayjs().format(columns[k].is_datetime || 'YYYY-MM-DD HH:mm:ss' as any)
+                    v = dayjs().format(v || 'YYYY-MM-DD HH:mm:ss' as any)
                 }
                 value.push(`${k} = ${typeof v === 'string' ? `'${v}'` : v}`)
             }
