@@ -203,7 +203,7 @@ export class $DBModel {
         this.response = response;
         this.DBKeyName = DBKeyName || '$DB'
         const dirName = this.DBKeyName.replace(/\$/img, "")
-        let info:$DBModelTablesItem = {
+        const getInfo:any = (info:any)=>({
             get:(outSql?:any, conditions:any = {}, isExists?:boolean, ...sqldata:any[])=>{
                 if(conditions === true){
                     isExists = true
@@ -243,20 +243,20 @@ export class $DBModel {
                 this.outSql = outSql === true;
                 return this.createAPI(info.name,options)
             },
-        } as any
+        }) as any
         if(typeof Proxy === 'function'){
             this.tables = new Proxy({} as any, {
                 get:(target, p)=>{
                     if(!target[p]){
-                        info = merge(cloneDeep(info),{
+                        const info = {
                             ctx:null,
                             path:'proxy',
                             name:p,
-                        }) as any
-                        target[info.name] = info
+                        }
+                        const currInfo = merge(cloneDeep(getInfo(info)),info) as any
+                        target[currInfo.name] = currInfo
                         return target[p]
                     }
-                    console.log(target)
                     return target[p]
                     
                 },
@@ -285,11 +285,12 @@ export class $DBModel {
                     ctx[k].$$is__rewrite = true;
                 }
             }
-            info = merge(cloneDeep(info),{
+            const info = {
                 ctx,
                 path:e,
                 name:((e.match(/([^/\\]*)\.ts$/) || [])[1] || ""),
-            }) as any
+            }
+            const currInfo = merge(cloneDeep(getInfo(info)),info) as any
             // 自动同步model数据库配置
             let mysqlAuto:any = app.options.mysqlAuto
             if(Object.prototype.toString.call(mysqlAuto) === '[object Function]'){
@@ -302,9 +303,9 @@ export class $DBModel {
                 })
             }
             if(mysqlAuto === true || (Object.prototype.toString.call(mysqlAuto) === '[object RegExp]' && mysqlAuto.test(request.url))){
-                this.runMysqlModel(info)
+                this.runMysqlModel(currInfo)
             }
-            this.tables[info.name] = info
+            this.tables[currInfo.name] = currInfo
         })
         return
     }
