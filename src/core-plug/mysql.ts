@@ -113,13 +113,13 @@ export class $Serialize {
     /**
      * 获取分页格式数据
      */
-    getPage(data:Array<Array<any> | {
+    getPage<T extends boolean | string | true | 'true' = false, DK extends string>(data:Array<Array<any> | {
         results:any[];
         [key:string]:any
     } | any>, {
                 pageNo = 1,
                 pageSize = 15,
-                no_page = false,
+                no_page = false as any,
                 total,
                 defMap,
                 excludeReg = null,
@@ -127,13 +127,14 @@ export class $Serialize {
                 reduce = null,
                 reduceInitData = null,
                 is_equal = true,
+                dataKeyField = 'list' as any,
             }:Partial<{
         // 当前页数
         pageNo:number | string,
         // 每页数量
         pageSize:number | string,
         // 是否分页
-        no_page:boolean | string,
+        no_page:T,
         // 总数
         total:number,
         // defMap
@@ -146,7 +147,14 @@ export class $Serialize {
         reduce(previousValue: any, currentValue:any, currentIndex: number, array: any[]):any;
         reduceInitData:any;
         is_equal:boolean;
-    }> = {}):Array<any> | {list:Array<any>, total:number, pageNo:number, pageSize:number}{
+        dataKeyField:DK;
+    }> = {}):(T extends true | 'true' ?  Array<any> : ({
+        [K in DK]: any[] | number
+    } & {
+        total:number
+        pageNo:number
+        pageSize:number
+    })){
         let list = data.reduce<Array<any>>((a,b)=>{
             return a.concat(Object.prototype.toString.call(b) === '[object Object]' ? (b as any).results : b);
         }, []);
@@ -164,7 +172,7 @@ export class $Serialize {
             if(reduce){
                 list = list.reduce(reduce, reduceInitData)
             }
-            return list
+            return list as any
         }else {
             pageNo = Number(pageNo)
             pageSize = Number(pageSize)
@@ -174,14 +182,13 @@ export class $Serialize {
                 list = list.reduce(reduce, reduceInitData)
             }
             return {
-                list,
+                [dataKeyField]:list,
                 total:total_index,
                 pageNo,
                 pageSize
-            }
+            } as any
         }
-    }
-}
+    }}
 
 export class $DBModel {
     tables:$DBModelTables = {}
@@ -384,7 +391,7 @@ export class $DBModel {
         `, "更新表信息", tableName)
     }
 
-    async runSql(sql, message?:string|boolean, tableName?:string):Promise<{
+    async runSql(sql, message?:string|boolean, tableName?:string,...data:any[]):Promise<{
         results:any[],
         fields:any[]
     }>{
@@ -403,7 +410,7 @@ export class $DBModel {
                 });
             }
             // 查询
-            const res = await this.app[this.DBKeyName].query(sql)
+            const res = await this.app[this.DBKeyName].query(sql,data)
             if(this.app.options.debug){
                 ncol.color(function (){
                     let _this = this.success('【SQL】执行成功：');
@@ -848,6 +855,8 @@ declare module "@wisdom-serve/serve" {
     };
     interface AppServeInterface extends ext$DB, ext$DBModel{
         $DB:DBSql
+        $DB_$chat:DBSql
+        $DB_$designForm:DBSql
         $DBModel:$DBModel
         $Serialize:$Serialize
     }
