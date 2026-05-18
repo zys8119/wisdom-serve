@@ -10,9 +10,6 @@
   },
   "author": "",
   "license": "ISC",
-  "workspaces": [
-    "src/*"
-  ],
   "types": "./global.d.ts",
   "dependencies": {
     "@keyvhq/core": "^2.0.0",
@@ -29,9 +26,9 @@
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.19.0",
     "@typescript-eslint/parser": "^5.19.0",
-    "@wisdom-serve/core-plug": "workspaces:*",
-    "@wisdom-serve/serve": "workspaces:*",
-    "@wisdom-serve/utils": "workspaces:*",
+    "@wisdom-serve/core-plug": "link:./src/core-plug",
+    "@wisdom-serve/serve": "link:./src/serve",
+    "@wisdom-serve/utils": "link:./src/utils",
     "body-parser": "^1.20.2",
     "dayjs": "^1.11.10",
     "eslint": "^8.13.0",
