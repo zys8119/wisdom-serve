@@ -18,14 +18,21 @@ export default createRoute({
         const others = this.$body.messages.filter(
           (item: any) => !["system", "user"].includes(item.role),
         );
-        const messages = [].concat(system, others, users);
+        const messages = [].concat(system, others, users).map((item: any) => {
+          return {
+            ...item,
+            role: "user",
+          };
+        });
         this.$body.messages = messages;
         console.log(this.$body.messages);
         const stream = await anthropic.messages.stream({
           ...this.$body,
           messages,
-          // max_tokens: 262144,
-          // model: "[限时]claude-sonnet-4-6",
+          max_tokens: 262144,
+          options: {
+            num_ctx: 262144,
+          },
         });
         this.response.writeHead(200, {
           "Content-Type": "text/event-stream",
