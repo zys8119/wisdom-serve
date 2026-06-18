@@ -18,7 +18,7 @@ export default createRoute({
         const others = this.$body.messages.filter(
           (item: any) => !["system", "user"].includes(item.role),
         );
-        const messages = [].concat(system, users, others);
+        const messages = [].concat(system, others, users);
         this.$body.messages = messages;
         console.log(this.$body.messages);
         const stream = await anthropic.messages.stream({
